@@ -36,6 +36,11 @@ class _AppShellState extends State<AppShell> {
         initialRoute: AppRoutes.homepage,
         onGenerateRoute: AppRoutes.onGenerateTab,
       ),
+      floatingActionButton: AppCenterButton(
+        selected: _index == AppBottomNavigation.featuredIndex,
+        onPressed: () => _onTap(AppBottomNavigation.featuredIndex),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: AppBottomNavigation(
         currentIndex: _index,
         onTap: _onTap,

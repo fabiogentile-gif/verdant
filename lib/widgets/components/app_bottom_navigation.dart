@@ -11,19 +11,7 @@ class AppBottomNavigation extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  // Token dal design Figma
-  static const _background = Color(0xFFFFFDFA);
-  static const _border = Color(0xFFDCE0D6);
-  static const _indicator = Color(0xFFE6EBE3);
-  static const _active = Color(0xFF1A3636);
-  static const _inactive = Color(0xFF77847B);
-
-  // Voce in evidenza (Greenhouse)
-  static const _featuredIndex = 2;
-  static const _featuredIdle = Color(0xFF677D6A);
-  static const _circleSize = 52.0;
-  static const _protrusion = 22.0; // quanto il cerchio esce sopra la barra
-  static const _gap = 6.0; // spazio tra cerchio e bordo dell'incavo
+  static const featuredIndex = 2; // Greenhouse
 
   static const _items = [
     _NavItemData('Home', LucideIcons.house),
@@ -35,140 +23,63 @@ class AppBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final featuredSelected = currentIndex == _featuredIndex;
-    final featuredColor = featuredSelected ? _active : _featuredIdle;
+    final scheme = Theme.of(context).colorScheme;
 
-    return Material(
-      type: MaterialType.transparency,
-      child: Stack(
+    return BottomAppBar(
+      height: 64,
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+      color: scheme.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 8,
+      shadowColor: scheme.shadow.withValues(alpha: 0.15),
+      shape: const CircularNotchedRectangle(),
+      notchMargin: 6,
+      clipBehavior: Clip.antiAlias,
+      child: Row(
+        spacing: 2,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Sfondo della barra con incavo
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _BarPainter(
-                top: _protrusion,
-                notchDepth: _circleSize - _protrusion + _gap,
-                notchHalfWidth: _circleSize / 2 + 22,
-                fill: _background,
-                border: _border,
+          for (var i = 0; i < _items.length; i++)
+            Expanded(
+              child: _NavItem(
+                data: _items[i],
+                selected: i == currentIndex,
+                featured: i == featuredIndex,
+                onTap: () => onTap(i),
               ),
             ),
-          ),
-          // Contenuto della barra
-          Padding(
-            padding: const EdgeInsets.only(top: _protrusion),
-            child: SafeArea(
-              top: false,
-              minimum: const EdgeInsets.only(bottom: 8),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
-                child: Row(
-                  spacing: 2,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for (var i = 0; i < _items.length; i++)
-                      Expanded(
-                        child: _NavItem(
-                          data: _items[i],
-                          selected: i == currentIndex,
-                          featured: i == _featuredIndex,
-                          onTap: () => onTap(i),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          // Cerchio in evidenza, centrato e sporgente
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Semantics(
-                button: true,
-                selected: featuredSelected,
-                label: _items[_featuredIndex].label,
-                excludeSemantics: true,
-                child: Material(
-                  color: featuredColor,
-                  elevation: 6,
-                  shadowColor: featuredColor.withValues(alpha: 0.5),
-                  shape: const CircleBorder(),
-                  clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    onTap: () => onTap(_featuredIndex),
-                    child: SizedBox.square(
-                      dimension: _circleSize,
-                      child: Icon(
-                        _items[_featuredIndex].icon,
-                        size: 24,
-                        color: _background,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 }
 
-class _BarPainter extends CustomPainter {
-  const _BarPainter({
-    required this.top,
-    required this.notchDepth,
-    required this.notchHalfWidth,
-    required this.fill,
-    required this.border,
+// Cerchio centrale
+class AppCenterButton extends StatelessWidget {
+  const AppCenterButton({
+    super.key,
+    required this.selected,
+    required this.onPressed,
   });
 
-  final double top; // y del bordo superiore della barra
-  final double notchDepth; // profondità dell'incavo sotto il bordo
-  final double notchHalfWidth; // metà larghezza dell'incavo
-  final Color fill;
-  final Color border;
+  final bool selected;
+  final VoidCallback onPressed;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final ctrl = notchHalfWidth * 0.625; // morbidezza della curva
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
 
-    // Bordo superiore con incavo
-    final edge = Path()
-      ..moveTo(0, top)
-      ..lineTo(cx - notchHalfWidth, top)
-      ..cubicTo(cx - ctrl, top, cx - ctrl, top + notchDepth, cx, top + notchDepth)
-      ..cubicTo(cx + ctrl, top + notchDepth, cx + ctrl, top, cx + notchHalfWidth, top)
-      ..lineTo(size.width, top);
-
-    final body = Path.from(edge)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-
-    canvas.drawShadow(body, Colors.black.withValues(alpha: 0.12), 4, false);
-    canvas.drawPath(body, Paint()..color = fill);
-    canvas.drawPath(
-      edge,
-      Paint()
-        ..color = border
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1,
+    return FloatingActionButton(
+      heroTag: null,
+      onPressed: onPressed,
+      elevation: 4,
+      highlightElevation: 6,
+      shape: const CircleBorder(),
+      backgroundColor: selected ? scheme.inverseSurface : scheme.primary,
+      foregroundColor: selected ? scheme.onInverseSurface : scheme.onPrimary,
+      child: const Icon(LucideIcons.warehouse, size: 24),
     );
   }
-
-  @override
-  bool shouldRepaint(_BarPainter old) =>
-      old.top != top ||
-      old.notchDepth != notchDepth ||
-      old.notchHalfWidth != notchHalfWidth ||
-      old.fill != fill ||
-      old.border != border;
 }
 
 class _NavItemData {
@@ -192,50 +103,41 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        selected ? AppBottomNavigation._active : AppBottomNavigation._inactive;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final color = selected ? scheme.onSurface : scheme.onSurfaceVariant;
 
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: data.label,
-      excludeSemantics: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 4,
-          children: [
-            if (featured)
-              // Spazio lasciato al cerchio (disegnato sopra, nello Stack)
-              const SizedBox(height: 30)
-            else
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 48,
-                height: 30,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: selected
-                      ? AppBottomNavigation._indicator
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: Icon(data.icon, size: 21, color: color),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 4,
+        children: [
+          if (featured)
+            // Spazio lasciato al cerchio
+            const SizedBox(height: 30)
+          else
+            Container(
+              width: 48,
+              height: 30,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: selected ? scheme.primaryContainer : Colors.transparent,
+                borderRadius: BorderRadius.circular(100),
               ),
-            Text(
-              data.label,
-              maxLines: 1,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 10,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-                color: color,
-              ),
+              child: Icon(data.icon, size: 21, color: color),
             ),
-          ],
-        ),
+          Text(
+            data.label,
+            maxLines: 1,
+            style: theme.textTheme.labelSmall?.copyWith(
+              fontSize: 10,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }
