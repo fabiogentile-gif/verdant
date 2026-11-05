@@ -19,10 +19,10 @@ class MyApp extends StatelessWidget {
 
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
-        themeMode: mode,
+        themeMode: mode,  
         initialRoute: AppRoutes.root,
         onGenerateRoute: AppRoutes.onGenerateRoute,
-        title: 'APP',
+        title: 'Verdant.',
       ),
     );
   }

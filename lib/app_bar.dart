@@ -4,40 +4,66 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
   const StandardAppBar({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.actionIcon,
+    this.onActionTap,
   });
 
   final String title;
-  final String subtitle;
+  final IconData? actionIcon;
+  final VoidCallback? onActionTap;
+
+  static const _height = 68.0;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(_height);
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
     return AppBar(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      toolbarHeight: 72,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+      toolbarHeight: _height,
       automaticallyImplyLeading: false,
-      title: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
+      centerTitle: false,
+      titleSpacing: 20,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: colors.onSurface,
             ),
-            Text(
-              subtitle,
-              style: Theme.of(context).textTheme.bodySmall
-                  ?.copyWith(color: colors.onSurfaceVariant),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
+      actions: [
+        if (actionIcon != null)
+        Padding(
+          padding: const EdgeInsets.only(left: 12, right: 20),
+          child: Material(
+            color: Colors.transparent,
+            shape: CircleBorder(side: BorderSide(color: colors.outlineVariant)),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onActionTap,
+              child: SizedBox.square(
+                dimension: 40,
+                child: Icon(actionIcon, size: 20, color: colors.onSurface),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(72);
 }
