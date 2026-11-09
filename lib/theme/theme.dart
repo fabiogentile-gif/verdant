@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 const _lightScheme = ColorScheme(
   brightness: Brightness.light,
-  primary: Color(0xFF677D6A), // Natural green
+  primary: Color(0xFF677D6A),
   onPrimary: Color(0xFFFFFFFF),
   primaryContainer: Color(0xFFE6EBE3),
   onPrimaryContainer: Color(0xFF40534C),
-  secondary: Color(0xFFD6BD98), // Warm beige
+  secondary: Color(0xFFD6BD98),
   onSecondary: Color(0xFF1A3636),
   secondaryContainer: Color(0xFFEDE3D3),
   onSecondaryContainer: Color(0xFF40534C),
@@ -18,16 +18,16 @@ const _lightScheme = ColorScheme(
   onError: Color(0xFFFFFFFF),
   errorContainer: Color(0xFFF9DAD6),
   onErrorContainer: Color(0xFF410E0B),
-  surface: Color(0xFFFFFDFA), // card, campi, nav bar
-  onSurface: Color(0xFF1A3636), // Deep petrol
-  onSurfaceVariant: Color(0xFF77847B), // testo secondario
+  surface: Color(0xFFFFFDFA),
+  onSurface: Color(0xFF1A3636),
+  onSurfaceVariant: Color(0xFF77847B),
   surfaceContainerLowest: Color(0xFFFFFDFA),
-  surfaceContainerLow: Color(0xFFF6F3ED), // sfondo pagina
+  surfaceContainerLow: Color(0xFFF6F3ED),
   surfaceContainer: Color(0xFFF0ECE2),
   surfaceContainerHigh: Color(0xFFEBE7DC),
   surfaceContainerHighest: Color(0xFFE5E1D5),
   outline: Color(0xFF8A978F),
-  outlineVariant: Color(0xFFDEDFD5), // bordi
+  outlineVariant: Color(0xFFDEDFD5),
   inverseSurface: Color(0xFF1A3636),
   onInverseSurface: Color(0xFFF6F3ED),
   inversePrimary: Color(0xFFA9C2AC),
