@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/app_bar.dart';
+import 'package:verdant/widgets/components/page_header.dart';
 
 class Plants extends StatelessWidget {
   const Plants({super.key});
@@ -8,7 +9,24 @@ class Plants extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: StandardAppBar(title: 'My plants',actionIcon: LucideIcons.plus,onActionTap: () {},),
+      appBar: StandardAppBar(
+        title: 'My plants',
+        actionIcon: LucideIcons.plus,
+        onActionTap: () {},
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PageHeader.eyebrowText(
+              'MAYA’S LITTLE JUNGLE',
+              title: 'Growing, together.',
+              subtitle: 'Every leaf has a story. Here are yours.',
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

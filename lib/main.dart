@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:verdant/router/router.dart';
 import 'package:verdant/theme/theme.dart';
 import 'package:verdant/theme/theme_controller.dart';
 
-void main() {
-  runApp(MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('it_IT');
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {

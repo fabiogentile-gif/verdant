@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 const _lightScheme = ColorScheme(
   brightness: Brightness.light,
-  primary: Color(0xFF677D6A),
+  primary: Color(0xFF677D6A), // Natural green
   onPrimary: Color(0xFFFFFFFF),
-  primaryContainer: Color(0xFFDCE8DD),
-  onPrimaryContainer: Color(0xFF1F3322),
-  secondary: Color(0xFFD6BD98),
+  primaryContainer: Color(0xFFE6EBE3),
+  onPrimaryContainer: Color(0xFF40534C),
+  secondary: Color(0xFFD6BD98), // Warm beige
   onSecondary: Color(0xFF1A3636),
-  secondaryContainer: Color(0xFFF0E4CF),
-  onSecondaryContainer: Color(0xFF3D2F17),
+  secondaryContainer: Color(0xFFEDE3D3),
+  onSecondaryContainer: Color(0xFF40534C),
   tertiary: Color(0xFFA66A4A),
   onTertiary: Color(0xFFFFFFFF),
   tertiaryContainer: Color(0xFFF3DDD0),
@@ -18,18 +18,18 @@ const _lightScheme = ColorScheme(
   onError: Color(0xFFFFFFFF),
   errorContainer: Color(0xFFF9DAD6),
   onErrorContainer: Color(0xFF410E0B),
-  surface: Color(0xFFFFFFFF),
-  onSurface: Color(0xFF1A3636),
-  onSurfaceVariant: Color(0xFF4A5C57),
-  surfaceContainerLowest: Color(0xFFFFFFFF),
-  surfaceContainerLow: Color(0xFFFAF7F0),
+  surface: Color(0xFFFFFDFA), // card, campi, nav bar
+  onSurface: Color(0xFF1A3636), // Deep petrol
+  onSurfaceVariant: Color(0xFF77847B), // testo secondario
+  surfaceContainerLowest: Color(0xFFFFFDFA),
+  surfaceContainerLow: Color(0xFFF6F3ED), // sfondo pagina
   surfaceContainer: Color(0xFFF0ECE2),
   surfaceContainerHigh: Color(0xFFEBE7DC),
   surfaceContainerHighest: Color(0xFFE5E1D5),
   outline: Color(0xFF8A978F),
-  outlineVariant: Color(0xFFD5D2C6),
+  outlineVariant: Color(0xFFDEDFD5), // bordi
   inverseSurface: Color(0xFF1A3636),
-  onInverseSurface: Color(0xFFF5F1E8),
+  onInverseSurface: Color(0xFFF6F3ED),
   inversePrimary: Color(0xFFA9C2AC),
   shadow: Color(0xFF000000),
   scrim: Color(0xFF000000),
@@ -45,7 +45,7 @@ const _darkScheme = ColorScheme(
   secondary: Color(0xFFD6BD98),
   onSecondary: Color(0xFF1A3636),
   secondaryContainer: Color(0xFF5E4E34),
-  onSecondaryContainer: Color(0xFFF0E4CF),
+  onSecondaryContainer: Color(0xFFEDE3D3),
   tertiary: Color(0xFFE0A98B),
   onTertiary: Color(0xFF3A1E10),
   tertiaryContainer: Color(0xFF7A4A30),
@@ -55,7 +55,7 @@ const _darkScheme = ColorScheme(
   errorContainer: Color(0xFF8C1D18),
   onErrorContainer: Color(0xFFF9DEDC),
   surface: Color(0xFF40534C),
-  onSurface: Color(0xFFF5F1E8),
+  onSurface: Color(0xFFF6F3ED),
   onSurfaceVariant: Color(0xFFC9D1C5),
   surfaceContainerLowest: Color(0xFF1A3636),
   surfaceContainerLow: Color(0xFF2E4540),
@@ -64,7 +64,7 @@ const _darkScheme = ColorScheme(
   surfaceContainerHighest: Color(0xFF55695F),
   outline: Color(0xFF8FA095),
   outlineVariant: Color(0xFF566B62),
-  inverseSurface: Color(0xFFF5F1E8),
+  inverseSurface: Color(0xFFF6F3ED),
   onInverseSurface: Color(0xFF1A3636),
   inversePrimary: Color(0xFF4E6552),
   shadow: Color(0xFF000000),
@@ -76,7 +76,7 @@ class AppTheme {
   static final light = ThemeData(
     useMaterial3: true,
     colorScheme: _lightScheme,
-    scaffoldBackgroundColor: const Color(0xFFF5F1E8),
+    scaffoldBackgroundColor: const Color(0xFFF6F3ED),
   );
 
   static final dark = ThemeData(
