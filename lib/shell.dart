@@ -5,15 +5,16 @@ import 'package:verdant/widgets/components/app_bottom_navigation.dart';
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
+  static AppShellState? of(BuildContext context) => context.findAncestorStateOfType<AppShellState>();
+
   @override
-  State<AppShell> createState() => _AppShellState();
+  State<AppShell> createState() => AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class AppShellState extends State<AppShell> {
   final _navKey = GlobalKey<NavigatorState>();
   int _index = 0;
 
-  // Stesso ordine delle voci nella nav bar
   static const _tabs = [
     AppRoutes.homepage,
     AppRoutes.plants,
@@ -21,6 +22,11 @@ class _AppShellState extends State<AppShell> {
     AppRoutes.activity,
     AppRoutes.profile,
   ];
+
+  void goTotab(String route){
+    final i = _tabs.indexOf(route);
+    if(i!= -1) _onTap(i);
+  }
 
   void _onTap(int i) {
     if (i == _index) return;

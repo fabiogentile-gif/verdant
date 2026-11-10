@@ -3,6 +3,7 @@ import 'package:verdant/pages/activity.dart';
 import 'package:verdant/pages/greenhouse.dart';
 import 'package:verdant/pages/homepage.dart';
 import 'package:verdant/pages/plants.dart';
+import 'package:verdant/pages/product_details.dart';
 import 'package:verdant/pages/profile.dart';
 import 'package:verdant/shell.dart';
 
@@ -13,6 +14,7 @@ class AppRoutes {
   static const plants = '/plants';
   static const greenhouse = '/greenhouse';
   static const activity = '/activity';
+  static const productDetails = '/product';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -20,6 +22,12 @@ class AppRoutes {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => const AppShell(),
+        );
+      case productDetails:
+        final id = settings.arguments as String;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => ProductDetailsPage(productId: id),
         );
     }
     return null;

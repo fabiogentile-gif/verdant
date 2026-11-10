@@ -15,6 +15,8 @@ class AppSearchField extends StatelessWidget {
   final ValueChanged<String>? onSubmitted;
   final String hintText;
 
+  
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
