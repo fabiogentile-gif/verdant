@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "name": "Rubber Plant",
+    "description": "A beautiful rubber plant for your indoor space",
+    "price": 29.99,
+    "category": "plants",
+    "image": "/product_rubber_plant.png",
+    "stock": 15
+  },
+  {
+    "id": 2,
+    "name": "Monstera Deliciosa",
+    "description": "The perfect statement plant for your living room",
+    "price": 49.99,
+    "category": "plants",
+    "image": "/product_monstera_deliciosa.png",
+    "stock": 8
+  },
+  {
+    "id": 3,
+    "name": "Organic Potting Mix",
+    "description": "High-quality organic soil for all your plants",
+    "price": 12.99,
+    "category": "accessories",
+    "image": "/product_organic_potting_mix.png",
+    "stock": 25
+  },
+  {
+    "id": 4,
+    "name": "Sandstone Pot",
+    "description": "Elegant sandstone planter for your indoor garden",
+    "price": 34.99,
+    "category": "planters",
+    "image": "/product_sandstone_pot.png",
+    "stock": 12
+  },
+  {
+    "id": 5,
+    "name": "Watering Ritual Set",
+    "description": "Complete set for your plant watering routine",
+    "price": 24.99,
+    "category": "accessories",
+    "image": "/product_watering_ritual_set.png",
+    "stock": 20
+  },
+  {
+    "id": 6,
+    "name": "White Orchid",
+    "description": "Delicate white orchid for your home",
+    "price": 39.99,
+    "category": "plants",
+    "image": "/product_white_orchid.png",
+    "stock": 5
+  }
+]
