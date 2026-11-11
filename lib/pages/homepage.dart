@@ -6,9 +6,11 @@ import 'package:verdant/widgets/components/page_header.dart';
 import 'package:verdant/widgets/components/personal_collection.dart';
 import 'package:verdant/widgets/components/search_bar.dart';
 import 'package:verdant/widgets/homepage/category_filter.dart';
-import 'package:verdant/widgets/homepage/featured_products.dart';
+import 'package:verdant/widgets/homepage/featured_products.dart' as fp;
 import 'package:verdant/widgets/homepage/seasonal_card.dart';
 import 'package:verdant/widgets/homepage/upcoming_care.dart';
+
+import 'package:verdant/data/product_repository.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -19,6 +21,30 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   int _selected = 0;
+  late Future<List<fp.Product>> _featured;
+
+  @override
+  void initState() {
+    super.initState();
+    _featured = _loadFeatured();
+  }
+
+  Future<List<fp.Product>> _loadFeatured() async {
+    final list = await productRepository.getFeaturedProducts();
+    return list
+        .take(2)
+        .map(
+          (p) => fp.Product(
+            id: p.id,
+            name: p.name,
+            price:
+                '\$${p.price % 1 == 0 ? p.price.toStringAsFixed(0) : p.price.toStringAsFixed(2)}',
+            tag: p.tag ?? '',
+            image: imageFor(p.image),
+          ),
+        )
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,29 +72,26 @@ class _HomepageState extends State<Homepage> {
                 onSelected: (i) => setState(() => _selected = i),
               ),
               const SizedBox(height: 28),
-              FeaturedProducts(
-                onProductTap: (product) => Navigator.of(context,rootNavigator: true).pushNamed(AppRoutes.productDetails,arguments: product.id),
-                onShopAll: () => AppShell.of(context)?.goTotab(AppRoutes.plants),
-                products: const [
-                  Product(
-                    id: 'monstera',
-                    name: 'Monstera deliciosa',
-                    price: '\$38',
-                    tag: 'Bestseller',
-                    image: AssetImage(
-                      'assets/images/products/product_monstera_deliciosa.png',
-                    ),
-                  ),
-                  Product(
-                    id: 'sandstone-pot',
-                    name: 'Sandstone pot',
-                    price: '\$24',
-                    tag: 'Hand-finished',
-                    image: AssetImage(
-                      'assets/images/products/product_sandstone_pot.png',
-                    ),
-                  ),
-                ],
+              FutureBuilder<List<fp.Product>>(
+                future: _featured,
+                builder: (context, snap) {
+                  if (snap.hasError) return const SizedBox.shrink();
+                  if (!snap.hasData) {
+                    return const SizedBox(
+                      height: 240,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  return fp.FeaturedProducts(
+                    products: snap.data!,
+                    onProductTap: (product) => Navigator.of(
+                      context,
+                      rootNavigator: true,
+                    ).pushNamed(AppRoutes.productPath(product.id)),
+                    onShopAll: () =>
+                        AppShell.of(context)?.goTotab(AppRoutes.greenhouse),
+                  );
+                },
               ),
               const SizedBox(height: 28),
               PersonalCollection(
@@ -82,7 +105,8 @@ class _HomepageState extends State<Homepage> {
                 collectionLabel: '4 plants, one happy home',
                 onSeeAll: () => AppShell.of(context)?.goTotab(AppRoutes.plants),
                 onPlantTap: () {},
-                onCollectionTap: () => AppShell.of(context)?.goTotab(AppRoutes.plants),
+                onCollectionTap: () =>
+                    AppShell.of(context)?.goTotab(AppRoutes.plants),
               ),
               const SizedBox(height: 28),
               UpcomingCare(

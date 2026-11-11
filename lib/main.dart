@@ -3,10 +3,12 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:verdant/router/router.dart';
 import 'package:verdant/theme/theme.dart';
 import 'package:verdant/theme/theme_controller.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('it_IT');
+  usePathUrlStrategy();
   runApp(const MyApp());
 }
 

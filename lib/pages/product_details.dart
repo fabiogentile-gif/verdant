@@ -33,7 +33,7 @@ String _price(double value, {bool compact = false}) {
 class ProductDetailsPage extends StatefulWidget {
   const ProductDetailsPage({super.key, required this.productId});
 
-  final String productId;
+  final int productId;
 
   @override
   State<ProductDetailsPage> createState() => _ProductDetailsPageState();
@@ -42,7 +42,7 @@ class ProductDetailsPage extends StatefulWidget {
 class _ProductDetailsPageState extends State<ProductDetailsPage> {
   late Future<ProductDetails> _future;
   final _pageController = PageController();
-  final Set<String> _relatedFavorites = {};
+  final Set<int> _relatedFavorites = {};
   int _imageIndex = 0;
   int _quantity = 1;
   bool _favorite = false;
@@ -86,6 +86,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     );
                   }
                   if (snapshot.hasError || !snapshot.hasData) {
+                    debugPrint('Product load error: ${snapshot.error}\n${snapshot.stackTrace}');
                     return _ErrorState(onRetry: () => setState(_load));
                   }
                   return _buildContent(context, snapshot.data!);
@@ -115,7 +116,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           ),
           const SizedBox(height: 24),
 
-          // Introduzione
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -252,7 +252,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             ],
           ],
 
-          // Guida alla cura
           if (p.careSteps.isNotEmpty) ...[
             const SizedBox(height: 24),
             Container(height: 1, color: scheme.outlineVariant),
@@ -308,7 +307,11 @@ class _DetailHeader extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: onBack,
-            child: Icon(LucideIcons.arrowLeft, size: 20, color: scheme.onSurface),
+            child: Icon(
+              LucideIcons.arrowLeft,
+              size: 20,
+              color: scheme.onSurface,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -397,7 +400,9 @@ class _Gallery extends StatelessWidget {
                   width: i == index ? 16 : 5,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: i == index ? scheme.onSurface : scheme.outlineVariant,
+                    color: i == index
+                        ? scheme.onSurface
+                        : scheme.outlineVariant,
                     borderRadius: BorderRadius.circular(5),
                   ),
                 ),
@@ -495,7 +500,10 @@ class _PurchaseCard extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(100),
                   border: Border.all(color: scheme.outlineVariant),
@@ -738,8 +746,8 @@ class _RelatedGrid extends StatelessWidget {
   });
 
   final List<ProductSummary> products;
-  final Set<String> favorites;
-  final ValueChanged<String> onFavoriteTap;
+  final Set<int> favorites;
+  final ValueChanged<int> onFavoriteTap;
 
   Widget _card(BuildContext context, ProductSummary p) {
     return ProductCard(
@@ -750,10 +758,7 @@ class _RelatedGrid extends StatelessWidget {
       isFavorite: favorites.contains(p.id),
       onFavoriteTap: () => onFavoriteTap(p.id),
       onAddTap: () {},
-      onTap: () => Navigator.of(context).pushNamed(
-        AppRoutes.productDetails,
-        arguments: p.id,
-      ),
+      onTap: () => Navigator.of(context).pushNamed(AppRoutes.productPath(p.id)),
     );
   }
 

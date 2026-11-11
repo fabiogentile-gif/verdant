@@ -16,18 +16,27 @@ class AppRoutes {
   static const activity = '/activity';
   static const productDetails = '/product';
 
+  static String productPath(int id) => '$productDetails/$id';
+
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+    final uri = Uri.parse(settings.name ?? root);
+
+    if (uri.pathSegments.length == 2 &&
+        '/${uri.pathSegments.first}' == productDetails) {
+      final id = int.tryParse(uri.pathSegments[1]);
+      if (id != null) {
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => ProductDetailsPage(productId: id),
+        );
+      }
+    }
+
     switch (settings.name) {
       case root:
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => const AppShell(),
-        );
-      case productDetails:
-        final id = settings.arguments as String;
-        return MaterialPageRoute(
-          settings: settings,
-          builder: (_) => ProductDetailsPage(productId: id),
         );
     }
     return null;

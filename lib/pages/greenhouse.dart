@@ -7,6 +7,9 @@ import 'package:verdant/widgets/components/page_header.dart';
 import 'package:verdant/widgets/components/product_card.dart';
 import 'package:verdant/widgets/components/search_bar.dart';
 
+import 'package:verdant/data/product_repository.dart';
+import 'package:verdant/models/product.dart';
+
 class ShopProduct {
   const ShopProduct({
     required this.id,
@@ -16,7 +19,15 @@ class ShopProduct {
     this.tag,
   });
 
-  final String id;
+  factory ShopProduct.fromSummary(ProductSummary p) => ShopProduct(
+    id: p.id,
+    name: p.name,
+    price:
+        '\$${p.price % 1 == 0 ? p.price.toStringAsFixed(0) : p.price.toStringAsFixed(2)}',
+    image: imageFor(p.image),
+  );
+
+  final int id;
   final String name;
   final String price;
   final ImageProvider image;
@@ -32,7 +43,7 @@ class Greenhouse extends StatefulWidget {
 
 class _GreenhouseState extends State<Greenhouse> {
   int _categoryIndex = 0;
-  final Set<String> _favorites = {};
+  final Set<int> _favorites = {};
 
   static const _categories = [
     'All',
@@ -44,58 +55,20 @@ class _GreenhouseState extends State<Greenhouse> {
     'Accessories',
   ];
 
-  static const _favoriteProducts = [
-    ShopProduct(
-      id: 'monstera',
-      name: 'Monstera deliciosa',
-      price: '\$38',
-      tag: 'Bestseller',
-      image: AssetImage(
-        'assets/images/products/product_monstera_deliciosa.png',
-      ),
-    ),
-    ShopProduct(
-      id: 'rubber-plant',
-      name: 'Rubber plant',
-      price: '\$32',
-      tag: 'Easy care',
-      image: AssetImage('assets/images/products/product_rubber_plant.png'),
-    ),
-    ShopProduct(
-      id: 'sandstone-pot',
-      name: 'Sandstone pot',
-      price: '\$24',
-      image: AssetImage('assets/images/products/product_sandstone_pot.png'),
-    ),
-    ShopProduct(
-      id: 'white-orchid',
-      name: 'White orchid',
-      price: '\$42',
-      tag: 'In bloom',
-      image: AssetImage('assets/images/products/product_white_orchid.png'),
-    ),
-  ];
+  late Future<List<ShopProduct>> _products;
 
-  static const _recommendedProducts = [
-    ShopProduct(
-      id: 'potting-mix',
-      name: 'Organic potting mix',
-      price: '\$12',
-      image: AssetImage(
-        'assets/images/products/product_organic_potting_mix.png',
-      ),
-    ),
-    ShopProduct(
-      id: 'watering-set',
-      name: 'Watering ritual set',
-      price: '\$46',
-      image: AssetImage(
-        'assets/images/products/product_watering_ritual_set.png',
-      ),
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _products = _load();
+  }
 
-  void _toggleFavorite(String id) {
+  Future<List<ShopProduct>> _load() async {
+    final list = await productRepository.getProducts();
+    return list.map(ShopProduct.fromSummary).toList();
+  }
+
+  void _toggleFavorite(int id) {
     setState(() {
       if (!_favorites.remove(id)) _favorites.add(id);
     });
@@ -140,29 +113,64 @@ class _GreenhouseState extends State<Greenhouse> {
               const SizedBox(height: 24),
               _FeaturedCollection(onTap: () {}),
               const SizedBox(height: 24),
-              const _SectionHeading('The greenhouse favorites'),
-              const SizedBox(height: 16),
-              const _SortAndFilter(countLabel: '24 thoughtfully chosen finds'),
-              const SizedBox(height: 16),
-              _ProductGrid(
-                products: _favoriteProducts,
-                favorites: _favorites,
-                onFavoriteTap: _toggleFavorite,
-              ),
-              const SizedBox(height: 24),
-              const _SectionHeading('Good for your jungle'),
-              const SizedBox(height: 16),
-              const _SectionSubtitle(
-                'A few essentials for your Monstera and friends.',
-              ),
-              const SizedBox(height: 16),
-              _ProductGrid(
-                products: _recommendedProducts,
-                favorites: _favorites,
-                onFavoriteTap: _toggleFavorite,
-              ),
-              const SizedBox(height: 24),
               const _DeliveryNote(),
+              const SizedBox(height: 24),
+              FutureBuilder<List<ShopProduct>>(
+                future: _products,
+                builder: (context, snap) {
+                  if (snap.connectionState != ConnectionState.done) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 48),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (snap.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      child: Center(
+                        child: TextButton(
+                          onPressed: () => setState(() => _products = _load()),
+                          child: const Text("Couldn't load products. Retry"),
+                        ),
+                      ),
+                    );
+                  }
+                  final all = snap.data!;
+                  final favorites = all.take(4).toList();
+                  final recommended = all.skip(4).toList();
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const _SectionHeading('The greenhouse favorites'),
+                      const SizedBox(height: 16),
+                      _SortAndFilter(
+                        countLabel: '${all.length} thoughtfully chosen finds',
+                      ),
+                      const SizedBox(height: 16),
+                      _ProductGrid(
+                        products: favorites,
+                        favorites: _favorites,
+                        onFavoriteTap: _toggleFavorite,
+                      ),
+                      if (recommended.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        const _SectionHeading('Good for you jungle'),
+                        const SizedBox(height: 16),
+                        _SectionSubtitle(
+                          'A few essentials for your Monstera and friends',
+                        ),
+                        const SizedBox(height: 16),
+                        _ProductGrid(
+                          products: recommended,
+                          favorites: _favorites,
+                          onFavoriteTap: _toggleFavorite,
+                        ),
+                      ],
+                    ],
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -336,22 +344,21 @@ class _ProductGrid extends StatelessWidget {
   });
 
   final List<ShopProduct> products;
-  final Set<String> favorites;
-  final ValueChanged<String> onFavoriteTap;
+  final Set<int> favorites;
+  final ValueChanged<int> onFavoriteTap;
 
   Widget _card(BuildContext context, ShopProduct p) {
     return ProductCard(
       name: p.name,
       price: p.price,
       image: p.image,
-      tag: p.tag,
       isFavorite: favorites.contains(p.id),
       onFavoriteTap: () => onFavoriteTap(p.id),
       onAddTap: () {},
       onTap: () => Navigator.of(
         context,
         rootNavigator: true,
-      ).pushNamed(AppRoutes.productDetails, arguments: p.id),
+      ).pushNamed(AppRoutes.productPath(p.id)),
     );
   }
 
@@ -366,10 +373,12 @@ class _ProductGrid extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: _card(context,products[i])),
+            Expanded(child: _card(context, products[i])),
             const SizedBox(width: 14),
             Expanded(
-              child: second != null ? _card(context,second) : const SizedBox.shrink(),
+              child: second != null
+                  ? _card(context, second)
+                  : const SizedBox.shrink(),
             ),
           ],
         ),

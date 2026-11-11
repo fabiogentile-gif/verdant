@@ -1,56 +1,219 @@
 [
   {
     "id": 1,
-    "name": "Rubber Plant",
-    "description": "A beautiful rubber plant for your indoor space",
-    "price": 29.99,
+    "name": "Rubber plant",
+    "eyebrow": "THE EASY ONE",
+    "rating": 4.8,
+    "reviewCount": 96,
+    "price": 32,
     "category": "plants",
+    "stock": 15,
+    "inStock": true,
+    "availabilityLabel": "In stock · ready to grow",
+    "tag": "Easy care",
+    "featured": true,
+    "summary": "Glossy, deep green leaves and a calm, upright shape. A forgiving first plant that grows tall with very little fuss.",
+    "tags": [
+      { "label": "Easy care", "icon": "sprout" },
+      { "label": "Indoor" },
+      { "label": "Low light" }
+    ],
     "image": "/product_rubber_plant.png",
-    "stock": 15
+    "images": ["/product_rubber_plant.png"],
+    "variantLabel": "6-inch nursery pot",
+    "variantDetail": "16–22 in tall",
+    "purchaseNote": "Nursery pot included · Decorative pot sold separately",
+    "descriptionTitle": "Quietly dramatic",
+    "description": "Native to South and Southeast Asia, the rubber plant earns its place with thick, polished leaves that catch the light. It tolerates the occasional missed watering and rewards steady, bright conditions with new leaves all year.",
+    "growth": "Upright, slow to steady",
+    "goodToKnow": "Keep away from pets",
+    "careSteps": [
+      {
+        "icon": "sun",
+        "title": "Bright, indirect light",
+        "description": "Happy near a window, out of harsh afternoon sun."
+      },
+      {
+        "icon": "droplets",
+        "title": "Water every 10–14 days",
+        "description": "Let the top inch of soil dry out between waterings."
+      },
+      {
+        "icon": "sprout",
+        "title": "Well-draining soil",
+        "description": "A standard indoor potting mix works well."
+      }
+    ],
+    "relatedIds": [4, 3]
   },
   {
     "id": 2,
-    "name": "Monstera Deliciosa",
-    "description": "The perfect statement plant for your living room",
-    "price": 49.99,
+    "name": "Monstera deliciosa",
+    "eyebrow": "THE STATEMENT LEAF",
+    "rating": 4.9,
+    "reviewCount": 128,
+    "price": 38,
     "category": "plants",
+    "stock": 8,
+    "inStock": true,
+    "availabilityLabel": "In stock · ready to grow",
+    "tag": "Bestseller",
+    "featured": true,
+    "summary": "A little tropical drama, without the fuss. Meet the iconic split-leaf beauty that makes any corner feel alive.",
+    "tags": [
+      { "label": "Easy care", "icon": "sprout" },
+      { "label": "Indoor" },
+      { "label": "Air-loving" }
+    ],
     "image": "/product_monstera_deliciosa.png",
-    "stock": 8
+    "images": ["/product_monstera_deliciosa.png"],
+    "variantLabel": "6-inch nursery pot",
+    "variantDetail": "18–24 in tall",
+    "purchaseNote": "Nursery pot included · Decorative pot sold separately",
+    "descriptionTitle": "A natural conversation starter",
+    "description": "Native to the tropical forests of Central America, this climbing aroid develops beautiful leaf splits as it matures. Give it room, gentle light and a moss pole, and watch a living sculpture unfold.",
+    "growth": "Upright climber",
+    "goodToKnow": "Keep away from pets",
+    "careSteps": [
+      {
+        "icon": "sun",
+        "title": "Bright, indirect light",
+        "description": "A few feet from a sunny window is just right."
+      },
+      {
+        "icon": "droplets",
+        "title": "Water every 7–10 days",
+        "description": "Check first: let the top 2 inches of soil dry."
+      },
+      {
+        "icon": "sprout",
+        "title": "Airy, well-draining soil",
+        "description": "A chunky potting mix keeps roots happy."
+      }
+    ],
+    "relatedIds": [4, 3]
   },
   {
     "id": 3,
-    "name": "Organic Potting Mix",
-    "description": "High-quality organic soil for all your plants",
-    "price": 12.99,
+    "name": "Organic potting mix",
+    "eyebrow": "THE FOUNDATION",
+    "rating": 4.7,
+    "reviewCount": 54,
+    "price": 12,
     "category": "accessories",
+    "stock": 25,
+    "inStock": true,
+    "availabilityLabel": "In stock · ships fast",
+    "featured": false,
+    "summary": "A light, airy blend that keeps roots breathing and moisture just right for most indoor plants.",
+    "tags": [
+      { "label": "Organic" },
+      { "label": "All indoor plants" }
+    ],
     "image": "/product_organic_potting_mix.png",
-    "stock": 25
+    "images": ["/product_organic_potting_mix.png"],
+    "variantLabel": "Medium bag",
+    "variantDetail": "5 L",
+    "purchaseNote": "Peat-free · Enough for two 6-inch pots",
+    "descriptionTitle": "Good soil, good start",
+    "description": "A peat-free mix of coco coir, bark and perlite. It drains quickly, holds a little moisture and gives young roots the space they need to settle in.",
+    "careSteps": [],
+    "relatedIds": [2, 4]
   },
   {
     "id": 4,
-    "name": "Sandstone Pot",
-    "description": "Elegant sandstone planter for your indoor garden",
-    "price": 34.99,
+    "name": "Sandstone pot",
+    "eyebrow": "THE FINISHING TOUCH",
+    "rating": 4.8,
+    "reviewCount": 73,
+    "price": 24,
     "category": "planters",
+    "stock": 12,
+    "inStock": true,
+    "availabilityLabel": "In stock · ready to ship",
+    "featured": true,
+    "summary": "A warm, textured planter with a soft matte finish that suits any shelf, sill or corner.",
+    "tags": [
+      { "label": "Handmade look" },
+      { "label": "Drainage hole" }
+    ],
     "image": "/product_sandstone_pot.png",
-    "stock": 12
+    "images": ["/product_sandstone_pot.png"],
+    "variantLabel": "Medium",
+    "variantDetail": "7 in wide",
+    "purchaseNote": "Saucer included · Plant sold separately",
+    "descriptionTitle": "Made to be lived with",
+    "description": "Shaped from sandstone-textured ceramic, this pot gives plants a grounded, natural home. The drainage hole and saucer keep roots healthy and surfaces dry.",
+    "careSteps": [],
+    "relatedIds": [2, 3]
   },
   {
     "id": 5,
-    "name": "Watering Ritual Set",
-    "description": "Complete set for your plant watering routine",
-    "price": 24.99,
+    "name": "Watering ritual set",
+    "eyebrow": "THE DAILY MOMENT",
+    "rating": 4.9,
+    "reviewCount": 41,
+    "price": 46,
     "category": "accessories",
+    "stock": 20,
+    "inStock": true,
+    "availabilityLabel": "In stock · ready to ship",
+    "featured": false,
+    "summary": "A small set of tools that turns watering into a calm, mindful routine.",
+    "tags": [
+      { "label": "Gift idea" },
+      { "label": "3 pieces" }
+    ],
     "image": "/product_watering_ritual_set.png",
-    "stock": 20
+    "images": ["/product_watering_ritual_set.png"],
+    "variantLabel": "Complete set",
+    "variantDetail": "Can, mister & cloth",
+    "purchaseNote": "Free shipping on orders $100+",
+    "descriptionTitle": "Care, made beautiful",
+    "description": "A long-spout watering can, a fine mist spray and a soft leaf cloth. Everything you need to water precisely, boost humidity and keep leaves dust-free.",
+    "careSteps": [],
+    "relatedIds": [3, 1]
   },
   {
     "id": 6,
-    "name": "White Orchid",
-    "description": "Delicate white orchid for your home",
-    "price": 39.99,
+    "name": "White orchid",
+    "eyebrow": "THE QUIET BLOOM",
+    "rating": 4.7,
+    "reviewCount": 64,
+    "price": 42,
     "category": "plants",
+    "stock": 5,
+    "inStock": true,
+    "availabilityLabel": "Low stock · only 5 left",
+    "tag": "In bloom",
+    "featured": true,
+    "summary": "Delicate white blooms on an arching stem. Elegant, long-lasting and happier on a windowsill than you'd think.",
+    "tags": [
+      { "label": "In bloom", "icon": "sprout" },
+      { "label": "Indoor" },
+      { "label": "Bright light" }
+    ],
     "image": "/product_white_orchid.png",
-    "stock": 5
+    "images": ["/product_white_orchid.png"],
+    "variantLabel": "4-inch pot",
+    "variantDetail": "18–22 in tall",
+    "purchaseNote": "Nursery pot included · Decorative pot sold separately",
+    "descriptionTitle": "Elegance, rooted",
+    "description": "Phalaenopsis orchids can bloom for months and rebloom year after year. Give them bright light, a weekly drink and a little patience.",
+    "growth": "Arching bloom stem",
+    "goodToKnow": "Water at the roots, not the flowers",
+    "careSteps": [
+      {
+        "icon": "sun",
+        "title": "Bright, filtered light",
+        "description": "An east-facing window is ideal."
+      },
+      {
+        "icon": "droplets",
+        "title": "Water once a week",
+        "description": "Soak the roots, then let it drain fully."
+      }
+    ],
+    "relatedIds": [4, 5]
   }
 ]

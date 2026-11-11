@@ -1,103 +1,89 @@
 import 'package:verdant/models/product.dart';
 
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+
 abstract class ProductRepository {
-  Future<ProductDetails> getProductDetails(String id);
+  Future<List<ProductSummary>> getProducts({String? category});
+  Future<List<ProductSummary>> getFeaturedProducts();
+  Future<ProductDetails> getProductDetails(int id);
 }
 
-/// Cambia questa riga quando l'API sarà pronta
-ProductRepository productRepository = MockProductRepository();
+String get apiOrigin {
+  const fromEnv = String.fromEnvironment('API_ORIGIN');
+  if (fromEnv.isNotEmpty) return fromEnv;
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    return 'http://10.0.2.2:3000'; // localhost for emulator android
+  }
+  return 'http://localhost:3000';
+}
 
-// import 'dart:convert';
-// import 'package:http/http.dart' as http;
+ProductRepository productRepository = ApiProductRepository(origin: apiOrigin);
 
-// class ApiProductRepository implements ProductRepository {
-//   ApiProductRepository({required this.baseUrl, http.Client? client})
-//       : _client = client ?? http.Client();
+String resolveImage(String path, String origin) =>
+    path.startsWith('http') ? path : '$origin$path';
 
-//   final String baseUrl;
-//   final http.Client _client;
+ImageProvider imageFor(String src) =>
+    src.startsWith('http') ? NetworkImage(src) : AssetImage(src);
 
-//   @override
-//   Future<ProductDetails> getProductDetails(String id) async {
-//     final response = await _client.get(Uri.parse('$baseUrl/products/$id'));
-//     if (response.statusCode != 200) {
-//       throw Exception('Failed to load product ($id): ${response.statusCode}');
-//     }
-//     return ProductDetails.fromJson(
-//       jsonDecode(response.body) as Map<String, dynamic>,
-//     );
-//   }
-// }
+class ApiProductRepository implements ProductRepository {
+  ApiProductRepository({required this.origin, http.Client? client})
+    : _client = client ?? http.Client();
 
-class MockProductRepository implements ProductRepository {
-  @override
-  Future<ProductDetails> getProductDetails(String id) async {
-    await Future.delayed(const Duration(milliseconds: 400));
+  final String origin;
+  final http.Client _client;
 
-    final product = _products[id];
-    if (product == null) {
-      throw Exception('Product not found: $id');
+  String get _api => '$origin/api';
+
+  dynamic _data(http.Response r, String what) {
+    if (r.statusCode != 200) {
+      throw Exception('Failed to load $what: ${r.statusCode}');
     }
-    return product;
+    return (jsonDecode(r.body) as Map<String, dynamic>)['data'];
   }
 
-  static const _products = {
-    'monstera': ProductDetails(
-      id: 'monstera',
-      name: 'Monstera deliciosa',
-      eyebrow: 'THE STATEMENT LEAF',
-      rating: 4.9,
-      reviewCount: 128,
-      price: 38,
-      inStock: true,
-      availabilityLabel: 'In stock · ready to grow',
-      summary:
-          'A little tropical drama, without the fuss. Meet the iconic split-leaf beauty that makes any corner feel alive.',
-      tags: [
-        ProductTag(label: 'Easy care', icon: 'sprout'),
-        ProductTag(label: 'Indoor'),
-        ProductTag(label: 'Air-loving'),
-      ],
-      images: ['assets/images/products/product_monstera_deliciosa.png'],
-      variantLabel: '6-inch nursery pot',
-      variantDetail: '18–24 in tall',
-      purchaseNote: 'Nursery pot included · Decorative pot sold separately',
-      descriptionTitle: 'A natural conversation starter',
-      description:
-          'Native to the tropical forests of Central America, this climbing aroid develops beautiful leaf splits as it matures. Give it room, gentle light and a moss pole, and watch a living sculpture unfold.',
-      growth: 'Upright climber',
-      goodToKnow: 'Keep away from pets',
-      careSteps: [
-        CareStep(
-          icon: 'sun',
-          title: 'Bright, indirect light',
-          description: 'A few feet from a sunny window is just right.',
-        ),
-        CareStep(
-          icon: 'droplets',
-          title: 'Water every 7–10 days',
-          description: 'Check first: let the top 2 inches of soil dry.',
-        ),
-        CareStep(
-          icon: 'sprout',
-          title: 'Airy, well-draining soil',
-          description: 'A chunky potting mix keeps roots happy.',
-        ),
-      ],
-      related: [
-        ProductSummary(
-          id: 'sandstone-pot',
-          name: 'Sandstone pot',
-          price: 24,
-          image: 'assets/images/products/product_sandstone_pot.png',
-        ),
-        ProductSummary(
-          id: 'potting-mix',
-          name: 'Organic potting mix',
-          price: 12,
-          image: 'assets/images/products/product_organic_potting_mix.png',
-        ),
-      ],
-    ),
-  };
+  List<ProductSummary> _summaries(List list) => list
+      .cast<Map<String, dynamic>>()
+      .map(
+        (j) => ProductSummary.fromJson({
+          ...j,
+          'image': resolveImage(j['image'] as String, origin),
+        }),
+      )
+      .toList();
+
+  @override
+  Future<List<ProductSummary>> getProducts({String? category}) async {
+    final uri = Uri.parse('$_api/products').replace(
+      queryParameters: category == null ? null : {'category': category},
+    );
+    return _summaries(_data(await _client.get(uri), 'products') as List);
+  }
+
+  @override
+  Future<List<ProductSummary>> getFeaturedProducts() async {
+    final response = await _client.get(Uri.parse('$_api/featured'));
+    return _summaries(_data(response, 'featured products') as List);
+  }
+
+  @override
+  Future<ProductDetails> getProductDetails(int id) async {
+    final json = _data(
+      await _client.get(Uri.parse('$_api/products/$id')),
+      'product ($id)',
+    ) as Map<String, dynamic>;
+
+    String abs(String p) => resolveImage(p, origin);
+    return ProductDetails.fromJson({
+      ...json,
+      'images': (json['images'] as List).map((i) => abs(i as String)).toList(),
+      'related': (json['related'] as List)
+          .cast<Map<String, dynamic>>()
+          .map((r) => {...r, 'image': abs(r['image'] as String)})
+          .toList(),
+    });
+  }
 }

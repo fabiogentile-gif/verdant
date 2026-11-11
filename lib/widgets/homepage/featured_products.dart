@@ -10,7 +10,7 @@ class Product {
     required this.image,
   });
 
-  final String id;
+  final int id;
   final String name;
   final String price;
   final String tag;

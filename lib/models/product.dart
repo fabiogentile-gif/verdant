@@ -38,14 +38,14 @@ class ProductSummary {
     this.tag,
   });
 
-  final String id;
+  final int id;
   final String name;
   final double price;
   final String image;
   final String? tag;
 
   factory ProductSummary.fromJson(Map<String, dynamic> json) => ProductSummary(
-        id: json['id'] as String,
+        id: json['id'] as int,
         name: json['name'] as String,
         price: (json['price'] as num).toDouble(),
         image: json['image'] as String,
@@ -77,7 +77,7 @@ class ProductDetails {
     this.related = const [],
   });
 
-  final String id;
+  final int id;
   final String name;
   final double price;
   final String? eyebrow;
@@ -99,7 +99,7 @@ class ProductDetails {
   final List<ProductSummary> related;
 
   factory ProductDetails.fromJson(Map<String, dynamic> json) => ProductDetails(
-        id: json['id'] as String,
+        id: json['id'] as int,
         name: json['name'] as String,
         price: (json['price'] as num).toDouble(),
         eyebrow: json['eyebrow'] as String?,
