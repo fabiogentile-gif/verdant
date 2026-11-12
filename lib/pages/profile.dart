@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/owned_plants.dart';
 import 'package:verdant/search_field.dart';
+import 'package:verdant/theme/theme_controller.dart';
 import 'package:verdant/widgets/components/collection_overview.dart';
 import 'package:verdant/widgets/components/page_header.dart';
 import 'package:verdant/widgets/components/plant_card.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
+
 // + gli stessi import della pagina Piante da cui arriva StandardAppBar
 
 class Profile extends StatefulWidget {
@@ -20,7 +22,6 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
   bool _push = true;
   bool _email = false;
-  bool _dark = false; // TODO: collega al controller del tema
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +29,7 @@ class _ProfileState extends State<Profile> {
         .where((p) => p.status == PlantStatus.needsCare)
         .length;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: StandardAppBar(
         title: 'Profile',
@@ -129,8 +131,8 @@ class _ProfileState extends State<Profile> {
                   title: 'Dark mode',
                   subtitle: 'Switch to a darker, easier-on-the-eyes theme',
                   trailing: _Toggle(
-                    value: _dark,
-                    onChanged: (v) => setState(() => _dark = v),
+                    value: isDark,
+                    onChanged: (v) => themeMode.value = v ? ThemeMode.dark : ThemeMode.light,
                   ),
                 ),
                 _SettingsTile(

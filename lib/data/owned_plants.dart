@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:verdant/models/plant_details.dart';
 import 'package:verdant/widgets/components/plant_card.dart';
 
 class OwnedPlant {
@@ -10,6 +11,7 @@ class OwnedPlant {
     required this.status,
     required this.statusLabel,
     required this.scheduleLabel,
+    this.details,
   });
 
   final String name;
@@ -19,6 +21,7 @@ class OwnedPlant {
   final PlantStatus status;
   final String statusLabel;
   final String scheduleLabel;
+  final PlantDetails? details;
 }
 
 const ownedPlants = [
@@ -30,6 +33,7 @@ const ownedPlants = [
     status: PlantStatus.needsCare,
     statusLabel: 'Needs water',
     scheduleLabel: 'Water today · 9:00 AM',
+    details: monsteraDetails,
   ),
   OwnedPlant(
     name: 'Rubber Plant',

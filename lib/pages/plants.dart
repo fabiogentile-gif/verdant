@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/owned_plants.dart';
+import 'package:verdant/models/plant_details.dart';
+import 'package:verdant/pages/personal_plant_details.dart';
 import 'package:verdant/search_field.dart';
 import 'package:verdant/widgets/components/collection_overview.dart';
 import 'package:verdant/widgets/components/page_header.dart';
@@ -17,6 +19,7 @@ class OwnedPlant {
     required this.status,
     required this.statusLabel,
     required this.scheduleLabel,
+    this.details,
   });
 
   final String name;
@@ -26,6 +29,7 @@ class OwnedPlant {
   final PlantStatus status;
   final String statusLabel;
   final String scheduleLabel;
+  final PlantDetails? details;
 }
 
 enum _PlantFilter { all, needsCare }
@@ -40,7 +44,6 @@ class Plants extends StatefulWidget {
 class _PlantsState extends State<Plants> {
   _PlantFilter _filter = _PlantFilter.all;
   String _query = '';
-
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +141,16 @@ class _PlantsState extends State<Plants> {
                 status: visible[i].status,
                 statusLabel: visible[i].statusLabel,
                 scheduleLabel: visible[i].scheduleLabel,
-                onTap: () {},
+                onTap: () {
+                  final d = visible[i].details;
+                  if (d == null) return;
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          PersonalPlantDetails(plant: visible[i], details: d),
+                    ),
+                  );
+                },
               ),
             ],
             const SizedBox(height: 24),
