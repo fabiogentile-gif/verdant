@@ -5,6 +5,7 @@ import 'package:verdant/models/product.dart';
 import 'package:verdant/router/router.dart';
 import 'package:verdant/widgets/components/filter_chip.dart';
 import 'package:verdant/widgets/components/product_card.dart';
+import 'package:verdant/widgets/components/scrollview_list.dart';
 
 ImageProvider _imageFor(String source) {
   if (source.startsWith('http')) return NetworkImage(source);
@@ -86,7 +87,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     );
                   }
                   if (snapshot.hasError || !snapshot.hasData) {
-                    debugPrint('Product load error: ${snapshot.error}\n${snapshot.stackTrace}');
+                    debugPrint(
+                      'Product load error: ${snapshot.error}\n${snapshot.stackTrace}',
+                    );
                     return _ErrorState(onRetry: () => setState(_load));
                   }
                   return _buildContent(context, snapshot.data!);
@@ -103,7 +106,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    return SingleChildScrollView(
+    return ScrollViewNoStretch(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

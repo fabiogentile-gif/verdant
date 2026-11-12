@@ -5,6 +5,7 @@ import 'package:verdant/search_field.dart';
 import 'package:verdant/widgets/components/filter_chip.dart';
 import 'package:verdant/widgets/components/page_header.dart';
 import 'package:verdant/widgets/components/product_card.dart';
+import 'package:verdant/widgets/components/scrollview_list.dart';
 import 'package:verdant/widgets/components/search_bar.dart';
 
 import 'package:verdant/data/product_repository.dart';
@@ -82,97 +83,92 @@ class _GreenhouseState extends State<Greenhouse> {
         actionIcon: LucideIcons.shoppingBag,
         onActionTap: () {},
       ),
-      body: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(overscroll: false),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const PageHeader(
-                title: 'Room to grow.',
-                subtitle: 'Thoughtfully grown plants and beautiful things to help them thrive.',
-              ),
-              const SizedBox(height: 24),
-              const AppSearchField(
-                hintText: 'Search plants, pots & essentials',
-              ),
-              const SizedBox(height: 24),
-              Wrap(
-                spacing: 8,
-                runSpacing: 9,
-                children: [
-                  for (int i = 0; i < _categories.length; i++)
-                    AppFilterChip(
-                      label: _categories[i],
-                      selected: _categoryIndex == i,
-                      onTap: () => setState(() => _categoryIndex = i),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              _FeaturedCollection(onTap: () {}),
-              const SizedBox(height: 24),
-              const _DeliveryNote(),
-              const SizedBox(height: 24),
-              FutureBuilder<List<ShopProduct>>(
-                future: _products,
-                builder: (context, snap) {
-                  if (snap.connectionState != ConnectionState.done) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 48),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  if (snap.hasError) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 32),
-                      child: Center(
-                        child: TextButton(
-                          onPressed: () => setState(() => _products = _load()),
-                          child: const Text("Couldn't load products. Retry"),
-                        ),
+      body: ScrollViewNoStretch(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const PageHeader(
+              title: 'Room to grow.',
+              subtitle: 'Thoughtfully grown plants and beautiful things to help them thrive.',
+            ),
+            const SizedBox(height: 24),
+            const AppSearchField(hintText: 'Search plants, pots & essentials'),
+            const SizedBox(height: 24),
+            Wrap(
+              spacing: 8,
+              runSpacing: 9,
+              children: [
+                for (int i = 0; i < _categories.length; i++)
+                  AppFilterChip(
+                    label: _categories[i],
+                    selected: _categoryIndex == i,
+                    onTap: () => setState(() => _categoryIndex = i),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            _FeaturedCollection(onTap: () {}),
+            const SizedBox(height: 24),
+            const _DeliveryNote(),
+            const SizedBox(height: 24),
+            FutureBuilder<List<ShopProduct>>(
+              future: _products,
+              builder: (context, snap) {
+                if (snap.connectionState != ConnectionState.done) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 48),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (snap.hasError) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 32),
+                    child: Center(
+                      child: TextButton(
+                        onPressed: () => setState(() => _products = _load()),
+                        child: const Text("Couldn't load products. Retry"),
                       ),
-                    );
-                  }
-                  final all = snap.data!;
-                  final favorites = all.take(4).toList();
-                  final recommended = all.skip(4).toList();
+                    ),
+                  );
+                }
+                final all = snap.data!;
+                final favorites = all.take(4).toList();
+                final recommended = all.skip(4).toList();
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const _SectionHeading('The greenhouse favorites'),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const _SectionHeading('The greenhouse favorites'),
+                    const SizedBox(height: 16),
+                    _SortAndFilter(
+                      countLabel: '${all.length} thoughtfully chosen finds',
+                    ),
+                    const SizedBox(height: 16),
+                    _ProductGrid(
+                      products: favorites,
+                      favorites: _favorites,
+                      onFavoriteTap: _toggleFavorite,
+                    ),
+                    if (recommended.isNotEmpty) ...[
+                      const SizedBox(height: 24),
+                      const _SectionHeading('Good for you jungle'),
                       const SizedBox(height: 16),
-                      _SortAndFilter(
-                        countLabel: '${all.length} thoughtfully chosen finds',
+                      _SectionSubtitle(
+                        'A few essentials for your Monstera and friends',
                       ),
                       const SizedBox(height: 16),
                       _ProductGrid(
-                        products: favorites,
+                        products: recommended,
                         favorites: _favorites,
                         onFavoriteTap: _toggleFavorite,
                       ),
-                      if (recommended.isNotEmpty) ...[
-                        const SizedBox(height: 24),
-                        const _SectionHeading('Good for you jungle'),
-                        const SizedBox(height: 16),
-                        _SectionSubtitle(
-                          'A few essentials for your Monstera and friends',
-                        ),
-                        const SizedBox(height: 16),
-                        _ProductGrid(
-                          products: recommended,
-                          favorites: _favorites,
-                          onFavoriteTap: _toggleFavorite,
-                        ),
-                      ],
                     ],
-                  );
-                },
-              ),
-            ],
-          ),
+                  ],
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

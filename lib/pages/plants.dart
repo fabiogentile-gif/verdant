@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:verdant/data/owned_plants.dart';
 import 'package:verdant/search_field.dart';
+import 'package:verdant/widgets/components/collection_overview.dart';
 import 'package:verdant/widgets/components/page_header.dart';
 import 'package:verdant/widgets/components/plant_card.dart';
+import 'package:verdant/widgets/components/scrollview_list.dart';
 import 'package:verdant/widgets/components/search_bar.dart';
 
 class OwnedPlant {
@@ -38,55 +41,17 @@ class _PlantsState extends State<Plants> {
   _PlantFilter _filter = _PlantFilter.all;
   String _query = '';
 
-  static const _plants = [
-    OwnedPlant(
-      name: 'Monstera',
-      room: 'Living room',
-      species: 'Monstera deliciosa',
-      image: AssetImage('assets/images/owned/monstera_deliciosa.png'),
-      status: PlantStatus.needsCare,
-      statusLabel: 'Needs water',
-      scheduleLabel: 'Water today · 9:00 AM',
-    ),
-    OwnedPlant(
-      name: 'Rubber Plant',
-      room: 'Bedroom',
-      species: 'Ficus elastica',
-      image: AssetImage('assets/images/owned/rubber_plant.png'),
-      status: PlantStatus.healthy,
-      statusLabel: 'Healthy',
-      scheduleLabel: 'Next watering · Sun, Nov 8',
-    ),
-    OwnedPlant(
-      name: 'Golden Pothos',
-      room: 'Kitchen',
-      species: 'Epipremnum aureum',
-      image: AssetImage('assets/images/owned/golden_pothos.png'),
-      status: PlantStatus.healthy,
-      statusLabel: 'Healthy',
-      scheduleLabel: 'Next watering · Mon, Nov 9',
-    ),
-    OwnedPlant(
-      name: 'Peace Lily',
-      room: 'Study',
-      species: 'Spathiphyllum',
-      image: AssetImage('assets/images/owned/peace_lily.png'),
-      status: PlantStatus.healthy,
-      statusLabel: 'Healthy',
-      scheduleLabel: 'Next watering · Sat, Nov 7',
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
-    final needsCareCount = _plants
+    final needsCareCount = ownedPlants
         .where((p) => p.status == PlantStatus.needsCare)
         .length;
-    final healthyCount = _plants.length - needsCareCount;
+    final healthyCount = ownedPlants.length - needsCareCount;
 
     final query = _query.trim().toLowerCase();
 
-    final visible = _plants.where((p) {
+    final visible = ownedPlants.where((p) {
       final matchesFilter =
           _filter == _PlantFilter.all || p.status == PlantStatus.needsCare;
       final matchesQuery =
@@ -103,167 +68,89 @@ class _PlantsState extends State<Plants> {
         actionIcon: LucideIcons.plus,
         onActionTap: () {},
       ),
-      body: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(overscroll: false),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              PageHeader.eyebrowText(
-                'MAYA’S LITTLE JUNGLE',
-                title: 'Growing, together.',
-                subtitle: 'Every leaf has a story. Here are yours.',
+      body: ScrollViewNoStretch(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            PageHeader.eyebrowText(
+              'MAYA’S LITTLE JUNGLE',
+              title: 'Growing, together.',
+              subtitle: 'Every leaf has a story. Here are yours.',
+            ),
+            const SizedBox(height: 24),
+            CollectionOverview(
+              total: ownedPlants.length,
+              healthy: healthyCount,
+              needsCare: needsCareCount,
+            ),
+            const SizedBox(height: 24),
+            AppSearchField(
+              hintText: 'Find a plant in your collection',
+              onChanged: (value) => setState(() => _query = value),
+            ),
+            const SizedBox(height: 24),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _FilterChip(
+                    label: 'All plants (${ownedPlants.length})',
+                    selected: _filter == _PlantFilter.all,
+                    onTap: () => setState(() => _filter = _PlantFilter.all),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label: 'Needs care ($needsCareCount)',
+                    selected: _filter == _PlantFilter.needsCare,
+                    onTap: () =>
+                        setState(() => _filter = _PlantFilter.needsCare),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label: 'By room',
+                    selected: false,
+                    leadingIcon: LucideIcons.chevronDown,
+                    onTap: () {},
+                  ),
+                ],
               ),
-              const SizedBox(height: 24),
-              _CollectionOverview(
-                total: _plants.length,
-                healthy: healthyCount,
-                needsCare: needsCareCount,
-              ),
-              const SizedBox(height: 24),
-              AppSearchField(
-                hintText: 'Find a plant in your collection',
-                onChanged: (value) => setState(() => _query = value),
-              ),
-              const SizedBox(height: 24),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _FilterChip(
-                      label: 'All plants (${_plants.length})',
-                      selected: _filter == _PlantFilter.all,
-                      onTap: () => setState(() => _filter = _PlantFilter.all),
-                    ),
-                    const SizedBox(width: 8),
-                    _FilterChip(
-                      label: 'Needs care ($needsCareCount)',
-                      selected: _filter == _PlantFilter.needsCare,
-                      onTap: () =>
-                          setState(() => _filter = _PlantFilter.needsCare),
-                    ),
-                    const SizedBox(width: 8),
-                    _FilterChip(
-                      label: 'By room',
-                      selected: false,
-                      leadingIcon: LucideIcons.chevronDown,
-                      onTap: () {},
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              if (visible.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Text(
-                    'No plants match your search.',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+            ),
+            const SizedBox(height: 24),
+            if (visible.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text(
+                  'No plants match your search.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
-              for (int i = 0; i < visible.length; i++) ...[
-                if (i > 0) const SizedBox(height: 12),
-                PlantCard(
-                  name: visible[i].name,
-                  subtitle: '${visible[i].room} · ${visible[i].species}',
-                  image: visible[i].image,
-                  status: visible[i].status,
-                  statusLabel: visible[i].statusLabel,
-                  scheduleLabel: visible[i].scheduleLabel,
-                  onTap: () {},
-                ),
-              ],
-              const SizedBox(height: 24),
-              _AddPlantButton(
-                label: 'Add a plant to your collection',
-                onPressed: () {},
               ),
-              const SizedBox(height: 24),
-              const _CollectionGuidance(),
+            for (int i = 0; i < visible.length; i++) ...[
+              if (i > 0) const SizedBox(height: 12),
+              PlantCard(
+                name: visible[i].name,
+                subtitle: '${visible[i].room} · ${visible[i].species}',
+                image: visible[i].image,
+                status: visible[i].status,
+                statusLabel: visible[i].statusLabel,
+                scheduleLabel: visible[i].scheduleLabel,
+                onTap: () {},
+              ),
             ],
-          ),
+            const SizedBox(height: 24),
+            _AddPlantButton(
+              label: 'Add a plant to your collection',
+              onPressed: () {},
+            ),
+            const SizedBox(height: 24),
+            const _CollectionGuidance(),
+          ],
         ),
       ),
-    );
-  }
-}
-
-class _CollectionOverview extends StatelessWidget {
-  const _CollectionOverview({
-    required this.total,
-    required this.healthy,
-    required this.needsCare,
-  });
-
-  final int total;
-  final int healthy;
-  final int needsCare;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: scheme.onSecondaryContainer,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _Metric(value: '$total', label: 'plants at home'),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _Metric(value: '$healthy', label: 'feeling good'),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _Metric(value: '$needsCare', label: 'needs care'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Metric extends StatelessWidget {
-  const _Metric({required this.value, required this.label});
-
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          value,
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontSize: 29,
-            fontWeight: FontWeight.w400,
-            color: scheme.surface,
-          ),
-        ),
-        const SizedBox(height: 7),
-        Text(
-          label,
-          style: theme.textTheme.labelSmall?.copyWith(
-            fontSize: 10,
-            color: scheme.tertiaryContainer,
-          ),
-        ),
-      ],
     );
   }
 }
