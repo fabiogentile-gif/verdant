@@ -5,7 +5,11 @@ import 'package:verdant/widgets/components/app_bottom_navigation.dart';
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
-  static AppShellState? of(BuildContext context) => context.findAncestorStateOfType<AppShellState>();
+  /// Lets pages pushed on the root navigator (e.g. the cart) switch tabs.
+  static final globalKey = GlobalKey<AppShellState>();
+
+  static AppShellState? of(BuildContext context) =>
+      context.findAncestorStateOfType<AppShellState>();
 
   @override
   State<AppShell> createState() => AppShellState();
@@ -23,9 +27,9 @@ class AppShellState extends State<AppShell> {
     AppRoutes.profile,
   ];
 
-  void goTotab(String route){
+  void goTotab(String route) {
     final i = _tabs.indexOf(route);
-    if(i!= -1) _onTap(i);
+    if (i != -1) _onTap(i);
   }
 
   void _onTap(int i) {

@@ -8,7 +8,9 @@ import 'package:verdant/widgets/components/product_card.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
 import 'package:verdant/widgets/components/search_bar.dart';
 
+import 'package:verdant/data/cart.dart';
 import 'package:verdant/data/product_repository.dart';
+import 'package:verdant/pages/cart.dart' show showAddedToCart;
 import 'package:verdant/models/product.dart';
 
 class ShopProduct {
@@ -17,6 +19,7 @@ class ShopProduct {
     required this.name,
     required this.price,
     required this.image,
+    required this.summary,
     this.tag,
   });
 
@@ -26,6 +29,8 @@ class ShopProduct {
     price:
         '\$${p.price % 1 == 0 ? p.price.toStringAsFixed(0) : p.price.toStringAsFixed(2)}',
     image: imageFor(p.image),
+    tag: p.tag,
+    summary: p,
   );
 
   final int id;
@@ -33,6 +38,9 @@ class ShopProduct {
   final String price;
   final ImageProvider image;
   final String? tag;
+
+  /// Source data, used e.g. when adding the product to the cart.
+  final ProductSummary summary;
 }
 
 class Greenhouse extends StatefulWidget {
@@ -81,7 +89,10 @@ class _GreenhouseState extends State<Greenhouse> {
       appBar: StandardAppBar(
         title: 'The greenhouse',
         actionIcon: LucideIcons.shoppingBag,
-        onActionTap: () {},
+        onActionTap: () => Navigator.of(
+          context,
+          rootNavigator: true,
+        ).pushNamed(AppRoutes.cart),
       ),
       body: ScrollViewNoStretch(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
@@ -350,7 +361,10 @@ class _ProductGrid extends StatelessWidget {
       image: p.image,
       isFavorite: favorites.contains(p.id),
       onFavoriteTap: () => onFavoriteTap(p.id),
-      onAddTap: () {},
+      onAddTap: () {
+        cart.addSummary(p.summary);
+        showAddedToCart(context, p.name);
+      },
       onTap: () => Navigator.of(
         context,
         rootNavigator: true,

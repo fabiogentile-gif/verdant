@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/owned_plants.dart';
-import 'package:verdant/models/plant_details.dart';
 import 'package:verdant/pages/personal_plant_details.dart';
 import 'package:verdant/search_field.dart';
 import 'package:verdant/widgets/components/collection_overview.dart';
@@ -9,28 +8,6 @@ import 'package:verdant/widgets/components/page_header.dart';
 import 'package:verdant/widgets/components/plant_card.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
 import 'package:verdant/widgets/components/search_bar.dart';
-
-class OwnedPlant {
-  const OwnedPlant({
-    required this.name,
-    required this.room,
-    required this.species,
-    required this.image,
-    required this.status,
-    required this.statusLabel,
-    required this.scheduleLabel,
-    this.details,
-  });
-
-  final String name;
-  final String room;
-  final String species;
-  final ImageProvider image;
-  final PlantStatus status;
-  final String statusLabel;
-  final String scheduleLabel;
-  final PlantDetails? details;
-}
 
 enum _PlantFilter { all, needsCare }
 

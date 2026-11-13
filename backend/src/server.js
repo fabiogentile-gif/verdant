@@ -37,7 +37,7 @@ app.get("/", (req, res) => {
     message: "Welcome to Verdant Shop API",
     version: "1.0.0",
     endpoints: {
-      "GET /api/products": "Get all products",
+      "GET /api/products": "Get all products (optional ?category=)",
       "GET /api/products/:id": "Get a specific product",
       "GET /api/categories": "Get all product categories",
       "GET /api/featured": "Get featured products",
@@ -45,12 +45,17 @@ app.get("/", (req, res) => {
   });
 });
 
-// Get all products
+// Get all products (optionally filtered by ?category=)
 app.get("/api/products", (req, res) => {
+  const { category } = req.query;
+  const result = category
+    ? products.filter((p) => p.category === category)
+    : products;
+
   res.json({
     success: true,
-    data: products,
-    count: products.length,
+    data: result,
+    count: result.length,
   });
 });
 

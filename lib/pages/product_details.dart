@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:verdant/data/cart.dart';
 import 'package:verdant/data/product_repository.dart';
+import 'package:verdant/pages/cart.dart' show showAddedToCart;
 import 'package:verdant/models/product.dart';
 import 'package:verdant/router/router.dart';
 import 'package:verdant/widgets/components/filter_chip.dart';
@@ -213,7 +215,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             onPlus: () => setState(() {
               if (_quantity < 99) _quantity++;
             }),
-            onAddToCart: () {},
+            onAddToCart: () {
+              cart.addDetails(p, quantity: _quantity);
+              showAddedToCart(context, p.name);
+            },
           ),
 
           // Descrizione botanica
@@ -760,7 +765,10 @@ class _RelatedGrid extends StatelessWidget {
       tag: p.tag,
       isFavorite: favorites.contains(p.id),
       onFavoriteTap: () => onFavoriteTap(p.id),
-      onAddTap: () {},
+      onAddTap: () {
+        cart.addSummary(p);
+        showAddedToCart(context, p.name);
+      },
       onTap: () => Navigator.of(context).pushNamed(AppRoutes.productPath(p.id)),
     );
   }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/models/plant_details.dart';
+import 'package:verdant/widgets/components/detail_header.dart';
 import 'package:verdant/widgets/components/plant_card.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
-import 'package:verdant/pages/plants.dart' show OwnedPlant;
+import 'package:verdant/data/owned_plants.dart' show OwnedPlant;
+import 'package:verdant/pages/care_reminder.dart';
 
 class PersonalPlantDetails extends StatelessWidget {
   const PersonalPlantDetails({
@@ -22,7 +24,7 @@ class PersonalPlantDetails extends StatelessWidget {
         bottom: false,
         child: Column(
           children: [
-            _DetailHeader(
+            DetailHeader(
               title: 'Your ${plant.name}',
               onBack: () => Navigator.of(context).maybePop(),
               onMore: () {},
@@ -45,7 +47,7 @@ class PersonalPlantDetails extends StatelessWidget {
                     const SizedBox(height: 26),
                     _BotanicalNotes(details: details),
                     const SizedBox(height: 26),
-                    _CareRhythm(details: details),
+                    _CareRhythm(plant: plant, details: details),
                     const SizedBox(height: 26),
                     _CareHistory(events: details.history),
                   ],
@@ -54,63 +56,6 @@ class PersonalPlantDetails extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Header
-// ---------------------------------------------------------------------------
-
-class _DetailHeader extends StatelessWidget {
-  const _DetailHeader({
-    required this.title,
-    required this.onBack,
-    required this.onMore,
-  });
-
-  final String title;
-  final VoidCallback onBack;
-  final VoidCallback onMore;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: onBack,
-            child: Icon(LucideIcons.arrowLeft, size: 20, color: scheme.onSurface),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              title,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: scheme.onSurface,
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: onMore,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: scheme.outlineVariant),
-              ),
-              child: Icon(LucideIcons.ellipsis, size: 20, color: scheme.onSurface),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -143,7 +88,10 @@ class _PlantPortrait extends StatelessWidget {
               left: 16,
               bottom: 16,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: scheme.surfaceContainerLowest,
                   borderRadius: BorderRadius.circular(100),
@@ -287,7 +235,11 @@ class _TodaysCare extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(LucideIcons.droplets, size: 24, color: scheme.surfaceContainerLowest),
+              Icon(
+                LucideIcons.droplets,
+                size: 24,
+                color: scheme.surfaceContainerLowest,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -582,7 +534,11 @@ class _BotanicalNotes extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(LucideIcons.pawPrint, size: 16, color: scheme.onTertiaryContainer),
+              Icon(
+                LucideIcons.pawPrint,
+                size: 16,
+                color: scheme.onTertiaryContainer,
+              ),
               const SizedBox(width: 8),
               Text(
                 details.petSafetyLabel,
@@ -605,9 +561,16 @@ class _BotanicalNotes extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _CareRhythm extends StatelessWidget {
-  const _CareRhythm({required this.details});
+  const _CareRhythm({required this.plant, required this.details});
 
+  final OwnedPlant plant;
   final PlantDetails details;
+
+  void _openReminder(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => CareReminderPage(plant: plant)));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -617,44 +580,57 @@ class _CareRhythm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionHeading(title: 'Your care rhythm', actionLabel: 'Edit →'),
+        GestureDetector(
+          onTap: () => _openReminder(context),
+          child: const _SectionHeading(
+            title: 'Your care rhythm',
+            actionLabel: 'Edit →',
+          ),
+        ),
         for (final r in details.reminders) ...[
           const SizedBox(height: 13),
-          Container(
-            padding: const EdgeInsets.all(15),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                _IconBox(icon: r.icon, boxSize: 42, iconSize: 20, radius: 14),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        r.title,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: scheme.onSurface,
+          GestureDetector(
+            onTap: () => _openReminder(context),
+            child: Container(
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  _IconBox(icon: r.icon, boxSize: 42, iconSize: 20, radius: 14),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          r.title,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: scheme.onSurface,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        r.whenLabel,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontSize: 11,
-                          color: scheme.onSurfaceVariant,
+                        const SizedBox(height: 4),
+                        Text(
+                          r.whenLabel,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontSize: 11,
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                Icon(LucideIcons.chevronRight, size: 16, color: scheme.onSurfaceVariant),
-              ],
+                  Icon(
+                    LucideIcons.chevronRight,
+                    size: 16,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -669,7 +645,7 @@ class _CareRhythm extends StatelessWidget {
         ),
         const SizedBox(height: 13),
         FilledButton.icon(
-          onPressed: () {},
+          onPressed: () => _openReminder(context),
           icon: const Icon(LucideIcons.plus, size: 18),
           label: const Text(
             'Schedule a care reminder',
@@ -719,7 +695,11 @@ class _CareHistory extends StatelessWidget {
                   color: scheme.secondaryContainer,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(e.icon, size: 15, color: scheme.onSecondaryContainer),
+                child: Icon(
+                  e.icon,
+                  size: 15,
+                  color: scheme.onSecondaryContainer,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
