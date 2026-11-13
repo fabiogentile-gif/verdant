@@ -32,13 +32,41 @@ class DiscountCode {
   final String code;
   final String label;
   final double rate; // 0.10 = 10%
+
+  /// e.g. `GROW10 · 10% off`
+  String get shortLabel => '$code · ${(rate * 100).round()}% off';
+}
+
+enum ShippingOption {
+  standard(
+    label: 'Standard delivery',
+    fee: 6.0,
+    minDays: 5,
+    maxDays: 7,
+    note: 'plant-safe packaging',
+  ),
+  express(label: 'Express delivery', fee: 12.0, minDays: 2, maxDays: 4);
+
+  const ShippingOption({
+    required this.label,
+    required this.fee,
+    required this.minDays,
+    required this.maxDays,
+    this.note,
+  });
+
+  final String label;
+  final double fee;
+  final int minDays;
+  final int maxDays;
+  final String? note;
 }
 
 /// In-memory shopping cart shared by the whole app.
 /// Listen to it with `ListenableBuilder(listenable: cart, ...)`.
 class Cart extends ChangeNotifier {
+  /// Standard delivery is free above this merchandise subtotal.
   static const freeDeliveryThreshold = 100.0;
-  static const deliveryFee = 6.0;
   static const maxQuantity = 99;
 
   static const _codes = {
@@ -51,10 +79,25 @@ class Cart extends ChangeNotifier {
 
   final List<CartItem> _items = [];
   DiscountCode? _discount;
+  ShippingOption _shipping = ShippingOption.standard;
 
   List<CartItem> get items => List.unmodifiable(_items);
   bool get isEmpty => _items.isEmpty;
   DiscountCode? get discount => _discount;
+  ShippingOption get shipping => _shipping;
+
+  set shipping(ShippingOption value) {
+    if (value == _shipping) return;
+    _shipping = value;
+    notifyListeners();
+  }
+
+  /// Fee for [option] with the current cart (standard can become free).
+  double feeFor(ShippingOption option) {
+    if (isEmpty) return 0;
+    if (option == ShippingOption.standard && hasFreeDelivery) return 0;
+    return option.fee;
+  }
 
   /// Total number of units (a plant with quantity 2 counts as 2).
   int get itemCount => _items.fold(0, (sum, i) => sum + i.quantity);
@@ -67,7 +110,7 @@ class Cart extends ChangeNotifier {
 
   /// Free delivery is based on the merchandise subtotal.
   bool get hasFreeDelivery => subtotal >= freeDeliveryThreshold;
-  double get delivery => isEmpty || hasFreeDelivery ? 0 : deliveryFee;
+  double get delivery => feeFor(_shipping);
   double get amountToFreeDelivery =>
       hasFreeDelivery ? 0 : freeDeliveryThreshold - subtotal;
   double get freeDeliveryProgress =>
@@ -147,6 +190,7 @@ class Cart extends ChangeNotifier {
   void clear() {
     _items.clear();
     _discount = null;
+    _shipping = ShippingOption.standard;
     notifyListeners();
   }
 

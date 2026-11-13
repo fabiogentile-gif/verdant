@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:verdant/pages/activity.dart';
 import 'package:verdant/pages/cart.dart';
+import 'package:verdant/pages/checkout.dart';
 import 'package:verdant/pages/greenhouse.dart';
 import 'package:verdant/pages/homepage.dart';
 import 'package:verdant/pages/plants.dart';
@@ -17,6 +18,7 @@ class AppRoutes {
   static const activity = '/activity';
   static const productDetails = '/product';
   static const cart = '/cart';
+  static const checkout = '/checkout';
 
   static String productPath(int id) => '$productDetails/$id';
 
@@ -44,6 +46,11 @@ class AppRoutes {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => const CartPage(),
+        );
+      case checkout:
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const CheckoutPage(),
         );
     }
     return null;

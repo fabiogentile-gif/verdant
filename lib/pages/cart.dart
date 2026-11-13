@@ -4,14 +4,9 @@ import 'package:verdant/data/cart.dart';
 import 'package:verdant/data/product_repository.dart';
 import 'package:verdant/router/router.dart';
 import 'package:verdant/shell.dart';
+import 'package:verdant/utils/money.dart';
 import 'package:verdant/widgets/components/detail_header.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
-
-String _money(double value) => '\$${value.toStringAsFixed(2)}';
-
-String _compactMoney(double value) => value == value.roundToDouble()
-    ? '\$${value.toInt()}'
-    : '\$${value.toStringAsFixed(2)}';
 
 /// "Your cart" screen (Figma: Shopping cart).
 class CartPage extends StatelessWidget {
@@ -23,9 +18,7 @@ class CartPage extends StatelessWidget {
   }
 
   void _checkout(BuildContext context) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('Checkout is coming soon.')));
+    Navigator.of(context).pushNamed(AppRoutes.checkout);
   }
 
   @override
@@ -133,7 +126,7 @@ class _ShippingIncentive extends StatelessWidget {
 
     final message = cart.hasFreeDelivery
         ? 'Your delivery is on us.'
-        : 'You’re ${_compactMoney(cart.amountToFreeDelivery)} away '
+        : 'You’re ${formatCompactMoney(cart.amountToFreeDelivery)} away '
               'from free delivery.';
 
     return Container(
@@ -176,7 +169,7 @@ class _ShippingIncentive extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Based on your ${_compactMoney(cart.subtotal)} '
+            'Based on your ${formatCompactMoney(cart.subtotal)} '
             'merchandise subtotal.',
             style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 10,
@@ -269,7 +262,7 @@ class _CartItemCard extends StatelessWidget {
                     _QuantitySelector(item: item),
                     const Spacer(),
                     Text(
-                      _money(item.total),
+                      formatMoney(item.total),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -477,19 +470,19 @@ class _OrderTotals extends StatelessWidget {
       children: [
         _SummaryRow(
           label: 'Subtotal · $count ${count == 1 ? 'item' : 'items'}',
-          value: _money(cart.subtotal),
+          value: formatMoney(cart.subtotal),
         ),
         if (discount != null) ...[
           const SizedBox(height: 15),
           _SummaryRow(
             label: discount.label,
-            value: '−${_money(cart.discountAmount)}',
+            value: '−${formatMoney(cart.discountAmount)}',
           ),
         ],
         const SizedBox(height: 15),
         _SummaryRow(
-          label: 'Standard delivery',
-          value: cart.delivery == 0 ? 'Free' : _money(cart.delivery),
+          label: cart.shipping.label,
+          value: cart.delivery == 0 ? 'Free' : formatMoney(cart.delivery),
         ),
         const SizedBox(height: 15),
         Divider(height: 1, thickness: 1, color: scheme.outlineVariant),
@@ -507,7 +500,7 @@ class _OrderTotals extends StatelessWidget {
               ),
             ),
             Text(
-              _money(cart.total),
+              formatMoney(cart.total),
               style: theme.textTheme.titleLarge?.copyWith(
                 fontSize: 21,
                 fontWeight: FontWeight.w600,

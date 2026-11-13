@@ -33,7 +33,7 @@ Elenco delle funzionalità mancanti, incomplete o rotte, in ordine di priorità.
 - [ ] Nome utente "Maya" hardcoded nel titolo.
 
 ### Greenhouse / Shop (`lib/pages/greenhouse.dart`)
-- [x] Carrello: modello `lib/data/cart.dart` + pagina `lib/pages/cart.dart` (rotta `/cart`). Restano: badge quantità sull'icona, persistenza (si svuota al riavvio), checkout reale.
+- [x] Carrello: modello `lib/data/cart.dart` + pagina `lib/pages/cart.dart` (rotta `/cart`). Checkout in `lib/pages/checkout.dart` con pagamento simulato (carta o PayPal finti, `lib/data/payment.dart`). Restano: badge quantità sull'icona, persistenza (carrello e metodi di pagamento si svuotano al riavvio), indirizzo di consegna fisso (Maya Thompson), storico ordini.
 - [ ] Barra di ricerca senza `onChanged` – la ricerca prodotti non funziona.
 - [ ] Chip categorie: `_categoryIndex` viene aggiornato ma i prodotti non vengono filtrati. Inoltre le categorie della UI
   (`Indoor Plants`, `Outdoor Plants`, `Pots`, `Soil`, `Fertilizers`, `Accessories`) non corrispondono a quelle del backend
