@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:verdant/theme/theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class CareReminder {
-  const CareReminder({
-    required this.title,
-    required this.schedule,
-    this.onTap,
-  });
+  const CareReminder({required this.title, required this.schedule, this.onTap});
 
   final String title;
   final String schedule;
@@ -14,11 +11,7 @@ class CareReminder {
 }
 
 class UpcomingCare extends StatelessWidget {
-  const UpcomingCare({
-    super.key,
-    required this.reminders,
-    this.onViewAll,
-  });
+  const UpcomingCare({super.key, required this.reminders, this.onViewAll});
 
   final List<CareReminder> reminders;
   final VoidCallback? onViewAll;
@@ -86,6 +79,7 @@ class _CareReminderTile extends StatelessWidget {
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: scheme.surfaceContainerLowest,
+          boxShadow: AppShadows.cardSoft(scheme),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
@@ -132,11 +126,7 @@ class _CareReminderTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            Icon(
-              LucideIcons.chevronRight,
-              size: 16,
-              color: scheme.onSurface,
-            ),
+            Icon(LucideIcons.chevronRight, size: 16, color: scheme.onSurface),
           ],
         ),
       ),

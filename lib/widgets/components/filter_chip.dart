@@ -7,24 +7,29 @@ class AppFilterChip extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.leadingIcon,
+    this.trailingIcon,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
   final IconData? leadingIcon;
+  final IconData? trailingIcon;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    final background =
-        selected ? scheme.onSecondaryContainer : scheme.surfaceContainerLowest;
-    final border =
-        selected ? scheme.onSecondaryContainer : scheme.outlineVariant;
-    final foreground =
-        selected ? scheme.onPrimary : scheme.onSecondaryContainer;
+    final background = selected
+        ? scheme.onSecondaryContainer
+        : scheme.surfaceContainerLowest;
+    final border = selected
+        ? scheme.onSecondaryContainer
+        : scheme.outlineVariant;
+    final foreground = selected
+        ? scheme.onPrimary
+        : scheme.onSecondaryContainer;
 
     return GestureDetector(
       onTap: onTap,
@@ -50,6 +55,10 @@ class AppFilterChip extends StatelessWidget {
                 color: foreground,
               ),
             ),
+            if (trailingIcon != null) ...[
+              const SizedBox(width: 6),
+              Icon(trailingIcon, size: 14, color: foreground),
+            ],
           ],
         ),
       ),

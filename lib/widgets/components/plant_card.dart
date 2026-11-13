@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:verdant/theme/theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 enum PlantStatus { needsCare, healthy }
@@ -34,6 +35,7 @@ class PlantCard extends StatelessWidget {
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: scheme.surfaceContainerLowest,
+          boxShadow: AppShadows.cardSoft(scheme),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
@@ -112,8 +114,9 @@ class _StatusBadge extends StatelessWidget {
     final scheme = theme.colorScheme;
     final needsCare = status == PlantStatus.needsCare;
 
-    final background =
-        needsCare ? scheme.tertiaryContainer : scheme.secondaryContainer;
+    final background = needsCare
+        ? scheme.tertiaryContainer
+        : scheme.secondaryContainer;
     final border = needsCare ? scheme.tertiary : scheme.secondaryContainer;
     final foreground = needsCare
         ? scheme.onTertiaryContainer

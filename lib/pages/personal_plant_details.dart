@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:verdant/theme/theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/models/plant_details.dart';
 import 'package:verdant/widgets/components/detail_header.dart';
@@ -326,7 +327,7 @@ class _SectionHeading extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: theme.textTheme.titleLarge?.copyWith(
+            style: theme.textTheme.headlineSmall?.copyWith(
               fontSize: 23,
               letterSpacing: -0.5,
               fontWeight: FontWeight.w400,
@@ -595,6 +596,7 @@ class _CareRhythm extends StatelessWidget {
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
                 color: scheme.surfaceContainerLowest,
+                boxShadow: AppShadows.cardSoft(scheme),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(

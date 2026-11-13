@@ -16,11 +16,17 @@ class CollectionMetrics extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _Metric(value: '$total', label: 'plants at home')),
+        Expanded(
+          child: _Metric(value: '$total', label: 'plants at home'),
+        ),
         const SizedBox(width: 12),
-        Expanded(child: _Metric(value: '$healthy', label: 'feeling good')),
+        Expanded(
+          child: _Metric(value: '$healthy', label: 'feeling good'),
+        ),
         const SizedBox(width: 12),
-        Expanded(child: _Metric(value: '$needsCare', label: 'needs care')),
+        Expanded(
+          child: _Metric(value: '$needsCare', label: 'needs care'),
+        ),
       ],
     );
   }
@@ -42,7 +48,7 @@ class _Metric extends StatelessWidget {
       children: [
         Text(
           value,
-          style: theme.textTheme.headlineMedium?.copyWith(
+          style: theme.textTheme.titleLarge?.copyWith(
             fontSize: 29,
             fontWeight: FontWeight.w400,
             color: scheme.surface,

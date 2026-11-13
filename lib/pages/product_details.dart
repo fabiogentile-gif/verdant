@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:verdant/theme/theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/cart.dart';
 import 'package:verdant/data/product_repository.dart';
@@ -468,6 +469,7 @@ class _PurchaseCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLowest,
+        boxShadow: AppShadows.cardSoft(scheme),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(

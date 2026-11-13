@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:verdant/theme/theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/cart.dart';
 import 'package:verdant/data/product_repository.dart';
@@ -196,6 +197,7 @@ class _CartItemCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: scheme.surface,
+        boxShadow: AppShadows.cardSoft(scheme),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

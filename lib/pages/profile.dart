@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:verdant/theme/theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/owned_plants.dart';
 import 'package:verdant/search_field.dart';
@@ -194,6 +195,7 @@ class _IdentityCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLowest,
+        boxShadow: AppShadows.cardSoft(scheme),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -281,6 +283,7 @@ class _Section extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: scheme.surfaceContainerLowest,
+            boxShadow: AppShadows.cardSoft(scheme),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Column(

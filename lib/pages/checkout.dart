@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:verdant/theme/theme.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/cart.dart';
@@ -256,6 +257,7 @@ class _DeliveryAddress extends StatelessWidget {
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: scheme.surface,
+            boxShadow: AppShadows.cardSoft(scheme),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
@@ -635,6 +637,7 @@ class _OrderSummary extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: scheme.surface,
+        boxShadow: AppShadows.cardSoft(scheme),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(

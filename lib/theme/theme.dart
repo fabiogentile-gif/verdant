@@ -73,15 +73,45 @@ const _darkScheme = ColorScheme(
 );
 
 class AppTheme {
-  static final light = ThemeData(
-    useMaterial3: true,
-    colorScheme: _lightScheme,
-    scaffoldBackgroundColor: const Color(0xFFF6F3ED),
-  );
+  static final light = _build(_lightScheme, const Color(0xFFF6F3ED));
+  static final dark = _build(_darkScheme, const Color(0xFF1A3636));
 
-  static final dark = ThemeData(
-    useMaterial3: true,
-    colorScheme: _darkScheme,
-    scaffoldBackgroundColor: const Color(0xFF1A3636),
-  );
+  /// Inter everywhere; Lora for the display and headline roles (DESIGN.md:
+  /// "The One Serif Rule"). Fonts are bundled in assets/fonts.
+  static ThemeData _build(ColorScheme scheme, Color background) {
+    final base = ThemeData(
+      useMaterial3: true,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: background,
+      fontFamily: 'Inter',
+    );
+    final t = base.textTheme;
+    TextStyle? serif(TextStyle? s) => s?.copyWith(fontFamily: 'Lora');
+
+    return base.copyWith(
+      textTheme: t.copyWith(
+        displayLarge: serif(t.displayLarge),
+        displayMedium: serif(t.displayMedium),
+        displaySmall: serif(t.displaySmall),
+        headlineLarge: serif(t.headlineLarge),
+        headlineMedium: serif(t.headlineMedium),
+        headlineSmall: serif(t.headlineSmall),
+      ),
+    );
+  }
+}
+
+/// Shadow tokens (DESIGN.md, Elevation & Depth).
+abstract final class AppShadows {
+  /// "Card soft": resting cards. Tinted with forest ink, barely there
+  /// ("The Whisper Shadow Rule"). Deeper on dark so it still separates.
+  static List<BoxShadow> cardSoft(ColorScheme scheme) => [
+    BoxShadow(
+      color: scheme.brightness == Brightness.light
+          ? const Color(0x0F1A3636) // forest ink at 6%
+          : const Color(0x40000000),
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+    ),
+  ];
 }

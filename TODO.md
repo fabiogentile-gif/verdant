@@ -68,8 +68,10 @@ Elenco delle funzionalità mancanti, incomplete o rotte, in ordine di priorità.
   e calcolo del prossimo intervento.
 
 ### Activity (`lib/pages/activity.dart`)
-- [ ] La pagina contiene solo l'header: manca tutto il contenuto (timeline attività/cure, storico, calendario).
-- [ ] Icona calendario: `onActionTap: () {}`.
+- [x] Pagina completa: riepilogo, oggi, in arrivo, storico (dati in `lib/data/care_schedule.dart`, relativi a oggi, solo in memoria).
+- [x] Icona calendario: apre la scelta del periodo (7/14/30 giorni).
+- [ ] Collegare `careSchedule` anche a Homepage (UpcomingCare), pagina Piante (stato "Needs water") e dettaglio pianta ("Mark as watered"), che usano ancora testi fissi.
+- [ ] Salvare davvero i promemoria creati da "Edit care reminder" nel `careSchedule`.
 
 ### Profilo (`lib/pages/profile.dart`)
 - [ ] Azione app bar `onActionTap: () {}`.
