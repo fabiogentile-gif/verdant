@@ -6,12 +6,14 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+/// Data contract used by the UI; the source (API, mock, cache) stays hidden.
 abstract class ProductRepository {
   Future<List<ProductSummary>> getProducts({String? category});
   Future<List<ProductSummary>> getFeaturedProducts();
   Future<ProductDetails> getProductDetails(int id);
 }
 
+/// Backend base URL: `--dart-define=API_ORIGIN` wins, otherwise a platform default.
 String get apiOrigin {
   const fromEnv = String.fromEnvironment('API_ORIGIN');
   if (fromEnv.isNotEmpty) return fromEnv;
@@ -21,15 +23,19 @@ String get apiOrigin {
   return 'http://localhost:3000';
 }
 
+/// Global instance; non-final so tests can swap in a fake.
 ProductRepository productRepository = ApiProductRepository(origin: apiOrigin);
 
+/// Makes relative image paths absolute ("/img/a.jpg" -> "$origin/img/a.jpg").
 String resolveImage(String path, String origin) =>
     path.startsWith('http') ? path : '$origin$path';
 
+/// Remote URL -> NetworkImage, otherwise a local asset.
 ImageProvider imageFor(String src) =>
     src.startsWith('http') ? NetworkImage(src) : AssetImage(src);
 
 class ApiProductRepository implements ProductRepository {
+  // The client is injectable (e.g. MockClient in tests).
   ApiProductRepository({required this.origin, http.Client? client})
     : _client = client ?? http.Client();
 
@@ -38,6 +44,7 @@ class ApiProductRepository implements ProductRepository {
 
   String get _api => '$origin/api';
 
+  /// Throws on non-200, otherwise returns the `data` field of `{ "data": ... }`.
   dynamic _data(http.Response r, String what) {
     if (r.statusCode != 200) {
       throw Exception('Failed to load $what: ${r.statusCode}');
@@ -45,6 +52,7 @@ class ApiProductRepository implements ProductRepository {
     return (jsonDecode(r.body) as Map<String, dynamic>)['data'];
   }
 
+  /// JSON list -> ProductSummary, with `image` resolved to an absolute URL.
   List<ProductSummary> _summaries(List list) => list
       .cast<Map<String, dynamic>>()
       .map(
@@ -76,6 +84,7 @@ class ApiProductRepository implements ProductRepository {
       'product ($id)',
     ) as Map<String, dynamic>;
 
+    // Make the product's own images and the related products' images absolute.
     String abs(String p) => resolveImage(p, origin);
     return ProductDetails.fromJson({
       ...json,

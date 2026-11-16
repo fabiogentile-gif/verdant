@@ -41,20 +41,39 @@ class AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Navigator(
-        key: _navKey,
-        initialRoute: AppRoutes.homepage,
-        onGenerateRoute: AppRoutes.onGenerateTab,
+      resizeToAvoidBottomInset: false,
+      body: MediaQuery.removeViewInsets(
+        context: context,
+        removeBottom: true,
+        child: Navigator(
+          key: _navKey,
+          initialRoute: AppRoutes.homepage,
+          onGenerateRoute: AppRoutes.onGenerateTab,
+        ),
       ),
       floatingActionButton: AppCenterButton(
         selected: _index == AppBottomNavigation.featuredIndex,
         onPressed: () => _onTap(AppBottomNavigation.featuredIndex),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: const _FixedCenterDocked(),
       bottomNavigationBar: AppBottomNavigation(
         currentIndex: _index,
         onTap: _onTap,
       ),
+      floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
     );
+  }
+}
+
+class _FixedCenterDocked extends FloatingActionButtonLocation {
+  const _FixedCenterDocked();
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry g) {
+    final x = (g.scaffoldSize.width - g.floatingActionButtonSize.width) / 2;
+    // contentBottom = bordo superiore della bottom bar, non influenzato
+    // da snackbar o tastiera
+    final y = g.contentBottom - g.floatingActionButtonSize.height / 2;
+    return Offset(x, y);
   }
 }

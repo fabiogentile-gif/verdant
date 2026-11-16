@@ -97,6 +97,15 @@ class AppTheme {
         headlineMedium: serif(t.headlineMedium),
         headlineSmall: serif(t.headlineSmall),
       ),
+      // Fix to not have the floatingbutton on top
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        insetPadding: const EdgeInsets.fromLTRB(16,0,16,16),
+        backgroundColor: scheme.inverseSurface,
+        contentTextStyle: base.textTheme.bodyMedium?.copyWith(color: scheme.onInverseSurface),
+        actionTextColor: scheme.inversePrimary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+      )
     );
   }
 }
