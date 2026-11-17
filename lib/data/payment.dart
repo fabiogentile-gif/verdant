@@ -29,6 +29,7 @@ enum CardBrand {
     return unknown;
   }
 
+  /// AMEX has CVC lenght of 4 and card number of 15.
   int get cvcLength => this == amex ? 4 : 3;
   int get numberLength => this == amex ? 15 : 16;
 }
@@ -62,6 +63,7 @@ sealed class PaymentMethod {
   };
 }
 
+/// Saves some of the card data (brand,last 4 digits,holder,expiration date)
 class CardPayment extends PaymentMethod {
   const CardPayment({
     required super.id,
@@ -102,6 +104,7 @@ class CardPayment extends PaymentMethod {
   };
 }
 
+/// Saves only the email
 class PayPalPayment extends PaymentMethod {
   const PayPalPayment({required super.id, required this.email});
 
@@ -294,6 +297,7 @@ abstract final class CardValidator {
   }
 
   /// Luhn checksum used by all major card networks.
+  /// Used to validate the card digits (example 5123 8372 7321 1090)
   static bool luhn(String digits) {
     var sum = 0;
     var double = false;

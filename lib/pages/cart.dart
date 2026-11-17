@@ -727,6 +727,8 @@ void showAddedToCart(BuildContext context, String productName) {
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
+        persist: false,
+        duration: const Duration(seconds: 2),
         content: Text('$productName added to your cart.'),
         action: SnackBarAction(
           label: 'View cart',

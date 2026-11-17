@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:verdant/models/product.dart';
 
+/// Data contract used by the UI; the source (API, mock, cache) stays hidden.
 abstract class ProductRepository {
   Future<List<ProductSummary>> getProducts({String? category});
   Future<List<ProductSummary>> getFeaturedProducts();
@@ -34,6 +35,7 @@ class ProductLoadException implements Exception {
   String toString() => 'ProductLoadException($kind, $detail)';
 }
 
+/// Backend base URL: `--dart-define=API_ORIGIN` wins, otherwise a platform default.
 String get apiOrigin {
   const fromEnv = String.fromEnvironment('API_ORIGIN');
   if (fromEnv.isNotEmpty) return fromEnv;
@@ -43,15 +45,19 @@ String get apiOrigin {
   return 'http://localhost:3000';
 }
 
+/// Global instance; non-final so tests can swap in a fake.
 ProductRepository productRepository = ApiProductRepository(origin: apiOrigin);
 
+/// Makes relative image paths absolute ("/img/a.jpg" -> "$origin/img/a.jpg").
 String resolveImage(String path, String origin) =>
     path.startsWith('http') ? path : '$origin$path';
 
+/// Remote URL -> NetworkImage, otherwise a local asset.
 ImageProvider imageFor(String src) =>
     src.startsWith('http') ? NetworkImage(src) : AssetImage(src);
 
 class ApiProductRepository implements ProductRepository {
+  // The client is injectable (e.g. MockClient in tests).
   ApiProductRepository({
     required this.origin,
     http.Client? client,
@@ -83,6 +89,7 @@ class ApiProductRepository implements ProductRepository {
     return value;
   }
 
+  /// Throws [ProductLoadException], otherwise returns the `data` field of `{ "data": ... }`.
   Future<dynamic> _get(Uri uri) async {
     final http.Response r;
     try {
@@ -105,6 +112,7 @@ class ApiProductRepository implements ProductRepository {
     }
   }
 
+  /// JSON list -> ProductSummary, with `image` resolved to an absolute URL.
   List<ProductSummary> _summaries(Object? list) {
     if (list is! List) {
       throw const ProductLoadException(ProductErrorKind.badData);
@@ -142,6 +150,7 @@ class ApiProductRepository implements ProductRepository {
         if (json is! Map<String, dynamic>) {
           throw const ProductLoadException(ProductErrorKind.badData);
         }
+        // Make the product's own images and the related products' images absolute.
         String abs(String p) => resolveImage(p, origin);
         return ProductDetails.fromJson({
           ...json,
