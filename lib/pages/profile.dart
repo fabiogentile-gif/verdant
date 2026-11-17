@@ -1,42 +1,125 @@
 import 'package:flutter/material.dart';
-import 'package:verdant/theme/theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:verdant/data/address.dart';
+import 'package:verdant/data/care_schedule.dart';
+import 'package:verdant/data/orders.dart';
 import 'package:verdant/data/owned_plants.dart';
-import 'package:verdant/search_field.dart';
-import 'package:verdant/theme/theme_controller.dart';
+import 'package:verdant/data/payment.dart';
+import 'package:verdant/data/settings.dart';
+import 'package:verdant/router/router.dart';
+import 'package:verdant/services/notifications.dart';
+import 'package:verdant/theme/theme.dart';
 import 'package:verdant/widgets/components/app_toggle.dart';
 import 'package:verdant/widgets/components/collection_overview.dart';
 import 'package:verdant/widgets/components/page_header.dart';
-import 'package:verdant/widgets/components/plant_card.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
-
-// + gli stessi import della pagina Piante da cui arriva StandardAppBar
+import 'package:verdant/widgets/components/standard_app_bar.dart';
 
 class Profile extends StatefulWidget {
-  const Profile({super.key, this.onOpenPlants});
-
-  final VoidCallback? onOpenPlants;
+  const Profile({super.key});
 
   @override
   State<Profile> createState() => _ProfileState();
 }
 
 class _ProfileState extends State<Profile> {
-  bool _push = true;
-  bool _email = false;
+  final _housekeepingKey = GlobalKey();
+
+  void _scrollToSettings() {
+    final target = _housekeepingKey.currentContext;
+    if (target == null) return;
+    Scrollable.ensureVisible(
+      target,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  Future<void> _setPush(bool value) async {
+    appSettings.push = value;
+    if (!value) return;
+    final allowed = await NotificationService.requestPermission();
+    if (!allowed && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Android hasn’t allowed notifications for Verdant yet.',
+          ),
+          action: SnackBarAction(
+            label: 'Details',
+            onPressed: () => pushRoot(context, AppRoutes.privacy),
+          ),
+        ),
+      );
+    }
+  }
+
+  void _showTimeZone() {
+    final zone = NotificationService.timeZone;
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Time zone'),
+        content: Text(
+          zone == null
+              ? 'Reminders follow your phone’s time zone.'
+              : 'Reminders follow your phone’s time zone ($zone). Change it '
+                    'in Android settings and Verdant will follow.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAbout() {
+    showAboutDialog(
+      context: context,
+      applicationName: 'Verdant',
+      applicationVersion: '1.0.0',
+      applicationIcon: Icon(
+        LucideIcons.sprout,
+        size: 36,
+        color: Theme.of(context).colorScheme.primary,
+      ),
+      applicationLegalese:
+          'A school project: a plant shop and care companion. Payments are '
+          'simulated and nothing is shipped.',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final needsCare = ownedPlants
-        .where((p) => p.status == PlantStatus.needsCare)
-        .length;
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        plantCollection,
+        careSchedule,
+        appSettings,
+        orderHistory,
+        wallet,
+        addressBook,
+      ]),
+      builder: (context, _) => _build(context),
+    );
+  }
 
+  Widget _build(BuildContext context) {
+    final plants = ownedPlants;
+    final needsCare = plants.where(careSchedule.needsCare).length;
+    final orders = orderHistory.orders.length;
+    final payment = wallet.selected;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: StandardAppBar(
         title: 'Profile',
         actionIcon: LucideIcons.settings,
-        onActionTap: () {},
+        actionLabel: 'Settings',
+        onActionTap: _scrollToSettings,
       ),
       body: ScrollViewNoStretch(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
@@ -57,10 +140,10 @@ class _ProfileState extends State<Profile> {
             CollectionOverview(
               title: 'Your little jungle',
               actionLabel: 'My plants →',
-              onActionTap: widget.onOpenPlants,
-              images: [for (final p in ownedPlants) p.image],
-              total: ownedPlants.length,
-              healthy: ownedPlants.length - needsCare,
+              onActionTap: () => goToTab(context, AppRoutes.plants),
+              images: [for (final p in plants) p.image],
+              total: plants.length,
+              healthy: plants.length - needsCare,
               needsCare: needsCare,
             ),
             const SizedBox(height: 24),
@@ -70,20 +153,26 @@ class _ProfileState extends State<Profile> {
                 _SettingsTile(
                   icon: LucideIcons.package,
                   title: 'My orders',
-                  subtitle: 'Track deliveries & revisit past orders',
-                  onTap: () {},
+                  subtitle: orders == 0
+                      ? 'Track deliveries & revisit past orders'
+                      : '$orders ${orders == 1 ? 'order' : 'orders'} so far',
+                  onTap: () => pushRoot(context, AppRoutes.orders),
                 ),
                 _SettingsTile(
                   icon: LucideIcons.mapPin,
                   title: 'Saved addresses',
-                  subtitle: 'Your delivery details, all in one place',
-                  onTap: () {},
+                  subtitle:
+                      '${addressBook.address.label} · '
+                      '${addressBook.address.city}',
+                  onTap: () => pushRoot(context, AppRoutes.addresses),
                 ),
                 _SettingsTile(
                   icon: LucideIcons.creditCard,
                   title: 'Payment methods',
-                  subtitle: 'Manage your saved payment options',
-                  onTap: () {},
+                  subtitle: payment == null
+                      ? 'Manage your saved payment options'
+                      : 'Default: ${payment.title}',
+                  onTap: () => pushRoot(context, AppRoutes.paymentMethods),
                 ),
               ],
             ),
@@ -95,37 +184,40 @@ class _ProfileState extends State<Profile> {
                   icon: LucideIcons.calendarDays,
                   title: 'Care reminders',
                   subtitle:
-                      'Review schedules for your ${ownedPlants.length} plants',
-                  onTap: () {},
+                      'Review schedules for your ${plants.length} '
+                      '${plants.length == 1 ? 'plant' : 'plants'}',
+                  onTap: () => pushRoot(context, AppRoutes.careReminders),
                 ),
                 _SettingsTile(
                   icon: LucideIcons.bell,
                   title: 'Push notifications',
                   subtitle: 'A gentle nudge on your phone',
                   trailing: AppToggle(
-                    value: _push,
-                    onChanged: (v) => setState(() => _push = v),
+                    value: appSettings.push,
+                    onChanged: _setPush,
                   ),
                 ),
                 _SettingsTile(
                   icon: LucideIcons.mail,
                   title: 'Email reminders',
-                  subtitle: 'Keep your inbox a little quieter',
+                  subtitle: 'Saved for when email reminders arrive',
                   trailing: AppToggle(
-                    value: _email,
-                    onChanged: (v) => setState(() => _email = v),
+                    value: appSettings.email,
+                    onChanged: (v) => appSettings.email = v,
                   ),
                 ),
                 _SettingsTile(
                   icon: LucideIcons.clock3,
                   title: 'Time zone',
-                  subtitle: 'Portland · Pacific Time',
-                  onTap: () {},
+                  subtitle:
+                      NotificationService.timeZone ?? 'Follows your phone',
+                  onTap: _showTimeZone,
                 ),
               ],
             ),
             const SizedBox(height: 24),
             _Section(
+              key: _housekeepingKey,
               title: 'A little housekeeping',
               children: [
                 _SettingsTile(
@@ -134,8 +226,9 @@ class _ProfileState extends State<Profile> {
                   subtitle: 'Switch to a darker, easier-on-the-eyes theme',
                   trailing: AppToggle(
                     value: isDark,
-                    onChanged: (v) =>
-                        themeMode.value = v ? ThemeMode.dark : ThemeMode.light,
+                    onChanged: (v) => appSettings.themeMode = v
+                        ? ThemeMode.dark
+                        : ThemeMode.light,
                   ),
                 ),
                 _SettingsTile(
@@ -146,18 +239,18 @@ class _ProfileState extends State<Profile> {
                 _SettingsTile(
                   icon: LucideIcons.shieldCheck,
                   title: 'Privacy & permissions',
-                  onTap: () {},
+                  onTap: () => pushRoot(context, AppRoutes.privacy),
                 ),
                 _SettingsTile(
                   icon: LucideIcons.messageCircle,
                   title: 'Help & support',
                   subtitle: 'We’re here to help you grow',
-                  onTap: () {},
+                  onTap: () => pushRoot(context, AppRoutes.help),
                 ),
                 _SettingsTile(
                   icon: LucideIcons.sprout,
                   title: 'About Verdant',
-                  onTap: () {},
+                  onTap: _showAbout,
                 ),
               ],
             ),
@@ -256,7 +349,7 @@ class _IdentityCard extends StatelessWidget {
 }
 
 class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.children});
+  const _Section({super.key, required this.title, required this.children});
 
   final String title;
   final List<Widget> children;
