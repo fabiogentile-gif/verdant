@@ -25,6 +25,7 @@ class FeaturedProducts extends StatelessWidget {
     this.onProductTap,
     this.onFavoriteTap,
     this.onAddTap,
+    this.favoriteIds = const {},
   });
 
   final List<Product> products;
@@ -32,6 +33,7 @@ class FeaturedProducts extends StatelessWidget {
   final ValueChanged<Product>? onProductTap;
   final ValueChanged<Product>? onFavoriteTap;
   final ValueChanged<Product>? onAddTap;
+  final Set<int> favoriteIds;
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +80,7 @@ class FeaturedProducts extends StatelessWidget {
               Expanded(
                 child: _ProductCard(
                   product: products[i],
+                  isFavorite: favoriteIds.contains(products[i].id),
                   onTap: () => onProductTap?.call(products[i]),
                   onFavoriteTap: () => onFavoriteTap?.call(products[i]),
                   onAddTap: () => onAddTap?.call(products[i]),
@@ -97,12 +100,14 @@ class _ProductCard extends StatelessWidget {
     required this.onTap,
     required this.onFavoriteTap,
     required this.onAddTap,
+    this.isFavorite = false,
   });
 
   final Product product;
   final VoidCallback onTap;
   final VoidCallback onFavoriteTap;
   final VoidCallback onAddTap;
+  final bool isFavorite;
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +142,7 @@ class _ProductCard extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        LucideIcons.heart,
+                        isFavorite ? Icons.favorite : LucideIcons.heart,
                         size: 15,
                         color: scheme.onSurface,
                       ),

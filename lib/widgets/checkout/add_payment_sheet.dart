@@ -9,6 +9,7 @@ import 'package:verdant/widgets/components/filter_chip.dart';
 Future<PaymentMethod?> showAddPaymentSheet(BuildContext context) {
   return showModalBottomSheet<PaymentMethod>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Theme.of(context).scaffoldBackgroundColor,

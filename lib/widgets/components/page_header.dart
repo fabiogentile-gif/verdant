@@ -12,7 +12,7 @@ class PageHeader extends StatelessWidget {
   const PageHeader({super.key, required this.title, this.subtitle})
     : _eyebrowText = null,
       _eyebrowDate = null,
-      _locale = null;
+      locale = null;
 
   const PageHeader.eyebrowText(
     String eyebrow, {
@@ -21,33 +21,31 @@ class PageHeader extends StatelessWidget {
     this.subtitle,
   }) : _eyebrowText = eyebrow,
        _eyebrowDate = null,
-       _locale = null;
+       locale = null;
 
   const PageHeader.eyebrowDate(
     DateTime date, {
     super.key,
     required this.title,
     this.subtitle,
-    String? locale, // es. 'it_IT'; null = locale di default
+    this.locale, // e.g. 'en_US'; null = default locale
   }) : _eyebrowText = null,
-       _eyebrowDate = date,
-       _locale = locale;
+       _eyebrowDate = date;
 
   final String title;
   final String? subtitle;
   final String? _eyebrowText;
   final DateTime? _eyebrowDate;
-  final String? _locale;
+  final String? locale;
 
   static const _gap = 7.0;
 
   String? get _eyebrow {
-    if (_eyebrowText != null) return _eyebrowText!.toUpperCase();
-    if (_eyebrowDate != null) {
-      return DateFormat(
-        'EEEE, MMMM d',
-        _locale,
-      ).format(_eyebrowDate!).toUpperCase();
+    final text = _eyebrowText;
+    if (text != null) return text.toUpperCase();
+    final date = _eyebrowDate;
+    if (date != null) {
+      return DateFormat('EEEE, MMMM d', locale).format(date).toUpperCase();
     }
     return null;
   }
