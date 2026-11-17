@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:verdant/theme/theme.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:verdant/data/address.dart';
 import 'package:verdant/data/cart.dart';
+import 'package:verdant/data/orders.dart';
 import 'package:verdant/data/payment.dart';
-import 'package:verdant/data/product_repository.dart';
 import 'package:verdant/router/router.dart';
 import 'package:verdant/shell.dart';
 import 'package:verdant/utils/money.dart';
 import 'package:verdant/widgets/checkout/add_payment_sheet.dart';
+import 'package:verdant/widgets/checkout/order_summary_card.dart';
 import 'package:verdant/widgets/components/detail_header.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
 
@@ -43,6 +45,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     if (wallet.methods.isEmpty) return _addPaymentMethod();
     final addNew = await showModalBottomSheet<bool>(
       context: context,
+      useRootNavigator: true,
       useSafeArea: true,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
@@ -61,13 +64,19 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
 
     setState(() => _placing = true);
-    final summary = OrderSnapshot.fromCart(method);
+    final draft = Order.fromCart(method);
     final orderNumber = await processDemoPayment(
       method: method,
-      amount: summary.total,
+      amount: draft.total,
     );
     if (!mounted) return;
 
+    final summary = draft.placed(
+      number: orderNumber,
+      at: DateTime.now(),
+      address: addressBook.address,
+    );
+    orderHistory.add(summary);
     cart.clear();
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
@@ -93,7 +102,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             ),
             Expanded(
               child: ListenableBuilder(
-                listenable: Listenable.merge([cart, wallet]),
+                listenable: Listenable.merge([cart, wallet, addressBook]),
                 builder: (context, _) {
                   if (cart.isEmpty) {
                     return const Center(child: Text('Your cart is empty.'));
@@ -105,7 +114,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       children: [
                         const _Introduction(),
                         const SizedBox(height: 26),
-                        const _DeliveryAddress(),
+                        _DeliveryAddress(),
                         const SizedBox(height: 26),
                         // Not const: these read `cart`/`wallet` and must rebuild.
                         _ShippingOptions(),
@@ -115,7 +124,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           onAdd: _addPaymentMethod,
                         ),
                         const SizedBox(height: 26),
-                        _OrderSummary(),
+                        OrderSummaryCard(),
                         const SizedBox(height: 26),
                         _PurchaseAction(
                           total: cart.total,
@@ -243,14 +252,14 @@ class _DeliveryAddress extends StatelessWidget {
       color: scheme.onSurfaceVariant,
     );
 
-    // Saved address is static until user profiles exist.
+    final address = addressBook.address;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _SectionHeading(
           'Delivery address',
           actionLabel: 'Edit →',
-          onAction: () {},
+          onAction: () => pushRoot(context, AppRoutes.addresses),
         ),
         const SizedBox(height: 14),
         Container(
@@ -270,7 +279,7 @@ class _DeliveryAddress extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Maya Thompson',
+                      address.fullName,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -278,15 +287,10 @@ class _DeliveryAddress extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      '124 Maple Street, Apt 3B\n'
-                      'Portland, OR 97205\n'
-                      'United States',
-                      style: muted,
-                    ),
+                    Text(address.lines, style: muted),
                     const SizedBox(height: 6),
                     Text(
-                      '+1 (503) 555-0148',
+                      address.phone,
                       style: muted?.copyWith(fontSize: 12, height: null),
                     ),
                   ],
@@ -294,7 +298,7 @@ class _DeliveryAddress extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                'HOME',
+                address.label.toUpperCase(),
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontSize: 9,
                   fontWeight: FontWeight.w600,
@@ -311,7 +315,7 @@ class _DeliveryAddress extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Updates to maya.thompson@email.com',
+                'Updates to ${address.email}',
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: 12,
                   color: scheme.onSurfaceVariant,
@@ -585,229 +589,6 @@ class _ChoosePaymentSheet extends StatelessWidget {
   }
 }
 
-/// Snapshot of an order, kept for the confirmation screen after the
-/// cart has been emptied.
-class OrderSnapshot {
-  const OrderSnapshot({
-    required this.items,
-    required this.subtotal,
-    required this.discountLabel,
-    required this.discountAmount,
-    required this.shipping,
-    required this.delivery,
-    required this.total,
-    required this.paymentTitle,
-  });
-
-  factory OrderSnapshot.fromCart([PaymentMethod? method]) => OrderSnapshot(
-    items: cart.items,
-    subtotal: cart.subtotal,
-    discountLabel: cart.discount?.shortLabel,
-    discountAmount: cart.discountAmount,
-    shipping: cart.shipping,
-    delivery: cart.delivery,
-    total: cart.total,
-    paymentTitle: method?.title,
-  );
-
-  final List<CartItem> items;
-  final double subtotal;
-  final String? discountLabel;
-  final double discountAmount;
-  final ShippingOption shipping;
-  final double delivery;
-  final double total;
-  final String? paymentTitle;
-}
-
-class _OrderSummary extends StatelessWidget {
-  const _OrderSummary({this.data, this.title = 'Your green delivery'});
-
-  /// Defaults to the live cart.
-  final OrderSnapshot? data;
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final d = data ?? OrderSnapshot.fromCart();
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: scheme.surface,
-        boxShadow: AppShadows.cardSoft(scheme),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _SectionHeading(title),
-          for (final item in d.items) ...[
-            const SizedBox(height: 16),
-            _OrderItemRow(item: item),
-          ],
-          const SizedBox(height: 16),
-          Divider(height: 1, thickness: 1, color: scheme.outlineVariant),
-          const SizedBox(height: 16),
-          _SummaryRow(label: 'Subtotal', value: formatMoney(d.subtotal)),
-          if (d.discountLabel != null) ...[
-            const SizedBox(height: 16),
-            _SummaryRow(
-              label: d.discountLabel!,
-              value: '−${formatMoney(d.discountAmount)}',
-            ),
-          ],
-          const SizedBox(height: 16),
-          _SummaryRow(
-            label: d.shipping.label,
-            value: d.delivery == 0 ? 'Free' : formatMoney(d.delivery),
-          ),
-          const SizedBox(height: 16),
-          Divider(height: 1, thickness: 1, color: scheme.outlineVariant),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Total · USD',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: scheme.onSurface,
-                ),
-              ),
-              Text(
-                formatMoney(d.total),
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontSize: 21,
-                  fontWeight: FontWeight.w600,
-                  color: scheme.onSurface,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            d.paymentTitle == null
-                ? 'Applicable taxes included.'
-                : 'Paid with ${d.paymentTitle}. Applicable taxes included.',
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontSize: 10,
-              height: 1.5,
-              color: scheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _OrderItemRow extends StatelessWidget {
-  const _OrderItemRow({required this.item});
-
-  final CartItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final placeholder = Icon(
-      LucideIcons.sprout,
-      size: 18,
-      color: scheme.onSurfaceVariant,
-    );
-
-    return Row(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            width: 48,
-            height: 48,
-            color: scheme.surfaceContainer,
-            child: item.image.isEmpty
-                ? placeholder
-                : Image(
-                    image: imageFor(item.image),
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => placeholder,
-                  ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item.name,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: scheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Qty ${item.quantity}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontSize: 10,
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          formatMoney(item.total),
-          style: theme.textTheme.bodySmall?.copyWith(
-            fontSize: 12,
-            color: scheme.onSurface,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontSize: 13,
-            color: scheme.onSurfaceVariant,
-          ),
-        ),
-        Text(
-          value,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: scheme.onSurface,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _PurchaseAction extends StatelessWidget {
   const _PurchaseAction({
     required this.total,
@@ -949,7 +730,7 @@ class OrderConfirmationPage extends StatelessWidget {
   });
 
   final String orderNumber;
-  final OrderSnapshot summary;
+  final Order summary;
 
   void _done(BuildContext context, String tab) {
     Navigator.of(context).popUntil((route) => route.isFirst);
@@ -1014,7 +795,7 @@ class OrderConfirmationPage extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   '${_arrivalLabel(summary.shipping)} · '
-                  'we’ll email maya.thompson@email.com along the way.',
+                  'we’ll email ${summary.address?.email ?? addressBook.address.email} along the way.',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontSize: 13,
@@ -1023,7 +804,7 @@ class OrderConfirmationPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 26),
-                _OrderSummary(data: summary, title: 'Your order'),
+                OrderSummaryCard(data: summary, title: 'Your order'),
                 const SizedBox(height: 26),
                 FilledButton(
                   onPressed: () => _done(context, AppRoutes.homepage),

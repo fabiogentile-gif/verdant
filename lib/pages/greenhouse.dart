@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/router/router.dart';
-import 'package:verdant/search_field.dart';
+import 'package:verdant/widgets/components/standard_app_bar.dart';
 import 'package:verdant/widgets/components/filter_chip.dart';
 import 'package:verdant/widgets/components/page_header.dart';
 import 'package:verdant/widgets/components/product_card.dart';
@@ -9,39 +9,12 @@ import 'package:verdant/widgets/components/scrollview_list.dart';
 import 'package:verdant/widgets/components/search_bar.dart';
 
 import 'package:verdant/data/cart.dart';
+import 'package:verdant/data/favorites.dart';
+import 'package:verdant/data/shop_filter.dart';
+import 'package:verdant/utils/money.dart';
 import 'package:verdant/data/product_repository.dart';
 import 'package:verdant/pages/cart.dart' show showAddedToCart;
 import 'package:verdant/models/product.dart';
-
-class ShopProduct {
-  const ShopProduct({
-    required this.id,
-    required this.name,
-    required this.price,
-    required this.image,
-    required this.summary,
-    this.tag,
-  });
-
-  factory ShopProduct.fromSummary(ProductSummary p) => ShopProduct(
-    id: p.id,
-    name: p.name,
-    price:
-        '\$${p.price % 1 == 0 ? p.price.toStringAsFixed(0) : p.price.toStringAsFixed(2)}',
-    image: imageFor(p.image),
-    tag: p.tag,
-    summary: p,
-  );
-
-  final int id;
-  final String name;
-  final String price;
-  final ImageProvider image;
-  final String? tag;
-
-  /// Source data, used e.g. when adding the product to the cart.
-  final ProductSummary summary;
-}
 
 class Greenhouse extends StatefulWidget {
   const Greenhouse({super.key});
@@ -51,48 +24,131 @@ class Greenhouse extends StatefulWidget {
 }
 
 class _GreenhouseState extends State<Greenhouse> {
-  int _categoryIndex = 0;
-  final Set<int> _favorites = {};
-
-  static const _categories = [
-    'All',
-    'Indoor Plants',
-    'Outdoor Plants',
-    'Pots',
-    'Soil',
-    'Fertilizers',
-    'Accessories',
-  ];
-
-  late Future<List<ShopProduct>> _products;
+  late Future<List<ProductSummary>> _products;
+  late final TextEditingController _search;
 
   @override
   void initState() {
     super.initState();
-    _products = _load();
+    _products = productRepository.getProducts();
+    _search = TextEditingController(text: shopFilter.query);
+    shopFilter.addListener(_syncSearch);
   }
 
-  Future<List<ShopProduct>> _load() async {
-    final list = await productRepository.getProducts();
-    return list.map(ShopProduct.fromSummary).toList();
+  @override
+  void dispose() {
+    shopFilter.removeListener(_syncSearch);
+    _search.dispose();
+    super.dispose();
   }
 
-  void _toggleFavorite(int id) {
-    setState(() {
-      if (!_favorites.remove(id)) _favorites.add(id);
-    });
+  /// Keeps the field in sync when another page sets the query.
+  void _syncSearch() {
+    if (_search.text != shopFilter.query) _search.text = shopFilter.query;
+  }
+
+  void _reload() {
+    final repo = productRepository;
+    if (repo is ApiProductRepository) repo.clearCache();
+    setState(() => _products = productRepository.getProducts());
+  }
+
+  Future<void> _pickSort() async {
+    final picked = await showModalBottomSheet<ShopSort>(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) {
+        final scheme = Theme.of(context).colorScheme;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final s in ShopSort.values)
+                  ListTile(
+                    title: Text(s.label),
+                    trailing: s == shopFilter.sort
+                        ? Icon(
+                            LucideIcons.check,
+                            size: 18,
+                            color: scheme.primary,
+                          )
+                        : null,
+                    onTap: () => Navigator.of(context).pop(s),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (picked != null) shopFilter.sort = picked;
+  }
+
+  Future<void> _openFilters() {
+    return showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) => ListenableBuilder(
+        listenable: shopFilter,
+        builder: (context, _) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SwitchListTile(
+                  title: const Text('In stock only'),
+                  value: shopFilter.inStockOnly,
+                  onChanged: (v) => shopFilter.inStockOnly = v,
+                ),
+                SwitchListTile(
+                  title: const Text('My favourites only'),
+                  value: shopFilter.favoritesOnly,
+                  onChanged: (v) => shopFilter.favoritesOnly = v,
+                ),
+                TextButton(
+                  onPressed: () {
+                    shopFilter.clear();
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Clear all filters'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([shopFilter, favorites, cart]),
+      builder: (context, _) => _build(context),
+    );
+  }
+
+  Widget _build(BuildContext context) {
     return Scaffold(
       appBar: StandardAppBar(
         title: 'The greenhouse',
         actionIcon: LucideIcons.shoppingBag,
-        onActionTap: () => Navigator.of(
-          context,
-          rootNavigator: true,
-        ).pushNamed(AppRoutes.cart),
+        actionLabel: 'Your cart',
+        badgeCount: cart.itemCount,
+        onActionTap: () => pushRoot(context, AppRoutes.cart),
       ),
       body: ScrollViewNoStretch(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
@@ -104,26 +160,32 @@ class _GreenhouseState extends State<Greenhouse> {
               subtitle: 'Thoughtfully grown plants and beautiful things to help them thrive.',
             ),
             const SizedBox(height: 24),
-            const AppSearchField(hintText: 'Search plants, pots & essentials'),
+            AppSearchField(
+              controller: _search,
+              hintText: 'Search plants, pots & essentials',
+              onChanged: (v) => shopFilter.query = v,
+            ),
             const SizedBox(height: 24),
             Wrap(
               spacing: 8,
               runSpacing: 9,
               children: [
-                for (int i = 0; i < _categories.length; i++)
+                for (final c in ShopCategory.values)
                   AppFilterChip(
-                    label: _categories[i],
-                    selected: _categoryIndex == i,
-                    onTap: () => setState(() => _categoryIndex = i),
+                    label: c.label,
+                    selected: shopFilter.category == c,
+                    onTap: () => shopFilter.category = c,
                   ),
               ],
             ),
             const SizedBox(height: 24),
-            _FeaturedCollection(onTap: () {}),
+            _FeaturedCollection(
+              onTap: () => shopFilter.show(query: 'Easy care'),
+            ),
             const SizedBox(height: 24),
             const _DeliveryNote(),
             const SizedBox(height: 24),
-            FutureBuilder<List<ShopProduct>>(
+            FutureBuilder<List<ProductSummary>>(
               future: _products,
               builder: (context, snap) {
                 if (snap.connectionState != ConnectionState.done) {
@@ -133,47 +195,84 @@ class _GreenhouseState extends State<Greenhouse> {
                   );
                 }
                 if (snap.hasError) {
+                  final error = snap.error;
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 32),
-                    child: Center(
-                      child: TextButton(
-                        onPressed: () => setState(() => _products = _load()),
-                        child: const Text("Couldn't load products. Retry"),
-                      ),
+                    child: Column(
+                      children: [
+                        Text(
+                          error is ProductLoadException
+                              ? error.message
+                              : 'Couldn’t load products.',
+                          textAlign: TextAlign.center,
+                        ),
+                        TextButton(
+                          onPressed: _reload,
+                          child: const Text('Try again'),
+                        ),
+                      ],
                     ),
                   );
                 }
                 final all = snap.data!;
-                final favorites = all.take(4).toList();
-                final recommended = all.skip(4).toList();
+                final visible = shopFilter.apply(
+                  all,
+                  favoriteIds: favorites.ids,
+                );
+                final controls = _SortAndFilter(
+                  countLabel: shopFilter.isActive
+                      ? '${visible.length} of ${all.length} finds'
+                      : '${all.length} thoughtfully chosen finds',
+                  sortLabel: shopFilter.sort.label,
+                  activeFilters: shopFilter.extraFilterCount,
+                  onSort: _pickSort,
+                  onFilter: _openFilters,
+                );
+
+                if (shopFilter.isActive) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _SectionHeading(
+                        shopFilter.query.trim().isNotEmpty
+                            ? 'Results for “${shopFilter.query.trim()}”'
+                            : shopFilter.category.label,
+                      ),
+                      const SizedBox(height: 16),
+                      controls,
+                      const SizedBox(height: 16),
+                      if (visible.isEmpty)
+                        _EmptyResults(onClear: shopFilter.clear)
+                      else
+                        _ProductGrid(products: visible),
+                    ],
+                  );
+                }
+
+                final plants = visible
+                    .where((p) => p.category == 'plants')
+                    .toList();
+                final essentials = visible
+                    .where((p) => p.category != 'plants')
+                    .toList();
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const _SectionHeading('The greenhouse favorites'),
                     const SizedBox(height: 16),
-                    _SortAndFilter(
-                      countLabel: '${all.length} thoughtfully chosen finds',
-                    ),
+                    controls,
                     const SizedBox(height: 16),
-                    _ProductGrid(
-                      products: favorites,
-                      favorites: _favorites,
-                      onFavoriteTap: _toggleFavorite,
-                    ),
-                    if (recommended.isNotEmpty) ...[
+                    _ProductGrid(products: plants),
+                    if (essentials.isNotEmpty) ...[
                       const SizedBox(height: 24),
-                      const _SectionHeading('Good for you jungle'),
+                      const _SectionHeading('Good for your jungle'),
                       const SizedBox(height: 16),
                       _SectionSubtitle(
                         'A few essentials for your Monstera and friends',
                       ),
                       const SizedBox(height: 16),
-                      _ProductGrid(
-                        products: recommended,
-                        favorites: _favorites,
-                        onFavoriteTap: _toggleFavorite,
-                      ),
+                      _ProductGrid(products: essentials),
                     ],
                   ],
                 );
@@ -181,6 +280,50 @@ class _GreenhouseState extends State<Greenhouse> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _EmptyResults extends StatelessWidget {
+  const _EmptyResults({required this.onClear});
+
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: scheme.primaryContainer,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Icon(LucideIcons.sprout, size: 28, color: scheme.primary),
+          const SizedBox(height: 10),
+          Text(
+            'Nothing growing here yet.',
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: scheme.onSecondaryContainer,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Try another search or category.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: 12,
+              color: scheme.onSecondaryContainer,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextButton(onPressed: onClear, child: const Text('Show everything')),
+        ],
       ),
     );
   }
@@ -300,9 +443,19 @@ class _FeaturedCollection extends StatelessWidget {
 }
 
 class _SortAndFilter extends StatelessWidget {
-  const _SortAndFilter({required this.countLabel});
+  const _SortAndFilter({
+    required this.countLabel,
+    required this.sortLabel,
+    required this.activeFilters,
+    required this.onSort,
+    required this.onFilter,
+  });
 
   final String countLabel;
+  final String sortLabel;
+  final int activeFilters;
+  final VoidCallback onSort;
+  final VoidCallback onFilter;
 
   @override
   Widget build(BuildContext context) {
@@ -310,33 +463,51 @@ class _SortAndFilter extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          countLabel,
-          style: theme.textTheme.bodySmall?.copyWith(
-            fontSize: 12,
-            color: scheme.onSurfaceVariant,
+        Expanded(
+          child: Text(
+            countLabel,
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: 12,
+              color: scheme.onSurfaceVariant,
+            ),
           ),
         ),
-        Row(
-          children: [
-            Icon(
+        IconButton(
+          tooltip: 'Filters',
+          onPressed: onFilter,
+          icon: Badge(
+            isLabelVisible: activeFilters > 0,
+            label: Text('$activeFilters'),
+            backgroundColor: scheme.primary,
+            child: Icon(
               LucideIcons.slidersHorizontal,
               size: 18,
               color: scheme.onSurface,
             ),
-            const SizedBox(width: 14),
-            Text(
-              'Featured',
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontSize: 11,
-                color: scheme.onSurface,
+          ),
+        ),
+        TextButton(
+          onPressed: onSort,
+          style: TextButton.styleFrom(
+            foregroundColor: scheme.onSurface,
+            minimumSize: const Size(48, 48),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                sortLabel,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontSize: 11,
+                  color: scheme.onSurface,
+                ),
               ),
-            ),
-            const SizedBox(width: 4),
-            Icon(LucideIcons.chevronDown, size: 13, color: scheme.onSurface),
-          ],
+              const SizedBox(width: 4),
+              Icon(LucideIcons.chevronDown, size: 13, color: scheme.onSurface),
+            ],
+          ),
         ),
       ],
     );
@@ -344,31 +515,23 @@ class _SortAndFilter extends StatelessWidget {
 }
 
 class _ProductGrid extends StatelessWidget {
-  const _ProductGrid({
-    required this.products,
-    required this.favorites,
-    required this.onFavoriteTap,
-  });
+  const _ProductGrid({required this.products});
 
-  final List<ShopProduct> products;
-  final Set<int> favorites;
-  final ValueChanged<int> onFavoriteTap;
+  final List<ProductSummary> products;
 
-  Widget _card(BuildContext context, ShopProduct p) {
+  Widget _card(BuildContext context, ProductSummary p) {
     return ProductCard(
       name: p.name,
-      price: p.price,
-      image: p.image,
+      price: formatCompactMoney(p.price),
+      image: imageFor(p.image),
+      tag: p.tag,
       isFavorite: favorites.contains(p.id),
-      onFavoriteTap: () => onFavoriteTap(p.id),
+      onFavoriteTap: () => favorites.toggle(p.id),
       onAddTap: () {
-        cart.addSummary(p.summary);
+        cart.addSummary(p);
         showAddedToCart(context, p.name);
       },
-      onTap: () => Navigator.of(
-        context,
-        rootNavigator: true,
-      ).pushNamed(AppRoutes.productPath(p.id)),
+      onTap: () => pushRoot(context, AppRoutes.productPath(p.id)),
     );
   }
 

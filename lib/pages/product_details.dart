@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:verdant/theme/theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/cart.dart';
+import 'package:verdant/data/favorites.dart';
+import 'package:verdant/data/shop_filter.dart';
+import 'package:verdant/utils/money.dart';
 import 'package:verdant/data/product_repository.dart';
 import 'package:verdant/pages/cart.dart' show showAddedToCart;
 import 'package:verdant/models/product.dart';
@@ -9,11 +12,6 @@ import 'package:verdant/router/router.dart';
 import 'package:verdant/widgets/components/filter_chip.dart';
 import 'package:verdant/widgets/components/product_card.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
-
-ImageProvider _imageFor(String source) {
-  if (source.startsWith('http')) return NetworkImage(source);
-  return AssetImage(source);
-}
 
 IconData? _iconFor(String? key) {
   switch (key) {
@@ -28,12 +26,6 @@ IconData? _iconFor(String? key) {
   }
 }
 
-String _price(double value, {bool compact = false}) {
-  final isWhole = value == value.roundToDouble();
-  if (compact && isWhole) return '\$${value.toInt()}';
-  return '\$${value.toStringAsFixed(2)}';
-}
-
 class ProductDetailsPage extends StatefulWidget {
   const ProductDetailsPage({super.key, required this.productId});
 
@@ -46,10 +38,9 @@ class ProductDetailsPage extends StatefulWidget {
 class _ProductDetailsPageState extends State<ProductDetailsPage> {
   late Future<ProductDetails> _future;
   final _pageController = PageController();
-  final Set<int> _relatedFavorites = {};
+
   int _imageIndex = 0;
   int _quantity = 1;
-  bool _favorite = false;
 
   @override
   void initState() {
@@ -74,9 +65,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         child: Column(
           children: [
             _DetailHeader(
-              favorite: _favorite,
+              favorite: favorites.contains(widget.productId),
               onBack: () => Navigator.of(context).maybePop(),
-              onFavorite: () => setState(() => _favorite = !_favorite),
+              onFavorite: () =>
+                  setState(() => favorites.toggle(widget.productId)),
             ),
             Expanded(
               child: FutureBuilder<ProductDetails>(
@@ -93,7 +85,13 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     debugPrint(
                       'Product load error: ${snapshot.error}\n${snapshot.stackTrace}',
                     );
-                    return _ErrorState(onRetry: () => setState(_load));
+                    final error = snapshot.error;
+                    return _ErrorState(
+                      message: error is ProductLoadException
+                          ? error.message
+                          : 'We couldn’t load this product.',
+                      onRetry: () => setState(_load),
+                    );
                   }
                   return _buildContent(context, snapshot.data!);
                 },
@@ -160,7 +158,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _price(p.price),
+                formatMoney(p.price),
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontSize: 25,
                   fontWeight: FontWeight.w500,
@@ -199,7 +197,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     label: tag.label,
                     selected: false,
                     leadingIcon: _iconFor(tag.icon),
-                    onTap: () {},
+                    onTap: () {
+                      shopFilter.show(query: tag.label);
+                      goToTab(context, AppRoutes.greenhouse);
+                    },
                   ),
               ],
             ),
@@ -278,13 +279,20 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           // Correlati
           if (p.related.isNotEmpty) ...[
             const SizedBox(height: 24),
-            _SectionHeading('Better together', actionLabel: 'View all →'),
+            _SectionHeading(
+              'Better together',
+              actionLabel: 'View all →',
+              onAction: () {
+                shopFilter.show();
+                goToTab(context, AppRoutes.greenhouse);
+              },
+            ),
             const SizedBox(height: 16),
             _RelatedGrid(
               products: p.related,
-              favorites: _relatedFavorites,
+              favorites: favorites.ids,
               onFavoriteTap: (id) => setState(() {
-                if (!_relatedFavorites.remove(id)) _relatedFavorites.add(id);
+                favorites.toggle(id);
               }),
             ),
           ],
@@ -390,7 +398,7 @@ class _Gallery extends StatelessWidget {
                   itemBuilder: (_, i) => ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: Image(
-                      image: _imageFor(images[i]),
+                      image: imageFor(images[i]),
                       fit: BoxFit.cover,
                       width: double.infinity,
                     ),
@@ -556,7 +564,7 @@ class _PurchaseCard extends StatelessWidget {
             onPressed: product.inStock ? onAddToCart : null,
             icon: const Icon(LucideIcons.arrowRight, size: 18),
             label: Text(
-              'Add to cart · ${_price(total)}',
+              'Add to cart · ${formatMoney(total)}',
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             style: FilledButton.styleFrom(
@@ -587,10 +595,11 @@ class _PurchaseCard extends StatelessWidget {
 }
 
 class _SectionHeading extends StatelessWidget {
-  const _SectionHeading(this.title, {this.actionLabel});
+  const _SectionHeading(this.title, {this.actionLabel, this.onAction});
 
   final String title;
   final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -612,12 +621,19 @@ class _SectionHeading extends StatelessWidget {
         ),
         if (actionLabel != null) ...[
           const SizedBox(width: 8),
-          Text(
-            actionLabel!,
-            style: theme.textTheme.labelSmall?.copyWith(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: scheme.primary,
+          TextButton(
+            onPressed: onAction,
+            style: TextButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
+            child: Text(
+              actionLabel!,
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: scheme.primary,
+              ),
             ),
           ),
         ],
@@ -762,8 +778,8 @@ class _RelatedGrid extends StatelessWidget {
   Widget _card(BuildContext context, ProductSummary p) {
     return ProductCard(
       name: p.name,
-      price: _price(p.price, compact: true),
-      image: _imageFor(p.image),
+      price: formatCompactMoney(p.price),
+      image: imageFor(p.image),
       tag: p.tag,
       isFavorite: favorites.contains(p.id),
       onFavoriteTap: () => onFavoriteTap(p.id),
@@ -803,7 +819,9 @@ class _RelatedGrid extends StatelessWidget {
 }
 
 class _ErrorState extends StatelessWidget {
-  const _ErrorState({required this.onRetry});
+  const _ErrorState({required this.message, required this.onRetry});
+
+  final String message;
 
   final VoidCallback onRetry;
 
@@ -817,7 +835,8 @@ class _ErrorState extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'We couldn’t load this product.',
+            message,
+            textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: scheme.onSurfaceVariant,
             ),
