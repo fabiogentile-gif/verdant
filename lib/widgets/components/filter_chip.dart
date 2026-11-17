@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Pill-shaped chip with optional leading and trailing icons.
 class AppFilterChip extends StatelessWidget {
   const AppFilterChip({
     super.key,

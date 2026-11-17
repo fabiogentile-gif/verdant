@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+/// Shop card: image, tag, name, price, favourite and add-to-cart buttons.
 class ProductCard extends StatelessWidget {
   const ProductCard({
     super.key,

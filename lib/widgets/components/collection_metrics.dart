@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Three numbers: plants in total, healthy and needing care.
 class CollectionMetrics extends StatelessWidget {
   const CollectionMetrics({
     super.key,
@@ -32,6 +33,7 @@ class CollectionMetrics extends StatelessWidget {
   }
 }
 
+/// One number with its label.
 class _Metric extends StatelessWidget {
   const _Metric({required this.value, required this.label});
 

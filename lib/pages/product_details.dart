@@ -13,6 +13,7 @@ import 'package:verdant/widgets/components/filter_chip.dart';
 import 'package:verdant/widgets/components/product_card.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
 
+/// Icon for a tag or care step key sent by the backend ("sprout", "sun", "droplets").
 IconData? _iconFor(String? key) {
   switch (key) {
     case 'sprout':
@@ -26,6 +27,7 @@ IconData? _iconFor(String? key) {
   }
 }
 
+/// Product page: gallery, purchase card, care guide and related products.
 class ProductDetailsPage extends StatefulWidget {
   const ProductDetailsPage({super.key, required this.productId});
 
@@ -35,6 +37,7 @@ class ProductDetailsPage extends StatefulWidget {
   State<ProductDetailsPage> createState() => _ProductDetailsPageState();
 }
 
+/// Loads the product and holds the selected quantity.
 class _ProductDetailsPageState extends State<ProductDetailsPage> {
   late Future<ProductDetails> _future;
   final _pageController = PageController();
@@ -207,7 +210,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           ],
           const SizedBox(height: 24),
 
-          // Acquisto
+          // Purchase
           _PurchaseCard(
             product: p,
             quantity: _quantity,
@@ -223,7 +226,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             },
           ),
 
-          // Descrizione botanica
+          // Botanical description
           if (p.description != null) ...[
             const SizedBox(height: 24),
             if (p.descriptionTitle != null) ...[
@@ -276,7 +279,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             const _CareAssistantNote(),
           ],
 
-          // Correlati
+          // Related products
           if (p.related.isNotEmpty) ...[
             const SizedBox(height: 24),
             _SectionHeading(
@@ -302,6 +305,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   }
 }
 
+/// Top bar: back button, "Plant profile" title and favourite button.
 class _DetailHeader extends StatelessWidget {
   const _DetailHeader({
     required this.favorite,
@@ -363,6 +367,7 @@ class _DetailHeader extends StatelessWidget {
   }
 }
 
+/// Swipeable product photos with page indicators.
 class _Gallery extends StatelessWidget {
   const _Gallery({
     required this.images,
@@ -431,6 +436,7 @@ class _Gallery extends StatelessWidget {
   }
 }
 
+/// Small uppercase label above the product name.
 class _Eyebrow extends StatelessWidget {
   const _Eyebrow(this.text);
 
@@ -452,6 +458,7 @@ class _Eyebrow extends StatelessWidget {
   }
 }
 
+/// Price, quantity and the "Add to cart" button.
 class _PurchaseCard extends StatelessWidget {
   const _PurchaseCard({
     required this.product,
@@ -594,6 +601,7 @@ class _PurchaseCard extends StatelessWidget {
   }
 }
 
+/// Title of a section of the product page.
 class _SectionHeading extends StatelessWidget {
   const _SectionHeading(this.title, {this.actionLabel, this.onAction});
 
@@ -642,6 +650,7 @@ class _SectionHeading extends StatelessWidget {
   }
 }
 
+/// One label / value fact about the product.
 class _Characteristic extends StatelessWidget {
   const _Characteristic({required this.label, required this.value});
 
@@ -671,6 +680,7 @@ class _Characteristic extends StatelessWidget {
   }
 }
 
+/// One care step with its icon.
 class _CareRow extends StatelessWidget {
   const _CareRow({required this.step});
 
@@ -726,6 +736,7 @@ class _CareRow extends StatelessWidget {
   }
 }
 
+/// Note about the reminders Verdant sets up after purchase.
 class _CareAssistantNote extends StatelessWidget {
   const _CareAssistantNote();
 
@@ -764,6 +775,7 @@ class _CareAssistantNote extends StatelessWidget {
   }
 }
 
+/// Grid of related products.
 class _RelatedGrid extends StatelessWidget {
   const _RelatedGrid({
     required this.products,
@@ -818,6 +830,7 @@ class _RelatedGrid extends StatelessWidget {
   }
 }
 
+/// Shown when the product cannot be loaded, with a retry button.
 class _ErrorState extends StatelessWidget {
   const _ErrorState({required this.message, required this.onRetry});
 

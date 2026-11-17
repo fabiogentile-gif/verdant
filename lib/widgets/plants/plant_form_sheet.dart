@@ -24,6 +24,7 @@ Future<OwnedPlant?> showPlantFormSheet(
   );
 }
 
+/// Sheet content: species (only when adding), name and room.
 class _PlantFormSheet extends StatefulWidget {
   const _PlantFormSheet({this.plant});
 
@@ -33,6 +34,7 @@ class _PlantFormSheet extends StatefulWidget {
   State<_PlantFormSheet> createState() => _PlantFormSheetState();
 }
 
+/// Form controllers, selected species and validation.
 class _PlantFormSheetState extends State<_PlantFormSheet> {
   static const _suggestedRooms = [
     'Living room',
@@ -256,6 +258,7 @@ class _PlantFormSheetState extends State<_PlantFormSheet> {
   }
 }
 
+/// Label above a form field.
 class _Label extends StatelessWidget {
   const _Label(this.text);
 
@@ -275,6 +278,7 @@ class _Label extends StatelessWidget {
   }
 }
 
+/// One selectable species with its photo.
 class _SpeciesOption extends StatelessWidget {
   const _SpeciesOption({
     required this.species,

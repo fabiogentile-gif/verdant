@@ -172,6 +172,7 @@ class PersonalPlantDetails extends StatelessWidget {
 // Portrait + identity
 // ---------------------------------------------------------------------------
 
+/// Large photo of the plant.
 class _PlantPortrait extends StatelessWidget {
   const _PlantPortrait({required this.image, required this.room});
 
@@ -227,6 +228,7 @@ class _PlantPortrait extends StatelessWidget {
   }
 }
 
+/// Name, species, room and health status.
 class _PlantIdentity extends StatelessWidget {
   const _PlantIdentity({required this.plant, required this.guide});
 
@@ -331,6 +333,7 @@ class _PlantIdentity extends StatelessWidget {
 // Today's care
 // ---------------------------------------------------------------------------
 
+/// Next care due (watering by default) with the action to mark it as done.
 class _TodaysCare extends StatelessWidget {
   const _TodaysCare({required this.plant, required this.guide});
 
@@ -481,6 +484,7 @@ class _TodaysCare extends StatelessWidget {
 // Shared pieces
 // ---------------------------------------------------------------------------
 
+/// Title of a section with an optional action.
 class _SectionHeading extends StatelessWidget {
   const _SectionHeading({required this.title, this.actionLabel, this.onAction});
 
@@ -529,6 +533,7 @@ class _SectionHeading extends StatelessWidget {
   }
 }
 
+/// Rounded square with an icon, used in front of list rows.
 class _IconBox extends StatelessWidget {
   const _IconBox({
     required this.icon,
@@ -562,6 +567,7 @@ class _IconBox extends StatelessWidget {
 // Care guide
 // ---------------------------------------------------------------------------
 
+/// Care requirements of the species (light, water, humidity…).
 class _CareGuide extends StatelessWidget {
   const _CareGuide({required this.requirements});
 
@@ -615,6 +621,7 @@ class _CareGuide extends StatelessWidget {
   }
 }
 
+/// Seasonal advice for the species.
 class _SeasonalNote extends StatelessWidget {
   const _SeasonalNote({required this.guide});
 
@@ -681,6 +688,7 @@ class _SeasonalNote extends StatelessWidget {
 // Botanical notes
 // ---------------------------------------------------------------------------
 
+/// Botanical notes and pet safety of the species.
 class _BotanicalNotes extends StatelessWidget {
   const _BotanicalNotes({required this.guide});
 
@@ -741,6 +749,7 @@ class _BotanicalNotes extends StatelessWidget {
 // Care rhythm (reminders)
 // ---------------------------------------------------------------------------
 
+/// The plant's reminders, with a shortcut to add a missing one.
 class _CareRhythm extends StatelessWidget {
   const _CareRhythm({required this.plant});
 
@@ -876,6 +885,7 @@ class _CareRhythm extends StatelessWidget {
   }
 }
 
+/// Care already done for this plant.
 class _CareHistory extends StatefulWidget {
   const _CareHistory({required this.plant});
 
@@ -885,6 +895,7 @@ class _CareHistory extends StatefulWidget {
   State<_CareHistory> createState() => _CareHistoryState();
 }
 
+/// Shows the latest entries and expands to the full history.
 class _CareHistoryState extends State<_CareHistory> {
   static const _collapsed = 3;
   bool _showAll = false;

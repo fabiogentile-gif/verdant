@@ -34,6 +34,7 @@ class CheckoutPage extends StatefulWidget {
   State<CheckoutPage> createState() => _CheckoutPageState();
 }
 
+/// Places the order: simulates the payment, saves the order and empties the cart.
 class _CheckoutPageState extends State<CheckoutPage> {
   bool _placing = false;
 
@@ -149,6 +150,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 // Sections
 // ---------------------------------------------------------------------------
 
+/// Page title and a short explanation.
 class _Introduction extends StatelessWidget {
   const _Introduction();
 
@@ -194,6 +196,7 @@ class _Introduction extends StatelessWidget {
   }
 }
 
+/// Title of a checkout section with an optional action.
 class _SectionHeading extends StatelessWidget {
   const _SectionHeading(this.title, {this.actionLabel, this.onAction});
 
@@ -239,6 +242,7 @@ class _SectionHeading extends StatelessWidget {
   }
 }
 
+/// The saved delivery address, with a link to edit it.
 class _DeliveryAddress extends StatelessWidget {
   const _DeliveryAddress();
 
@@ -329,6 +333,7 @@ class _DeliveryAddress extends StatelessWidget {
   }
 }
 
+/// List of the delivery choices.
 class _ShippingOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -345,6 +350,7 @@ class _ShippingOptions extends StatelessWidget {
   }
 }
 
+/// One delivery choice with its price and arrival dates.
 class _ShippingTile extends StatelessWidget {
   const _ShippingTile({required this.option});
 
@@ -403,6 +409,7 @@ class _ShippingTile extends StatelessWidget {
   }
 }
 
+/// The selected payment method, or a prompt to add one.
 class _PaymentChoice extends StatelessWidget {
   const _PaymentChoice({required this.onChange, required this.onAdd});
 
@@ -466,6 +473,7 @@ class _PaymentChoice extends StatelessWidget {
   }
 }
 
+/// One saved payment method.
 class _PaymentTile extends StatelessWidget {
   const _PaymentTile({
     required this.method,
@@ -541,6 +549,7 @@ class _PaymentTile extends StatelessWidget {
   }
 }
 
+/// Bottom sheet to pick another saved payment method or add a new one.
 class _ChoosePaymentSheet extends StatelessWidget {
   const _ChoosePaymentSheet();
 
@@ -589,6 +598,7 @@ class _ChoosePaymentSheet extends StatelessWidget {
   }
 }
 
+/// Total and the "Place order" button.
 class _PurchaseAction extends StatelessWidget {
   const _PurchaseAction({
     required this.total,
@@ -659,6 +669,7 @@ class _PurchaseAction extends StatelessWidget {
 // Shared controls
 // ---------------------------------------------------------------------------
 
+/// Card with a highlighted border when selected.
 class _SelectableCard extends StatelessWidget {
   const _SelectableCard({
     required this.selected,
@@ -693,6 +704,7 @@ class _SelectableCard extends StatelessWidget {
   }
 }
 
+/// Radio-style indicator used by the selectable cards.
 class _RadioDot extends StatelessWidget {
   const _RadioDot({required this.selected});
 

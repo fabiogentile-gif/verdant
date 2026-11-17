@@ -16,6 +16,7 @@ import 'package:verdant/data/product_repository.dart';
 import 'package:verdant/pages/cart.dart' show showAddedToCart;
 import 'package:verdant/models/product.dart';
 
+/// Shop tab: search, categories, sorting and the product grid.
 class Greenhouse extends StatefulWidget {
   const Greenhouse({super.key});
 
@@ -23,6 +24,7 @@ class Greenhouse extends StatefulWidget {
   State<Greenhouse> createState() => _GreenhouseState();
 }
 
+/// Loads the catalogue once and applies [shopFilter] to it.
 class _GreenhouseState extends State<Greenhouse> {
   late Future<List<ProductSummary>> _products;
   late final TextEditingController _search;
@@ -285,6 +287,7 @@ class _GreenhouseState extends State<Greenhouse> {
   }
 }
 
+/// Shown when no product matches the search or filters.
 class _EmptyResults extends StatelessWidget {
   const _EmptyResults({required this.onClear});
 
@@ -329,6 +332,7 @@ class _EmptyResults extends StatelessWidget {
   }
 }
 
+/// Title of a section of the shop.
 class _SectionHeading extends StatelessWidget {
   const _SectionHeading(this.title);
 
@@ -350,6 +354,7 @@ class _SectionHeading extends StatelessWidget {
   }
 }
 
+/// Muted line under a section title.
 class _SectionSubtitle extends StatelessWidget {
   const _SectionSubtitle(this.text);
 
@@ -370,6 +375,7 @@ class _SectionSubtitle extends StatelessWidget {
   }
 }
 
+/// Banner for the "Easy-grow edit" collection.
 class _FeaturedCollection extends StatelessWidget {
   const _FeaturedCollection({this.onTap});
 
@@ -442,6 +448,7 @@ class _FeaturedCollection extends StatelessWidget {
   }
 }
 
+/// Result count with the sort and filter buttons.
 class _SortAndFilter extends StatelessWidget {
   const _SortAndFilter({
     required this.countLabel,
@@ -514,6 +521,7 @@ class _SortAndFilter extends StatelessWidget {
   }
 }
 
+/// Two-column grid of product cards.
 class _ProductGrid extends StatelessWidget {
   const _ProductGrid({required this.products});
 
@@ -562,6 +570,7 @@ class _ProductGrid extends StatelessWidget {
   }
 }
 
+/// Free-shipping note at the bottom of the shop.
 class _DeliveryNote extends StatelessWidget {
   const _DeliveryNote();
 

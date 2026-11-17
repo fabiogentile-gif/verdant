@@ -104,6 +104,7 @@ class OrderSummaryCard extends StatelessWidget {
   }
 }
 
+/// One product line: image, name, quantity and price.
 class _OrderItemRow extends StatelessWidget {
   const _OrderItemRow({required this.item});
 
@@ -173,6 +174,7 @@ class _OrderItemRow extends StatelessWidget {
   }
 }
 
+/// One label / amount row of the totals.
 class _SummaryRow extends StatelessWidget {
   const _SummaryRow({required this.label, required this.value});
 

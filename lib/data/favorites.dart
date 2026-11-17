@@ -29,4 +29,5 @@ class Favorites extends ChangeNotifier {
   }
 }
 
+/// Favourite products shared by every page.
 final favorites = Favorites();

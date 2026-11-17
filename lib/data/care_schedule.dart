@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/owned_plants.dart';
 import 'package:verdant/data/storage.dart';
 
+/// The kinds of care Verdant can remind you about, with their labels and icons.
 enum CareKind {
   water(
     verb: 'Water',
@@ -144,6 +145,7 @@ class CompletedCare {
   );
 }
 
+/// Midnight of [d]: drops the time so days can be compared.
 DateTime dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
 final _day = DateFormat('EEE, MMM d', 'en_US');
@@ -169,6 +171,7 @@ String formatEvery(int days) => switch (days) {
   _ => 'Every $days days',
 };
 
+/// Unique enough id for plans created on this device.
 String _newId() =>
     '${DateTime.now().microsecondsSinceEpoch}-${Random().nextInt(1 << 20)}';
 
@@ -210,6 +213,7 @@ class CareSchedule extends ChangeNotifier {
       final plant = plan.plant;
       if (plant == null) continue;
       var due = plan.nextDue;
+      // Overdue: report it once, then skip ahead to the first date in range.
       if (due.isBefore(from)) {
         tasks.add(CareTask(plan: plan, plant: plant, due: due));
         due = due.add(Duration(days: plan.everyDays));
@@ -217,6 +221,7 @@ class CareSchedule extends ChangeNotifier {
           due = due.add(Duration(days: plan.everyDays));
         }
       }
+      // Every occurrence inside the range.
       while (due.isBefore(to)) {
         tasks.add(CareTask(plan: plan, plant: plant, due: due));
         due = due.add(Duration(days: plan.everyDays));
@@ -430,4 +435,5 @@ class CareSchedule extends ChangeNotifier {
   }
 }
 
+/// The single care calendar used by every page.
 final careSchedule = CareSchedule();

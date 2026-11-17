@@ -16,6 +16,7 @@ abstract class ProductRepository {
 /// Why loading products failed, with a message fit for the UI.
 enum ProductErrorKind { offline, timeout, notFound, server, badData }
 
+/// Thrown by [ApiProductRepository] when products cannot be loaded.
 class ProductLoadException implements Exception {
   const ProductLoadException(this.kind, [this.detail]);
 
@@ -56,6 +57,7 @@ String resolveImage(String path, String origin) =>
 ImageProvider imageFor(String src) =>
     src.startsWith('http') ? NetworkImage(src) : AssetImage(src);
 
+/// Loads products from the Express backend, with a timeout and a short in-memory cache.
 class ApiProductRepository implements ProductRepository {
   // The client is injectable (e.g. MockClient in tests).
   ApiProductRepository({

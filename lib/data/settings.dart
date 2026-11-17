@@ -57,4 +57,5 @@ class AppSettings extends ChangeNotifier {
   }
 }
 
+/// App preferences shared by every page.
 final appSettings = AppSettings();

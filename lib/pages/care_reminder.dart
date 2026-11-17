@@ -30,6 +30,7 @@ class CareReminderPage extends StatefulWidget {
   State<CareReminderPage> createState() => _CareReminderPageState();
 }
 
+/// Form state: repeat interval, weekdays, start date, time, note and channels.
 class _CareReminderPageState extends State<CareReminderPage> {
   static const _repeatOptions = [1, 7, 14, 30];
   static const _weekdayLetters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -462,6 +463,7 @@ class _CareReminderPageState extends State<CareReminderPage> {
 // Sections
 // ---------------------------------------------------------------------------
 
+/// Page title and a short explanation.
 class _Introduction extends StatelessWidget {
   const _Introduction();
 
@@ -508,6 +510,7 @@ class _Introduction extends StatelessWidget {
   }
 }
 
+/// The plant the reminder is for.
 class _SelectedPlant extends StatelessWidget {
   const _SelectedPlant({required this.plant, required this.onTap});
 
@@ -574,6 +577,7 @@ class _SelectedPlant extends StatelessWidget {
   }
 }
 
+/// Label above a form field.
 class _FieldLabel extends StatelessWidget {
   const _FieldLabel(this.text, {this.strong = false});
 
@@ -595,6 +599,7 @@ class _FieldLabel extends StatelessWidget {
   }
 }
 
+/// Small helper text under a field.
 class _Hint extends StatelessWidget {
   const _Hint(this.text, {this.accent = false});
 
@@ -617,6 +622,7 @@ class _Hint extends StatelessWidget {
   }
 }
 
+/// Tappable field showing a value (date, time) that opens a picker.
 class _ValueField extends StatelessWidget {
   const _ValueField({
     required this.icon,
@@ -668,6 +674,7 @@ class _ValueField extends StatelessWidget {
   }
 }
 
+/// One selectable day of the week.
 class _WeekdayOption extends StatelessWidget {
   const _WeekdayOption({
     required this.label,
@@ -712,6 +719,7 @@ class _WeekdayOption extends StatelessWidget {
   }
 }
 
+/// Optional free-text note saved with the reminder.
 class _NoteField extends StatelessWidget {
   const _NoteField({required this.controller});
 
@@ -750,6 +758,7 @@ class _NoteField extends StatelessWidget {
   }
 }
 
+/// A notification channel (push or email) with its toggle.
 class _NotificationRow extends StatelessWidget {
   const _NotificationRow({
     required this.icon,
@@ -804,6 +813,7 @@ class _NotificationRow extends StatelessWidget {
   }
 }
 
+/// Preview of the next reminders the form would create.
 class _SchedulePreview extends StatelessWidget {
   const _SchedulePreview({
     required this.first,
@@ -882,6 +892,7 @@ class _SchedulePreview extends StatelessWidget {
   }
 }
 
+/// Save and cancel buttons at the bottom of the form.
 class _FormActions extends StatelessWidget {
   const _FormActions({required this.onSave, required this.onCancel});
 

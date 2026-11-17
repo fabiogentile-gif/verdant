@@ -20,8 +20,10 @@ Future<PaymentMethod?> showAddPaymentSheet(BuildContext context) {
   );
 }
 
+/// Which form the sheet shows.
 enum _Kind { card, paypal }
 
+/// Sheet with a card / PayPal switch and the matching form.
 class _AddPaymentSheet extends StatefulWidget {
   const _AddPaymentSheet();
 
@@ -29,6 +31,7 @@ class _AddPaymentSheet extends StatefulWidget {
   State<_AddPaymentSheet> createState() => _AddPaymentSheetState();
 }
 
+/// Holds the selected kind of payment.
 class _AddPaymentSheetState extends State<_AddPaymentSheet> {
   _Kind _kind = _Kind.card;
 
@@ -104,6 +107,7 @@ class _AddPaymentSheetState extends State<_AddPaymentSheet> {
 // Card
 // ---------------------------------------------------------------------------
 
+/// Card number, holder, expiry and CVC.
 class _CardForm extends StatefulWidget {
   const _CardForm();
 
@@ -111,6 +115,7 @@ class _CardForm extends StatefulWidget {
   State<_CardForm> createState() => _CardFormState();
 }
 
+/// Controllers, live brand detection and validation of the card form.
 class _CardFormState extends State<_CardForm> {
   final _formKey = GlobalKey<FormState>();
   final _holder = TextEditingController();
@@ -277,6 +282,7 @@ class _ExpiryFormatter extends TextInputFormatter {
 // PayPal (fake login)
 // ---------------------------------------------------------------------------
 
+/// Fake PayPal login (email and password).
 class _PayPalForm extends StatefulWidget {
   const _PayPalForm();
 
@@ -284,6 +290,7 @@ class _PayPalForm extends StatefulWidget {
   State<_PayPalForm> createState() => _PayPalFormState();
 }
 
+/// Controllers, validation and the fake login delay.
 class _PayPalFormState extends State<_PayPalForm> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
@@ -354,6 +361,7 @@ class _PayPalFormState extends State<_PayPalForm> {
 // Shared bits
 // ---------------------------------------------------------------------------
 
+/// Labelled text field used by both forms.
 class _Field extends StatelessWidget {
   const _Field({
     required this.label,
@@ -447,6 +455,7 @@ class _Field extends StatelessWidget {
   }
 }
 
+/// Small badge with the detected card brand.
 class _BrandBadge extends StatelessWidget {
   const _BrandBadge(this.text);
 
@@ -477,6 +486,7 @@ class _BrandBadge extends StatelessWidget {
   }
 }
 
+/// Small info note with an icon.
 class _Note extends StatelessWidget {
   const _Note(this.text);
 
@@ -510,6 +520,7 @@ class _Note extends StatelessWidget {
   }
 }
 
+/// Full-width submit button with a loading state.
 class _PrimaryButton extends StatelessWidget {
   const _PrimaryButton({
     required this.label,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/widgets/components/plant_card.dart';
 
+/// Homepage section highlighting one plant of the collection.
 class PersonalCollection extends StatelessWidget {
   const PersonalCollection({
     super.key,

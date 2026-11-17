@@ -72,6 +72,7 @@ const _darkScheme = ColorScheme(
   surfaceTint: Color(0xFF677D6A),
 );
 
+/// Light and dark Material themes built from the Verdant palette.
 class AppTheme {
   static final light = _build(_lightScheme, const Color(0xFFF6F3ED));
   static final dark = _build(_darkScheme, const Color(0xFF1A3636));
@@ -97,7 +98,7 @@ class AppTheme {
         headlineMedium: serif(t.headlineMedium),
         headlineSmall: serif(t.headlineSmall),
       ),
-      // Fix to not have the floatingbutton on top
+      // Keeps the floating button from jumping above snackbars
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         insetPadding: const EdgeInsets.fromLTRB(16,0,16,4),

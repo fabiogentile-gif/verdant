@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:verdant/theme/theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+/// Health status shown by the badge on a [PlantCard].
 enum PlantStatus { needsCare, healthy }
 
+/// Plant row: photo, name, status badge and next care.
 class PlantCard extends StatelessWidget {
   const PlantCard({
     super.key,
@@ -102,6 +104,7 @@ class PlantCard extends StatelessWidget {
   }
 }
 
+/// Coloured pill with the plant status.
 class _StatusBadge extends StatelessWidget {
   const _StatusBadge({required this.label, required this.status});
 

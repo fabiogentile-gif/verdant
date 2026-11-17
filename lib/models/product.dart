@@ -1,13 +1,15 @@
+/// A label shown on a product page, with an optional icon.
 class ProductTag {
   const ProductTag({required this.label, this.icon});
 
   final String label;
-  final String? icon; // chiave icona, es. "sprout"
+  final String? icon; // icon key, e.g. "sprout"
 
   factory ProductTag.fromJson(Map<String, dynamic> json) =>
       ProductTag(label: json['label'] as String, icon: json['icon'] as String?);
 }
 
+/// One care tip shown on a product page.
 class CareStep {
   const CareStep({
     required this.icon,
@@ -26,7 +28,7 @@ class CareStep {
   );
 }
 
-/// Versione leggera di un prodotto (liste, correlati)
+/// Lightweight version of a product (lists, related products).
 class ProductSummary {
   const ProductSummary({
     required this.id,
@@ -73,6 +75,7 @@ class ProductSummary {
   );
 }
 
+/// Everything shown on a product page, as returned by `GET /api/products/:id`.
 class ProductDetails {
   const ProductDetails({
     required this.id,
@@ -142,6 +145,7 @@ class ProductDetails {
   );
 }
 
+/// Parses a JSON list of objects with [parse]; a missing list becomes empty.
 List<T> _list<T>(Object? raw, T Function(Map<String, dynamic>) parse) {
   return (raw as List? ?? const [])
       .map((e) => parse(e as Map<String, dynamic>))

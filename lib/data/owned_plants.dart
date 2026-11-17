@@ -160,6 +160,7 @@ class PlantCollection extends ChangeNotifier {
   ];
 }
 
+/// The user's plant collection shared by every page.
 final plantCollection = PlantCollection();
 
 /// Shortcut for the current list of plants.

@@ -9,6 +9,7 @@ import 'package:verdant/data/storage.dart';
 // last 4 digits, holder and expiry are stored (on the device).
 // ---------------------------------------------------------------------------
 
+/// Card networks recognised from the card number.
 enum CardBrand {
   visa('Visa', 'VISA'),
   mastercard('Mastercard', 'MC'),
@@ -29,11 +30,12 @@ enum CardBrand {
     return unknown;
   }
 
-  /// AMEX has CVC lenght of 4 and card number of 15.
+  /// Amex uses a 4-digit CVC and a 15-digit card number.
   int get cvcLength => this == amex ? 4 : 3;
   int get numberLength => this == amex ? 15 : 16;
 }
 
+/// A saved way to pay: a card or a PayPal account.
 sealed class PaymentMethod {
   const PaymentMethod({required this.id});
 
@@ -63,7 +65,7 @@ sealed class PaymentMethod {
   };
 }
 
-/// Saves some of the card data (brand,last 4 digits,holder,expiration date)
+/// A saved card: only brand, last 4 digits, holder and expiry date.
 class CardPayment extends PaymentMethod {
   const CardPayment({
     required super.id,
@@ -104,7 +106,7 @@ class CardPayment extends PaymentMethod {
   };
 }
 
-/// Saves only the email
+/// A connected PayPal account: only the email is saved.
 class PayPalPayment extends PaymentMethod {
   const PayPalPayment({required super.id, required this.email});
 
@@ -234,6 +236,7 @@ class Wallet extends ChangeNotifier {
       '${DateTime.now().microsecondsSinceEpoch}-${_random.nextInt(1 << 30)}';
 }
 
+/// Payment methods shared by checkout and the profile.
 final wallet = Wallet();
 
 /// Fake payment processing: always succeeds after a short delay.
@@ -250,8 +253,10 @@ Future<String> processDemoPayment({
 // Validation (returns an error message, or null when valid)
 // ---------------------------------------------------------------------------
 
+/// Removes spaces, dashes and any other non-digit character.
 String digitsOnly(String s) => s.replaceAll(RegExp(r'\D'), '');
 
+/// Validation of the card form fields.
 abstract final class CardValidator {
   static String? holder(String value) =>
       value.trim().length < 2 ? 'Enter the name on the card.' : null;
@@ -297,7 +302,7 @@ abstract final class CardValidator {
   }
 
   /// Luhn checksum used by all major card networks.
-  /// Used to validate the card digits (example 5123 8372 7321 1090)
+  /// Example of a valid number: 5123 8372 7321 1090.
   static bool luhn(String digits) {
     var sum = 0;
     var double = false;
@@ -314,6 +319,7 @@ abstract final class CardValidator {
   }
 }
 
+/// Validation of the (fake) PayPal login form.
 abstract final class PayPalValidator {
   static final _email = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 

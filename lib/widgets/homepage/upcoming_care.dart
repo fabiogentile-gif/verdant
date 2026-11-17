@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:verdant/theme/theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+/// A reminder as shown on the homepage.
 class CareReminder {
   const CareReminder({required this.title, required this.schedule, this.onTap});
 
@@ -10,6 +11,7 @@ class CareReminder {
   final VoidCallback? onTap;
 }
 
+/// Homepage section listing the next care reminders.
 class UpcomingCare extends StatelessWidget {
   const UpcomingCare({super.key, required this.reminders, this.onViewAll});
 
@@ -63,6 +65,7 @@ class UpcomingCare extends StatelessWidget {
   }
 }
 
+/// One reminder row.
 class _CareReminderTile extends StatelessWidget {
   const _CareReminderTile({required this.reminder});
 

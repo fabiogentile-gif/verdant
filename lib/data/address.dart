@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:verdant/data/storage.dart';
 
+/// Where an order is shipped, plus the contact details for the courier.
 class DeliveryAddress {
   const DeliveryAddress({
     required this.fullName,
@@ -84,4 +85,5 @@ class AddressBook extends ChangeNotifier {
   }
 }
 
+/// Delivery address shared by checkout and the profile.
 final addressBook = AddressBook();

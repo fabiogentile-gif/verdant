@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:verdant/widgets/components/collection_metrics.dart';
 
+/// Card with the collection metrics, plant thumbnails and an optional action.
 class CollectionOverview extends StatelessWidget {
   const CollectionOverview({
     super.key,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// SingleChildScrollView without the Android stretch overscroll effect.
 class ScrollViewNoStretch extends StatelessWidget {
   const ScrollViewNoStretch({
     super.key,

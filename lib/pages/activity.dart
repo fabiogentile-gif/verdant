@@ -16,6 +16,7 @@ final _day = DateFormat('EEE, MMM d', 'en_US');
 final _time = DateFormat('h:mm a', 'en_US');
 final _fullDate = DateFormat('MMM d, y', 'en_US');
 
+/// Midnight of [d]: drops the time so days can be compared.
 DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
 /// "November 5–11, 2026", across months/years when needed.
@@ -42,6 +43,7 @@ class Activity extends StatefulWidget {
   State<Activity> createState() => _ActivityState();
 }
 
+/// Holds the filters (plant, kind of care) and the review period.
 class _ActivityState extends State<Activity> {
   static const _ranges = [7, 14, 30];
 
@@ -206,6 +208,7 @@ class _ActivityState extends State<Activity> {
 // Sections
 // ---------------------------------------------------------------------------
 
+/// Summary card: care due today, coming up and plants involved.
 class _CareOverview extends StatelessWidget {
   const _CareOverview({
     required this.dueToday,
@@ -266,6 +269,7 @@ class _CareOverview extends StatelessWidget {
   }
 }
 
+/// Controls for the period, kind of care and plant shown.
 class _ReviewControls extends StatelessWidget {
   const _ReviewControls({
     required this.rangeLabel,
@@ -359,6 +363,7 @@ class _ReviewControls extends StatelessWidget {
   }
 }
 
+/// Care due today (or overdue), each with a "done" action.
 class _TodaySection extends StatelessWidget {
   const _TodaySection({
     required this.tasks,
@@ -445,6 +450,7 @@ class _TodaySection extends StatelessWidget {
   }
 }
 
+/// Reminders in the selected period after today.
 class _ComingUpSection extends StatelessWidget {
   const _ComingUpSection({
     required this.tasks,
@@ -515,6 +521,7 @@ class _ComingUpSection extends StatelessWidget {
   }
 }
 
+/// One upcoming reminder in the "Coming up" list.
 class _ReminderTile extends StatelessWidget {
   const _ReminderTile({required this.task, required this.onTap});
 
@@ -597,6 +604,7 @@ class _ReminderTile extends StatelessWidget {
   }
 }
 
+/// Care already done, most recent first.
 class _HistorySection extends StatelessWidget {
   const _HistorySection({
     required this.events,
@@ -661,6 +669,7 @@ class _HistorySection extends StatelessWidget {
   }
 }
 
+/// One completed care event in the history.
 class _CompletedRow extends StatelessWidget {
   const _CompletedRow({required this.event});
 
@@ -745,6 +754,7 @@ class _CompletedRow extends StatelessWidget {
 // Small pieces
 // ---------------------------------------------------------------------------
 
+/// Title of a section with an optional action on the right.
 class _SectionHeading extends StatelessWidget {
   const _SectionHeading(this.title, {this.actionLabel, this.onAction});
 
@@ -790,6 +800,7 @@ class _SectionHeading extends StatelessWidget {
   }
 }
 
+/// Small uppercase label above a group of rows.
 class _GroupLabel extends StatelessWidget {
   const _GroupLabel(this.text);
 
@@ -811,6 +822,7 @@ class _GroupLabel extends StatelessWidget {
   }
 }
 
+/// Muted message shown when a section is empty.
 class _SoftNote extends StatelessWidget {
   const _SoftNote({required this.icon, required this.text});
 
@@ -855,11 +867,13 @@ class _SoftNote extends StatelessWidget {
 /// Distinguishes "picked null" from "dismissed".
 sealed class _OptionResult<T> {}
 
+/// The user picked [value] (which may be null, meaning "all").
 class _OptionPicked<T> extends _OptionResult<T> {
   _OptionPicked(this.value);
   final T value;
 }
 
+/// Bottom sheet with one option per row. Resolves to null when dismissed.
 Future<_OptionResult<T>?> _showOptions<T>(
   BuildContext context, {
   required String title,

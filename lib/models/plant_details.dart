@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+/// One line of a care guide (e.g. light, humidity) with its icon.
 class CareRequirement {
   const CareRequirement({
     required this.icon,

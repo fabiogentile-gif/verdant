@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:verdant/router/router.dart';
 import 'package:verdant/widgets/components/app_bottom_navigation.dart';
 
+/// Main layout: the tab pages in a nested navigator and the bottom navigation bar.
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
@@ -15,6 +16,7 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => AppShellState();
 }
 
+/// State of [AppShell]: the selected tab and the nested navigator.
 class AppShellState extends State<AppShell> {
   final _navKey = GlobalKey<NavigatorState>();
   int _index = 0;
@@ -65,14 +67,16 @@ class AppShellState extends State<AppShell> {
   }
 }
 
+/// Keeps the centre button docked on the bottom bar even when a snackbar
+/// or the keyboard is shown (the default location would move it up).
 class _FixedCenterDocked extends FloatingActionButtonLocation {
   const _FixedCenterDocked();
 
   @override
   Offset getOffset(ScaffoldPrelayoutGeometry g) {
     final x = (g.scaffoldSize.width - g.floatingActionButtonSize.width) / 2;
-    // contentBottom = bordo superiore della bottom bar, non influenzato
-    // da snackbar o tastiera
+    // contentBottom = top edge of the bottom bar, not affected by
+    // snackbars or the keyboard.
     final y = g.contentBottom - g.floatingActionButtonSize.height / 2;
     return Offset(x, y);
   }

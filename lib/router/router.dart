@@ -19,6 +19,7 @@ import 'package:verdant/pages/profile/payment_methods.dart';
 import 'package:verdant/pages/profile/privacy.dart';
 import 'package:verdant/shell.dart';
 
+/// Route names and the factory that builds a page for each of them.
 class AppRoutes {
   // Tabs (inside the shell's nested navigator).
   static const homepage = '/homepage';

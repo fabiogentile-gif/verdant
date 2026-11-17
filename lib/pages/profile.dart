@@ -15,6 +15,7 @@ import 'package:verdant/widgets/components/page_header.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
 import 'package:verdant/widgets/components/standard_app_bar.dart';
 
+/// Profile tab: account, orders, settings and app info.
 class Profile extends StatefulWidget {
   const Profile({super.key});
 
@@ -22,6 +23,7 @@ class Profile extends StatefulWidget {
   State<Profile> createState() => _ProfileState();
 }
 
+/// Handles the settings actions (notification permission, time zone…).
 class _ProfileState extends State<Profile> {
   final _housekeepingKey = GlobalKey();
 
@@ -273,6 +275,7 @@ class _ProfileState extends State<Profile> {
   }
 }
 
+/// Avatar, name and a short subtitle.
 class _IdentityCard extends StatelessWidget {
   const _IdentityCard({required this.name, required this.subtitle});
 
@@ -348,6 +351,7 @@ class _IdentityCard extends StatelessWidget {
   }
 }
 
+/// Titled group of settings tiles.
 class _Section extends StatelessWidget {
   const _Section({super.key, required this.title, required this.children});
 
@@ -398,6 +402,7 @@ class _Section extends StatelessWidget {
   }
 }
 
+/// One settings row: icon, title, optional value and a trailing widget.
 class _SettingsTile extends StatelessWidget {
   const _SettingsTile({
     required this.icon,
@@ -467,6 +472,7 @@ class _SettingsTile extends StatelessWidget {
   }
 }
 
+/// Low-emphasis outlined button.
 class _SoftButton extends StatelessWidget {
   const _SoftButton({required this.label, required this.onPressed});
 

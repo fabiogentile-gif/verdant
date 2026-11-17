@@ -51,6 +51,7 @@ class ShopCategory {
   ];
 }
 
+/// Sort orders offered in the Greenhouse.
 enum ShopSort {
   featured('Featured'),
   priceLow('Price: low to high'),
@@ -147,4 +148,5 @@ class ShopFilter extends ChangeNotifier {
   }
 }
 
+/// Greenhouse search and filter state shared by every page.
 final shopFilter = ShopFilter();

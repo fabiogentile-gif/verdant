@@ -11,8 +11,10 @@ import 'package:verdant/widgets/components/search_bar.dart';
 import 'package:verdant/widgets/components/standard_app_bar.dart';
 import 'package:verdant/widgets/plants/plant_form_sheet.dart';
 
+/// Top filter of the collection: every plant or only those needing care.
 enum _PlantFilter { all, needsCare }
 
+/// Plants tab: the user's collection, filterable by status and room.
 class Plants extends StatefulWidget {
   const Plants({super.key});
 
@@ -20,6 +22,7 @@ class Plants extends StatefulWidget {
   State<Plants> createState() => _PlantsState();
 }
 
+/// Holds the selected filter and room.
 class _PlantsState extends State<Plants> {
   _PlantFilter _filter = _PlantFilter.all;
   String _query = '';
@@ -189,6 +192,7 @@ class _PlantsState extends State<Plants> {
   }
 }
 
+/// Chip used by the status and room filters.
 class _FilterChip extends StatelessWidget {
   const _FilterChip({
     required this.label,
@@ -248,6 +252,7 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
+/// Wide button that opens the "add a plant" sheet.
 class _AddPlantButton extends StatelessWidget {
   const _AddPlantButton({required this.label, required this.onPressed});
 
@@ -276,6 +281,7 @@ class _AddPlantButton extends StatelessWidget {
   }
 }
 
+/// Care tip shown under the collection.
 class _CollectionGuidance extends StatelessWidget {
   const _CollectionGuidance();
 

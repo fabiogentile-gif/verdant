@@ -11,6 +11,7 @@ import 'package:verdant/widgets/components/subpage_scaffold.dart';
 final _date = DateFormat('MMM d, y', 'en_US');
 final _short = DateFormat('MMM d', 'en_US');
 
+/// "Nov 10–12" or "Nov 30 – Dec 2" for the expected delivery window.
 String _arrival(Order o) {
   final (from, to) = o.arrivalWindow;
   return from.month == to.month
@@ -18,6 +19,7 @@ String _arrival(Order o) {
       : '${_short.format(from)} – ${_short.format(to)}';
 }
 
+/// List of the orders placed on this device.
 class OrdersPage extends StatelessWidget {
   const OrdersPage({super.key});
 
@@ -128,6 +130,7 @@ class OrdersPage extends StatelessWidget {
   }
 }
 
+/// Items, totals, address and payment of one order.
 class OrderDetailsPage extends StatelessWidget {
   const OrderDetailsPage({super.key, required this.number});
 

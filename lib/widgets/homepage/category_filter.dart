@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+/// A homepage category chip.
 class CategoryFilter {
   const CategoryFilter(this.label, {this.icon});
 
@@ -8,12 +9,14 @@ class CategoryFilter {
   final IconData? icon;
 }
 
+/// Categories shown on the homepage.
 const popularCategories = [
   CategoryFilter('Indoor', icon: LucideIcons.leaf),
   CategoryFilter('Outdoor', icon: LucideIcons.sun),
   CategoryFilter('Pots & more'),
 ];
 
+/// Horizontal list of category chips.
 class PopularCategories extends StatelessWidget {
   const PopularCategories({
     super.key,
@@ -64,6 +67,7 @@ class PopularCategories extends StatelessWidget {
   }
 }
 
+/// One category chip.
 class _FilterChip extends StatelessWidget {
   const _FilterChip({
     required this.category,

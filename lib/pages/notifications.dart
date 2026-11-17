@@ -63,6 +63,7 @@ bool hasUnreadNotifications({DateTime? now}) {
   return items.any((n) => n.at.isAfter(seen));
 }
 
+/// In-app inbox: care due today and recent orders.
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
 
@@ -70,6 +71,7 @@ class NotificationsPage extends StatefulWidget {
   State<NotificationsPage> createState() => _NotificationsPageState();
 }
 
+/// Remembers when the inbox was last opened, to highlight new entries.
 class _NotificationsPageState extends State<NotificationsPage> {
   static final _time = DateFormat('MMM d · h:mm a', 'en_US');
   late final DateTime? _seenBefore = appSettings.notificationsSeenAt;
@@ -165,6 +167,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 }
 
+/// One entry of the inbox.
 class _NotificationTile extends StatelessWidget {
   const _NotificationTile({
     required this.notification,

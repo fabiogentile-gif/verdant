@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+/// Rounded search field with a search icon.
 class AppSearchField extends StatelessWidget {
   const AppSearchField({
     super.key,

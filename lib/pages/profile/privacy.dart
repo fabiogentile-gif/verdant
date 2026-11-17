@@ -14,6 +14,7 @@ class PrivacyPage extends StatefulWidget {
   State<PrivacyPage> createState() => _PrivacyPageState();
 }
 
+/// Checks the notification permission and handles "Erase my data".
 class _PrivacyPageState extends State<PrivacyPage> {
   bool? _allowed;
 

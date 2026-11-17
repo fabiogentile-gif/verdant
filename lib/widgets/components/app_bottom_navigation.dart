@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+/// Bottom bar with the five tabs; the centre one leaves room for [AppCenterButton].
 class AppBottomNavigation extends StatelessWidget {
   const AppBottomNavigation({
     super.key,
@@ -54,7 +55,7 @@ class AppBottomNavigation extends StatelessWidget {
   }
 }
 
-// Cerchio centrale
+/// Round button docked in the middle of the bottom bar (Greenhouse).
 class AppCenterButton extends StatelessWidget {
   const AppCenterButton({
     super.key,
@@ -82,12 +83,14 @@ class AppCenterButton extends StatelessWidget {
   }
 }
 
+/// Label and icon of a tab.
 class _NavItemData {
   const _NavItemData(this.label, this.icon);
   final String label;
   final IconData icon;
 }
 
+/// One tab of the bottom bar.
 class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.data,
@@ -115,7 +118,7 @@ class _NavItem extends StatelessWidget {
         spacing: 4,
         children: [
           if (featured)
-            // Spazio lasciato al cerchio
+            // Space left for the centre button
             const SizedBox(height: 30)
           else
             Container(

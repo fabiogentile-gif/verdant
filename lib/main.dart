@@ -14,6 +14,7 @@ import 'package:verdant/theme/theme.dart';
 /// The app is written in English; dates and pickers follow the same locale.
 const appLocale = Locale('en', 'US');
 
+/// Restores saved data, then starts the app and the reminder notifications.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Intl.defaultLocale = 'en_US';
@@ -28,6 +29,7 @@ Future<void> main() async {
   NotificationService.init();
 }
 
+/// Adds the bundled font licences to the "About Verdant" licence page.
 void _registerFontLicenses() {
   LicenseRegistry.addLicense(() async* {
     for (final (family, file) in [
@@ -40,6 +42,7 @@ void _registerFontLicenses() {
   });
 }
 
+/// Root widget: theme, locale and routes. Rebuilds when the settings change (e.g. dark mode).
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 

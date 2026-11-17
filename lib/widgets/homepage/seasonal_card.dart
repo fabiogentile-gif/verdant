@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+/// Homepage banner with the seasonal collection.
 class SeasonalFeatureCard extends StatelessWidget {
   const SeasonalFeatureCard({super.key, this.onTap});
 

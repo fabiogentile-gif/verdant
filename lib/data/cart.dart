@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:verdant/data/storage.dart';
 import 'package:verdant/models/product.dart';
 
+/// A product in the cart with its quantity and optional variant (e.g. pot size).
 class CartItem {
   CartItem({
     required this.productId,
@@ -56,6 +57,7 @@ class DiscountCode {
   String get shortLabel => '$code · ${(rate * 100).round()}% off';
 }
 
+/// Delivery choices at checkout: price and expected days in transit.
 enum ShippingOption {
   standard(
     label: 'Standard delivery',
@@ -246,4 +248,5 @@ class Cart extends ChangeNotifier {
   static double _round(double v) => (v * 100).roundToDouble() / 100;
 }
 
+/// The cart shared by the shop, product pages and checkout.
 final cart = Cart();

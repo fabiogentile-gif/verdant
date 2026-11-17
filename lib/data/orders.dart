@@ -152,4 +152,5 @@ class OrderHistory extends ChangeNotifier {
   }
 }
 
+/// Orders placed on this device, shared by checkout, profile and notifications.
 final orderHistory = OrderHistory();

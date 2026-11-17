@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-/// Header di pagina: [eyebrow] opzionale + titolo + sottotitolo.
+/// Page header: optional [eyebrow] + title + subtitle.
 ///
-/// Esempi:
-///   PageHeader(title: 'Piante', subtitle: '...')
-///   PageHeader.eyebrowText('Il tuo giardino', title: '...', subtitle: '...')
+/// Examples:
+///   PageHeader(title: 'Plants', subtitle: '...')
+///   PageHeader.eyebrowText('Your garden', title: '...', subtitle: '...')
 ///   PageHeader.eyebrowDate(DateTime.now(), title: '...', subtitle: '...')
-
 class PageHeader extends StatelessWidget {
   const PageHeader({super.key, required this.title, this.subtitle})
     : _eyebrowText = null,

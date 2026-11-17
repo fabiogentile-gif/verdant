@@ -11,6 +11,7 @@ class AddressPage extends StatefulWidget {
   State<AddressPage> createState() => _AddressPageState();
 }
 
+/// Form controllers and validation for the address.
 class _AddressPageState extends State<AddressPage> {
   final _formKey = GlobalKey<FormState>();
   late final Map<String, TextEditingController> _fields;
@@ -185,6 +186,7 @@ class _AddressPageState extends State<AddressPage> {
   }
 }
 
+/// Labelled text field of the address form.
 class _Field extends StatelessWidget {
   const _Field({
     required this.label,

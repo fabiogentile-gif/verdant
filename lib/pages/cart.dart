@@ -79,6 +79,7 @@ class CartPage extends StatelessWidget {
 // Sections
 // ---------------------------------------------------------------------------
 
+/// Page title and the number of items in the cart.
 class _Introduction extends StatelessWidget {
   const _Introduction({required this.count});
 
@@ -117,6 +118,7 @@ class _Introduction extends StatelessWidget {
   }
 }
 
+/// Progress towards free standard delivery.
 class _ShippingIncentive extends StatelessWidget {
   const _ShippingIncentive();
 
@@ -183,6 +185,7 @@ class _ShippingIncentive extends StatelessWidget {
   }
 }
 
+/// One product in the cart with its quantity selector and remove action.
 class _CartItemCard extends StatelessWidget {
   const _CartItemCard({required this.item});
 
@@ -282,6 +285,7 @@ class _CartItemCard extends StatelessWidget {
   }
 }
 
+/// Minus / quantity / plus control.
 class _QuantitySelector extends StatelessWidget {
   const _QuantitySelector({required this.item});
 
@@ -331,6 +335,7 @@ class _QuantitySelector extends StatelessWidget {
   }
 }
 
+/// Field to apply or remove a discount code.
 class _DiscountCode extends StatefulWidget {
   const _DiscountCode();
 
@@ -338,6 +343,7 @@ class _DiscountCode extends StatefulWidget {
   State<_DiscountCode> createState() => _DiscountCodeState();
 }
 
+/// Holds the typed code and the validation error.
 class _DiscountCodeState extends State<_DiscountCode> {
   final _controller = TextEditingController();
   String? _error;
@@ -457,6 +463,7 @@ class _DiscountCodeState extends State<_DiscountCode> {
   }
 }
 
+/// Subtotal, discount, delivery and total.
 class _OrderTotals extends StatelessWidget {
   const _OrderTotals();
 
@@ -525,6 +532,7 @@ class _OrderTotals extends StatelessWidget {
   }
 }
 
+/// One label / amount row of the totals.
 class _SummaryRow extends StatelessWidget {
   const _SummaryRow({required this.label, required this.value});
 
@@ -559,6 +567,7 @@ class _SummaryRow extends StatelessWidget {
   }
 }
 
+/// "Continue to checkout" button and the secure-checkout note.
 class _CartActions extends StatelessWidget {
   const _CartActions({required this.onCheckout, required this.onBack});
 
@@ -626,6 +635,7 @@ class _CartActions extends StatelessWidget {
   }
 }
 
+/// Shown when the cart has no items.
 class _EmptyCart extends StatelessWidget {
   const _EmptyCart({required this.onBrowse});
 

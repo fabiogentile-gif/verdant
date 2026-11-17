@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+/// Product data needed by a featured card (price already formatted).
 class Product {
   const Product({
     required this.id,
@@ -17,6 +18,7 @@ class Product {
   final ImageProvider image;
 }
 
+/// Homepage section with the featured products and a "Shop all" link.
 class FeaturedProducts extends StatelessWidget {
   const FeaturedProducts({
     super.key,
@@ -94,6 +96,7 @@ class FeaturedProducts extends StatelessWidget {
   }
 }
 
+/// Card of one featured product.
 class _ProductCard extends StatelessWidget {
   const _ProductCard({
     required this.product,

@@ -24,6 +24,7 @@ import 'package:verdant/widgets/homepage/featured_products.dart' as fp;
 import 'package:verdant/widgets/homepage/seasonal_card.dart';
 import 'package:verdant/widgets/homepage/upcoming_care.dart';
 
+/// Home tab: greeting, search, categories, featured products and upcoming care.
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
 
@@ -31,6 +32,7 @@ class Homepage extends StatefulWidget {
   State<Homepage> createState() => _HomepageState();
 }
 
+/// Loads the featured products and builds the sections.
 class _HomepageState extends State<Homepage> {
   /// Homepage category chips → Greenhouse categories.
   static final _categoryTargets = [
@@ -205,6 +207,7 @@ class _HomepageState extends State<Homepage> {
   }
 }
 
+/// Shown when the featured products cannot be loaded, with a retry button.
 class _FeaturedError extends StatelessWidget {
   const _FeaturedError({required this.message, required this.onRetry});
 
