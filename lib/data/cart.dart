@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:verdant/data/storage.dart';
 import 'package:verdant/models/product.dart';
 
 class CartItem {
@@ -19,6 +20,24 @@ class CartItem {
   int quantity;
 
   double get total => unitPrice * quantity;
+
+  Map<String, Object?> toJson() => {
+    'productId': productId,
+    'name': name,
+    'unitPrice': unitPrice,
+    'image': image,
+    'variant': variant,
+    'quantity': quantity,
+  };
+
+  factory CartItem.fromJson(Map json) => CartItem(
+    productId: json['productId'] as int,
+    name: json['name'] as String,
+    unitPrice: (json['unitPrice'] as num).toDouble(),
+    image: json['image'] as String,
+    variant: json['variant'] as String?,
+    quantity: json['quantity'] as int? ?? 1,
+  );
 }
 
 /// A discount code the shop recognises.
@@ -62,7 +81,7 @@ enum ShippingOption {
   final String? note;
 }
 
-/// In-memory shopping cart shared by the whole app.
+/// Shopping cart shared by the whole app, saved on the device.
 /// Listen to it with `ListenableBuilder(listenable: cart, ...)`.
 class Cart extends ChangeNotifier {
   /// Standard delivery is free above this merchandise subtotal.
@@ -89,7 +108,7 @@ class Cart extends ChangeNotifier {
   set shipping(ShippingOption value) {
     if (value == _shipping) return;
     _shipping = value;
-    notifyListeners();
+    _changed();
   }
 
   /// Fee for [option] with the current cart (standard can become free).
@@ -141,7 +160,7 @@ class Cart extends ChangeNotifier {
         ),
       );
     }
-    notifyListeners();
+    _changed();
   }
 
   void addSummary(ProductSummary p, {int quantity = 1}) => add(
@@ -165,12 +184,12 @@ class Cart extends ChangeNotifier {
     final item = _find(productId);
     if (item == null) return;
     item.quantity = quantity.clamp(1, maxQuantity);
-    notifyListeners();
+    _changed();
   }
 
   void remove(int productId) {
     _items.removeWhere((i) => i.productId == productId);
-    notifyListeners();
+    _changed();
   }
 
   /// Returns true when [code] is valid and has been applied.
@@ -178,20 +197,20 @@ class Cart extends ChangeNotifier {
     final match = _codes[code.trim().toUpperCase()];
     if (match == null) return false;
     _discount = match;
-    notifyListeners();
+    _changed();
     return true;
   }
 
   void removeDiscount() {
     _discount = null;
-    notifyListeners();
+    _changed();
   }
 
   void clear() {
     _items.clear();
     _discount = null;
     _shipping = ShippingOption.standard;
-    notifyListeners();
+    _changed();
   }
 
   CartItem? _find(int productId) {
@@ -199,6 +218,29 @@ class Cart extends ChangeNotifier {
       if (i.productId == productId) return i;
     }
     return null;
+  }
+
+  void restore() {
+    final json = Storage.read(StorageKeys.cart);
+    if (json is! Map) return;
+    _items
+      ..clear()
+      ..addAll(
+        (json['items'] as List? ?? []).whereType<Map>().map(CartItem.fromJson),
+      );
+    _discount = _codes[json['discount']];
+    _shipping =
+        ShippingOption.values.asNameMap()[json['shipping']] ?? _shipping;
+    notifyListeners();
+  }
+
+  void _changed() {
+    Storage.write(StorageKeys.cart, {
+      'items': _items.map((i) => i.toJson()).toList(),
+      'discount': _discount?.code,
+      'shipping': _shipping.name,
+    });
+    notifyListeners();
   }
 
   static double _round(double v) => (v * 100).roundToDouble() / 100;

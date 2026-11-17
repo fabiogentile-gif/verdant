@@ -4,10 +4,8 @@ class ProductTag {
   final String label;
   final String? icon; // chiave icona, es. "sprout"
 
-  factory ProductTag.fromJson(Map<String, dynamic> json) => ProductTag(
-        label: json['label'] as String,
-        icon: json['icon'] as String?,
-      );
+  factory ProductTag.fromJson(Map<String, dynamic> json) =>
+      ProductTag(label: json['label'] as String, icon: json['icon'] as String?);
 }
 
 class CareStep {
@@ -22,10 +20,10 @@ class CareStep {
   final String description;
 
   factory CareStep.fromJson(Map<String, dynamic> json) => CareStep(
-        icon: json['icon'] as String,
-        title: json['title'] as String,
-        description: json['description'] as String,
-      );
+    icon: json['icon'] as String,
+    title: json['title'] as String,
+    description: json['description'] as String,
+  );
 }
 
 /// Versione leggera di un prodotto (liste, correlati)
@@ -36,6 +34,11 @@ class ProductSummary {
     required this.price,
     required this.image,
     this.tag,
+    this.category,
+    this.tags = const [],
+    this.rating,
+    this.featured = false,
+    this.inStock = true,
   });
 
   final int id;
@@ -44,13 +47,30 @@ class ProductSummary {
   final String image;
   final String? tag;
 
+  /// Backend category: "plants", "planters", "accessories".
+  final String? category;
+
+  /// Tag labels, e.g. "Easy care", "Indoor".
+  final List<String> tags;
+  final double? rating;
+  final bool featured;
+  final bool inStock;
+
   factory ProductSummary.fromJson(Map<String, dynamic> json) => ProductSummary(
-        id: json['id'] as int,
-        name: json['name'] as String,
-        price: (json['price'] as num).toDouble(),
-        image: json['image'] as String,
-        tag: json['tag'] as String?,
-      );
+    id: json['id'] as int,
+    name: json['name'] as String,
+    price: (json['price'] as num).toDouble(),
+    image: json['image'] as String,
+    tag: json['tag'] as String?,
+    category: json['category'] as String?,
+    tags: [
+      for (final t in json['tags'] as List? ?? const [])
+        if (t is Map && t['label'] is String) t['label'] as String,
+    ],
+    rating: (json['rating'] as num?)?.toDouble(),
+    featured: json['featured'] as bool? ?? false,
+    inStock: json['inStock'] as bool? ?? true,
+  );
 }
 
 class ProductDetails {
@@ -99,27 +119,27 @@ class ProductDetails {
   final List<ProductSummary> related;
 
   factory ProductDetails.fromJson(Map<String, dynamic> json) => ProductDetails(
-        id: json['id'] as int,
-        name: json['name'] as String,
-        price: (json['price'] as num).toDouble(),
-        eyebrow: json['eyebrow'] as String?,
-        rating: (json['rating'] as num?)?.toDouble(),
-        reviewCount: json['reviewCount'] as int?,
-        inStock: json['inStock'] as bool? ?? true,
-        availabilityLabel: json['availabilityLabel'] as String?,
-        summary: json['summary'] as String?,
-        tags: _list(json['tags'], ProductTag.fromJson),
-        images: (json['images'] as List? ?? const []).cast<String>(),
-        variantLabel: json['variantLabel'] as String?,
-        variantDetail: json['variantDetail'] as String?,
-        purchaseNote: json['purchaseNote'] as String?,
-        descriptionTitle: json['descriptionTitle'] as String?,
-        description: json['description'] as String?,
-        growth: json['growth'] as String?,
-        goodToKnow: json['goodToKnow'] as String?,
-        careSteps: _list(json['careSteps'], CareStep.fromJson),
-        related: _list(json['related'], ProductSummary.fromJson),
-      );
+    id: json['id'] as int,
+    name: json['name'] as String,
+    price: (json['price'] as num).toDouble(),
+    eyebrow: json['eyebrow'] as String?,
+    rating: (json['rating'] as num?)?.toDouble(),
+    reviewCount: json['reviewCount'] as int?,
+    inStock: json['inStock'] as bool? ?? true,
+    availabilityLabel: json['availabilityLabel'] as String?,
+    summary: json['summary'] as String?,
+    tags: _list(json['tags'], ProductTag.fromJson),
+    images: (json['images'] as List? ?? const []).cast<String>(),
+    variantLabel: json['variantLabel'] as String?,
+    variantDetail: json['variantDetail'] as String?,
+    purchaseNote: json['purchaseNote'] as String?,
+    descriptionTitle: json['descriptionTitle'] as String?,
+    description: json['description'] as String?,
+    growth: json['growth'] as String?,
+    goodToKnow: json['goodToKnow'] as String?,
+    careSteps: _list(json['careSteps'], CareStep.fromJson),
+    related: _list(json['related'], ProductSummary.fromJson),
+  );
 }
 
 List<T> _list<T>(Object? raw, T Function(Map<String, dynamic>) parse) {

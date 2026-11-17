@@ -1,11 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:verdant/data/storage.dart';
 
 // ---------------------------------------------------------------------------
 // DEMO ONLY. Nothing here talks to a real payment provider.
 // For safety we never keep the full card number or the CVC: only brand,
-// last 4 digits, holder and expiry are stored, in memory.
+// last 4 digits, holder and expiry are stored (on the device).
 // ---------------------------------------------------------------------------
 
 enum CardBrand {
@@ -41,6 +42,24 @@ sealed class PaymentMethod {
   String get badge;
   String get title;
   String get subtitle;
+
+  Map<String, Object?> toJson();
+
+  static PaymentMethod? fromJson(Map json) => switch (json['type']) {
+    'card' => CardPayment(
+      id: json['id'] as String,
+      brand: CardBrand.values.asNameMap()[json['brand']] ?? CardBrand.unknown,
+      last4: json['last4'] as String,
+      holder: json['holder'] as String,
+      expMonth: json['expMonth'] as int,
+      expYear: json['expYear'] as int,
+    ),
+    'paypal' => PayPalPayment(
+      id: json['id'] as String,
+      email: json['email'] as String,
+    ),
+    _ => null,
+  };
 }
 
 class CardPayment extends PaymentMethod {
@@ -69,6 +88,18 @@ class CardPayment extends PaymentMethod {
   String get subtitle =>
       '$holder · Exp. ${expMonth.toString().padLeft(2, '0')}/'
       '${expYear.toString().padLeft(2, '0')}';
+
+  /// Only non-sensitive fields: never the full number or the CVC.
+  @override
+  Map<String, Object?> toJson() => {
+    'type': 'card',
+    'id': id,
+    'brand': brand.name,
+    'last4': last4,
+    'holder': holder,
+    'expMonth': expMonth,
+    'expYear': expYear,
+  };
 }
 
 class PayPalPayment extends PaymentMethod {
@@ -84,9 +115,12 @@ class PayPalPayment extends PaymentMethod {
 
   @override
   String get subtitle => email;
+
+  @override
+  Map<String, Object?> toJson() => {'type': 'paypal', 'id': id, 'email': email};
 }
 
-/// Saved payment methods (in memory) and the one selected for checkout.
+/// Saved payment methods (on the device) and the one selected for checkout.
 class Wallet extends ChangeNotifier {
   final List<PaymentMethod> _methods = [];
   String? _selectedId;
@@ -124,7 +158,7 @@ class Wallet extends ChangeNotifier {
       expMonth: month,
       expYear: year,
     );
-    _save(card);
+    _add(card);
     return card;
   }
 
@@ -139,14 +173,14 @@ class Wallet extends ChangeNotifier {
 
     await Future<void>.delayed(const Duration(milliseconds: 900));
     final account = PayPalPayment(id: _newId(), email: email.trim());
-    _save(account);
+    _add(account);
     return account;
   }
 
   void select(String id) {
     if (_selectedId == id) return;
     _selectedId = id;
-    notifyListeners();
+    _changed();
   }
 
   void remove(String id) {
@@ -154,12 +188,41 @@ class Wallet extends ChangeNotifier {
     if (_selectedId == id) {
       _selectedId = _methods.isEmpty ? null : _methods.last.id;
     }
+    _changed();
+  }
+
+  void restore() {
+    final json = Storage.read(StorageKeys.wallet);
+    if (json is! Map) return;
+    _methods
+      ..clear()
+      ..addAll(
+        (json['methods'] as List? ?? [])
+            .whereType<Map>()
+            .map(PaymentMethod.fromJson)
+            .nonNulls,
+      );
+    _selectedId = json['selectedId'] as String?;
     notifyListeners();
   }
 
-  void _save(PaymentMethod method) {
+  void reset() {
+    _methods.clear();
+    _selectedId = null;
+    notifyListeners();
+  }
+
+  void _add(PaymentMethod method) {
     _methods.add(method);
     _selectedId = method.id;
+    _changed();
+  }
+
+  void _changed() {
+    Storage.write(StorageKeys.wallet, {
+      'methods': _methods.map((m) => m.toJson()).toList(),
+      'selectedId': _selectedId,
+    });
     notifyListeners();
   }
 
