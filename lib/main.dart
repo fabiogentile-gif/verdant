@@ -1,15 +1,43 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/date_symbol_data_local.dart';
-import 'package:verdant/router/router.dart';
-import 'package:verdant/theme/theme.dart';
-import 'package:verdant/theme/theme_controller.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:intl/intl.dart';
+import 'package:verdant/data/app_data.dart';
+import 'package:verdant/data/settings.dart';
+import 'package:verdant/data/storage.dart';
+import 'package:verdant/router/router.dart';
+import 'package:verdant/services/notifications.dart';
+import 'package:verdant/theme/theme.dart';
+
+/// The app is written in English; dates and pickers follow the same locale.
+const appLocale = Locale('en', 'US');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('it_IT');
+  Intl.defaultLocale = 'en_US';
   usePathUrlStrategy();
+  _registerFontLicenses();
+
+  await Storage.init();
+  restoreAppData();
+
   runApp(const MyApp());
+  // Scheduling can take a moment; do it after the first frame.
+  NotificationService.init();
+}
+
+void _registerFontLicenses() {
+  LicenseRegistry.addLicense(() async* {
+    for (final (family, file) in [
+      ('Inter', 'assets/fonts/Inter-OFL.txt'),
+      ('Lora', 'assets/fonts/Lora-OFL.txt'),
+    ]) {
+      final text = await rootBundle.loadString(file);
+      yield LicenseEntryWithLineBreaks([family], text);
+    }
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -17,17 +45,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: themeMode,
-      builder: (context, mode, _) => MaterialApp(
-        debugShowCheckedModeBanner: true, //da togliere dopo
-
+    return ListenableBuilder(
+      listenable: appSettings,
+      builder: (context, _) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Verdant.',
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
-        themeMode: mode,  
+        themeMode: appSettings.themeMode,
+        locale: appLocale,
+        supportedLocales: const [appLocale],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
         initialRoute: AppRoutes.root,
         onGenerateRoute: AppRoutes.onGenerateRoute,
-        title: 'Verdant.',
+        onUnknownRoute: AppRoutes.onUnknownRoute,
       ),
     );
   }
