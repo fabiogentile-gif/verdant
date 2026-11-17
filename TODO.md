@@ -1,102 +1,53 @@
 # TODO – Verdant
 
 Analisi delle cartelle `lib/` (app Flutter) e `backend/` (API Express).
-Elenco delle funzionalità mancanti, incomplete o rotte, in ordine di priorità.
+Stato aggiornato: il frontend è completo tranne le parti che richiedono **login/utenti**, **backend** o **hardware**.
 
 ---
 
 ## 🔴 Bug bloccanti
 
-- [x] **Errore di compilazione in `lib/pages/plants.dart:150`** – la classe `OwnedPlant` è definita due volte
-  (`lib/data/owned_plants.dart` e `lib/pages/plants.dart`). `ownedPlants` usa quella di `data/`, mentre
-  `PersonalPlantDetails` si aspetta quella di `pages/plants.dart` → `argument_type_not_assignable`.
-  Eliminare la copia in `plants.dart` e far importare a `personal_plant_details.dart` quella di `data/owned_plants.dart`.
-- [x] **Filtro categoria ignorato dal backend** – `ApiProductRepository.getProducts(category:)` chiama
-  `GET /api/products?category=...`, ma `server.js` non legge `req.query.category` e restituisce sempre tutti i prodotti.
-  Gestire la query string lato server (oppure usare `GET /api/categories/:category` lato app).
-- [x] **Test di default rotto** – `test/widget_test.dart` è ancora il test "counter" del template Flutter; va riscritto.
+- [x] Errore di compilazione `OwnedPlant` duplicata.
+- [x] Filtro categoria ignorato dal backend.
+- [x] Test di default rotto.
 
 ---
 
-## 📱 Frontend (`lib/`)
+## 📱 Frontend (`lib/`) – fatto
 
-### Homepage (`lib/pages/homepage.dart`)
-- [ ] Campanella notifiche: `onActionTap: () {}` – manca pagina/pannello notifiche e logica `hasUnread`
-  (il pallino in `search_field.dart` → `_buildBell` è commentato).
-- [ ] Barra di ricerca senza `onChanged`/`onSubmitted` – la ricerca non fa nulla.
-- [ ] `PopularCategories`: la selezione cambia solo l'indice, non filtra né naviga verso il Greenhouse.
-- [ ] `SeasonalFeatureCard` creata senza `onTap`.
-- [ ] `FeaturedProducts`: `onFavoriteTap` e `onAddTap` non passati (preferiti / aggiunta al carrello).
-- [ ] `PersonalCollection`: dati della pianta hardcoded (Monstera) e `onPlantTap: () {}` – dovrebbe aprire `PersonalPlantDetails`
-  e prendere la pianta che ha bisogno di cure da `ownedPlants`.
-- [ ] `UpcomingCare`: promemoria hardcoded, `onViewAll: () {}` e nessun `onTap` sui singoli promemoria.
-- [ ] Nome utente "Maya" hardcoded nel titolo.
+Dati salvati sul telefono (`shared_preferences`, `lib/data/storage.dart`): piante, promemoria, storico cure, carrello, metodi di pagamento (solo ultime 4 cifre), preferiti, ordini, indirizzo, impostazioni.
 
-### Greenhouse / Shop (`lib/pages/greenhouse.dart`)
-- [x] Carrello: modello `lib/data/cart.dart` + pagina `lib/pages/cart.dart` (rotta `/cart`). Checkout in `lib/pages/checkout.dart` con pagamento simulato (carta o PayPal finti, `lib/data/payment.dart`). Restano: badge quantità sull'icona, persistenza (carrello e metodi di pagamento si svuotano al riavvio), indirizzo di consegna fisso (Maya Thompson), storico ordini.
-- [ ] Barra di ricerca senza `onChanged` – la ricerca prodotti non funziona.
-- [ ] Chip categorie: `_categoryIndex` viene aggiornato ma i prodotti non vengono filtrati. Inoltre le categorie della UI
-  (`Indoor Plants`, `Outdoor Plants`, `Pots`, `Soil`, `Fertilizers`, `Accessories`) non corrispondono a quelle del backend
-  (`plants`, `planters`, `accessories`) → valutare di caricarle da `GET /api/categories`.
-- [ ] `_FeaturedCollection(onTap: () {})` – nessuna azione.
-- [ ] `_SortAndFilter`: è solo grafica, manca ordinamento (prezzo, nome, rating…) e pannello filtri.
-- [x] `ProductCard.onAddTap: () {}` – aggiunta al carrello non implementata.
-- [ ] Preferiti salvati solo in memoria (`Set<int>`), persi al cambio tab; non condivisi con la pagina dettaglio/homepage.
-- [ ] Divisione "favorites" / "recommended" basata su `take(4)`/`skip(4)` invece che su dati reali.
-- [x] `ShopProduct.tag` mai valorizzato in `fromSummary`.
+- [x] **Homepage**: campanella → pagina Notifiche con pallino "non letto"; ricerca e categorie aprono il Greenhouse filtrato; card stagionale cliccabile; prodotti in evidenza con preferiti e "+" carrello; pianta in evidenza e promemoria presi dal calendario cure.
+- [x] **Greenhouse**: ricerca, categorie (filtrate sui dati reali), ordinamento, filtri (disponibili / preferiti), badge carrello, "Easy-grow edit", preferiti condivisi, divisione piante / accessori reale, errori di rete leggibili.
+- [x] **Dettaglio prodotto**: tag → Greenhouse filtrato, "View all", preferiti condivisi, helper duplicati rimossi (`imageFor`, `lib/utils/money.dart`).
+- [x] **Le mie piante**: aggiunta pianta (specie, nome, stanza) con promemoria automatico, filtro per stanza, dettaglio per tutte le piante.
+- [x] **Dettaglio pianta**: menu ⋯ (modifica / promemoria / rimuovi), "Mark as watered", date reali, guida per specie (`PlantSpecies` in `lib/models/plant_details.dart`).
+- [x] **Promemoria cure**: salvataggio reale (acqua / concime / rinvaso, ripetizione, giorni, data, ora, nota, push/email), eliminazione.
+- [x] **Activity**: collegata al calendario condiviso con Homepage, Piante e dettaglio.
+- [x] **Profilo**: I miei ordini (+ dettaglio), indirizzo, metodi di pagamento, promemoria, fuso orario, privacy e permessi (con "Erase my data"), aiuto (FAQ), About (con licenze font), tema scuro salvato, icona impostazioni.
+- [x] **Notifiche**: `flutter_local_notifications` programma i promemoria (canale "Care reminders"), permesso Android 13+.
+- [x] **Infrastruttura**: router con pagina 404 e rotte nominate (`/plant/:id`, `/orders/:n`, …), `ProductRepository` con timeout, cache ed errori tipizzati, banner debug tolto, app tutta in inglese (date incluse) con `flutter_localizations`, warning `page_header.dart` risolti, `StandardAppBar` spostata in `widgets/components/`.
 
-### Dettaglio prodotto (`lib/pages/product_details.dart`)
-- [x] `onAddToCart: () {}` – manca l'aggiunta al carrello con la quantità selezionata.
-- [ ] Codici sconto validati solo lato app (`GROW10` in `Cart._codes`) → spostarli sul backend.
-- [ ] Tag prodotto (`AppFilterChip`) con `onTap: () {}`.
-- [x] Prodotti correlati: `onAddTap: () {}`.
-- [ ] Preferito (`_favorite`, `_relatedFavorites`) solo locale, non persistito né sincronizzato.
-- [ ] Duplicazioni da rimuovere: `_imageFor` (esiste già `imageFor` in `product_repository.dart`) e `_price`
-  (formattazione prezzo ripetuta anche in homepage e greenhouse → creare un helper comune o usare `intl`).
+## 📱 Frontend – rimandato
 
-### Le mie piante (`lib/pages/plants.dart`)
-- [ ] Pulsante "+" in app bar e "Add a plant to your collection": `onPressed: () {}` – manca il flusso di aggiunta pianta.
-- [ ] Chip "By room": `onTap: () {}` – manca il filtro per stanza.
-- [ ] Le piante senza `details` (tutte tranne la Monstera) non aprono nulla al tap.
-- [ ] Dati delle piante hardcoded in `lib/data/owned_plants.dart` – manca un repository (API o storage locale) come per i prodotti.
+### Login / utenti (da fare insieme all'autenticazione)
+- [ ] Nome "Maya" fisso (Homepage, Piante, Profilo) e "Plant parent · Portland, OR".
+- [ ] "Edit profile", "Sign out", "Account & security" senza azione.
+- [ ] Indirizzo demo precompilato (ora modificabile, ma non legato a un account).
 
-### Dettaglio pianta personale (`lib/pages/personal_plant_details.dart`)
-- [ ] Menu "altro" (`onMore: () {}`) – modifica / rimozione pianta.
-- [ ] "Mark as watered": `onPressed: () {}` – dovrebbe aggiornare ultima annaffiatura, stato e storico.
-- [ ] "Schedule a care reminder": `onPressed: () {}` – manca la creazione di promemoria.
-- [ ] Etichette date (`lastWateredLabel`, `nextCareLabel`, `history`…) sono stringhe statiche: servono `DateTime` reali
-  e calcolo del prossimo intervento.
+### Richiede backend
+- [ ] Codici sconto validati solo nell'app (`GROW10` in `Cart._codes`).
+- [ ] Email reminders: la preferenza è salvata ma nessuna email viene inviata.
+- [ ] Ordini, preferiti, piante e promemoria solo sul telefono (nessuna sincronizzazione).
+- [ ] Stato ordine stimato dalle date ("Placed" / "On its way" / "Delivered"), non reale.
 
-### Activity (`lib/pages/activity.dart`)
-- [x] Pagina completa: riepilogo, oggi, in arrivo, storico (dati in `lib/data/care_schedule.dart`, relativi a oggi, solo in memoria).
-- [x] Icona calendario: apre la scelta del periodo (7/14/30 giorni).
-- [ ] Collegare `careSchedule` anche a Homepage (UpcomingCare), pagina Piante (stato "Needs water") e dettaglio pianta ("Mark as watered"), che usano ancora testi fissi.
-- [ ] Salvare davvero i promemoria creati da "Edit care reminder" nel `careSchedule`.
+### Richiede hardware
+- [ ] **Smart pot / sensori** (umidità, luce, temperatura): nessun dato reale disponibile; in `PRODUCT.md` è segnato come non deciso.
 
-### Profilo (`lib/pages/profile.dart`)
-- [ ] Azione app bar `onActionTap: () {}`.
-- [ ] `onOpenPlants` mai passato dal router (`Profile()` in `router.dart`) → il link alla collezione non funziona;
-  usare `AppShell.of(context)?.goTotab(AppRoutes.plants)`.
-- [ ] Tutte le voci senza implementazione: My orders, Saved addresses, Payment methods, Care reminders, Time zone,
-  Account & security, Privacy & permissions, Help & support, About Verdant.
-- [ ] "Edit profile" e "Sign out": `onPressed: () {}` – manca autenticazione / gestione utente.
-- [ ] Toggle push/email solo in stato locale, non persistiti né collegati a un sistema di notifiche.
-- [ ] Dark mode: `themeMode` non viene salvato (si perde al riavvio) – es. `shared_preferences`.
-- [ ] Dati utente ("Maya", "Portland, OR") hardcoded.
-
-### Generale / infrastruttura
-- [ ] **Notifiche** (obiettivo del progetto: "smart pots with notification system"): nessuna integrazione
-  (es. `flutter_local_notifications` / FCM).
-- [ ] **Smart pot**: nessun modello/servizio per sensori (umidità, luce, temperatura) o collegamento dispositivi.
-- [ ] Gestione stato globale assente (carrello, preferiti, utente, piante) – valutare Provider/Riverpod o simili.
-- [ ] `ProductRepository`: nessun timeout, nessuna cache, nessuna gestione errori di rete tipizzata;
-  manca un repository equivalente per piante, utente, ordini.
-- [ ] Router: nessuna pagina 404 (`onGenerateRoute` restituisce `null` per rotte sconosciute) e nessuna rotta
-  nominata per `PersonalPlantDetails`.
-- [ ] `main.dart`: `debugShowCheckedModeBanner: true` da rimettere a `false` ("da togliere dopo").
-- [ ] Localizzazione: le date usano `it_IT` ma tutti i testi sono in inglese hardcoded → introdurre `flutter_localizations`/ARB.
-- [ ] Warning `flutter analyze` in `lib/widgets/components/page_header.dart` (righe 34, 45, 50: `!` inutili, initializing formal).
-- [ ] File fuori posto: `lib/search_field.dart` contiene `StandardAppBar` → spostarlo in `lib/widgets/components/`.
+### Possibili migliorie
+- [ ] Traduzione italiana (oggi l'app è tutta in inglese, già predisposta con `flutter_localizations`).
+- [ ] Area di tocco < 48 dp su alcune icone (cuori sulle card prodotto, "+" carrello).
+- [ ] Test automatici: la cartella `test/` è stata rimossa.
 
 ---
 
