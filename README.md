@@ -101,5 +101,3 @@ flutter build apk    # Android release build
 ## Roadmap
 
 See [TODO.md](TODO.md). Still to do: user accounts and login, a backend for orders, discount codes and email reminders, and smart-pot sensors (humidity, light, temperature).
-
-Design notes live in [DESIGN.md](DESIGN.md) and the product brief in [PRODUCT.md](PRODUCT.md).
