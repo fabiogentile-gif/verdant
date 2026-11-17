@@ -5,8 +5,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/care_schedule.dart';
 import 'package:verdant/data/owned_plants.dart';
 import 'package:verdant/pages/care_reminder.dart';
-import 'package:verdant/pages/personal_plant_details.dart';
-import 'package:verdant/search_field.dart';
+import 'package:verdant/router/router.dart';
+import 'package:verdant/widgets/components/standard_app_bar.dart';
 import 'package:verdant/widgets/components/filter_chip.dart';
 import 'package:verdant/widgets/components/page_header.dart';
 import 'package:verdant/widgets/components/plant_card.dart';
@@ -53,22 +53,22 @@ class _ActivityState extends State<Activity> {
   bool _matches(OwnedPlant plant, CareKind? kind) =>
       (_plant == null || plant == _plant) && (_kind == null || kind == _kind);
 
-  void _openPlant(OwnedPlant plant) {
-    final details = plant.details;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => details != null
-            ? PersonalPlantDetails(plant: plant, details: details)
-            : CareReminderPage(plant: plant),
-      ),
-    );
-  }
+  void _openPlant(OwnedPlant plant) => openPlant(context, plant);
 
-  void _openReminder([OwnedPlant? plant]) {
-    Navigator.of(context).push(
+  void _openReminder([OwnedPlant? plant, CareKind? kind]) {
+    final target = plant ?? _plant ?? ownedPlants.firstOrNull;
+    if (target == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Add a plant first to set a reminder.')),
+      );
+      return;
+    }
+    Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
-        builder: (_) =>
-            CareReminderPage(plant: plant ?? _plant ?? ownedPlants.first),
+        builder: (_) => CareReminderPage(
+          plant: target,
+          kind: kind ?? _kind ?? CareKind.water,
+        ),
       ),
     );
   }
@@ -137,7 +137,7 @@ class _ActivityState extends State<Activity> {
 
           bool visible(CareTask t) => _matches(t.plant, t.plan.kind);
           final history = careSchedule.completed
-              .where((c) => _matches(c.plant, c.kind))
+              .where((c) => c.plant != null && _matches(c.plant!, c.kind))
               .toList();
 
           return ScrollViewNoStretch(
@@ -181,9 +181,9 @@ class _ActivityState extends State<Activity> {
                 _ComingUpSection(
                   tasks: comingUp.where(visible).toList(),
                   next: next != null && visible(next) ? next : null,
-                  onManage: _openReminder,
-                  onOpen: (t) => _openReminder(t.plant),
-                  onSchedule: _openReminder,
+                  onManage: () => pushRoot(context, AppRoutes.careReminders),
+                  onOpen: (t) => _openReminder(t.plant, t.plan.kind),
+                  onSchedule: () => _openReminder(),
                 ),
                 const SizedBox(height: 24),
                 _HistorySection(
@@ -406,14 +406,14 @@ class _TodaySection extends StatelessWidget {
             subtitle: '${task.plant.room} · ${task.plant.species}',
             image: task.plant.image,
             status: PlantStatus.needsCare,
-            statusLabel: 'Needs ${task.plan.kind.verb.toLowerCase()}',
+            statusLabel: task.plan.kind.needsLabel,
             scheduleLabel: _schedule(task),
             onTap: () => onOpen(task.plant),
           ),
-          if (task.plan.instructions != null) ...[
+          if (task.plan.note != null) ...[
             const SizedBox(height: 12),
             Text(
-              task.plan.instructions!,
+              task.plan.note!,
               style: theme.textTheme.bodySmall?.copyWith(
                 fontSize: 12,
                 height: 1.5,
@@ -713,7 +713,9 @@ class _CompletedRow extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               Text(
-                '${event.plant.name} · ${event.plant.room}',
+                event.plant == null
+                    ? 'A plant you no longer have'
+                    : '${event.plant!.name} · ${event.plant!.room}',
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
@@ -869,6 +871,7 @@ Future<_OptionResult<T>?> _showOptions<T>(
 
   final result = await showModalBottomSheet<_OptionResult<T>>(
     context: context,
+    useRootNavigator: true,
     useSafeArea: true,
     backgroundColor: theme.scaffoldBackgroundColor,
     shape: const RoundedRectangleBorder(

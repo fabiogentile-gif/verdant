@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:verdant/data/care_schedule.dart';
 import 'package:verdant/data/owned_plants.dart';
-import 'package:verdant/pages/personal_plant_details.dart';
-import 'package:verdant/search_field.dart';
+import 'package:verdant/router/router.dart';
 import 'package:verdant/widgets/components/collection_overview.dart';
 import 'package:verdant/widgets/components/page_header.dart';
 import 'package:verdant/widgets/components/plant_card.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
 import 'package:verdant/widgets/components/search_bar.dart';
+import 'package:verdant/widgets/components/standard_app_bar.dart';
+import 'package:verdant/widgets/plants/plant_form_sheet.dart';
 
 enum _PlantFilter { all, needsCare }
 
@@ -21,32 +23,80 @@ class Plants extends StatefulWidget {
 class _PlantsState extends State<Plants> {
   _PlantFilter _filter = _PlantFilter.all;
   String _query = '';
+  String? _room; // null = all rooms
+
+  void _addPlant() => showPlantFormSheet(context);
+
+  Future<void> _pickRoom() async {
+    final rooms = plantCollection.rooms;
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) {
+        final scheme = Theme.of(context).colorScheme;
+        Widget option(String label, String value, bool selected) => ListTile(
+          title: Text(label),
+          trailing: selected
+              ? Icon(LucideIcons.check, size: 18, color: scheme.primary)
+              : null,
+          onTap: () => Navigator.of(context).pop(value),
+        );
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                option('All rooms', '', _room == null),
+                for (final r in rooms) option(r, r, _room == r),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (picked != null) setState(() => _room = picked.isEmpty ? null : picked);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final needsCareCount = ownedPlants
-        .where((p) => p.status == PlantStatus.needsCare)
-        .length;
-    final healthyCount = ownedPlants.length - needsCareCount;
+    return ListenableBuilder(
+      listenable: Listenable.merge([plantCollection, careSchedule]),
+      builder: (context, _) => _build(context),
+    );
+  }
+
+  Widget _build(BuildContext context) {
+    final plants = ownedPlants;
+    if (_room != null && !plantCollection.rooms.contains(_room)) _room = null;
+    final needsCareCount = plants.where(careSchedule.needsCare).length;
+    final healthyCount = plants.length - needsCareCount;
 
     final query = _query.trim().toLowerCase();
 
-    final visible = ownedPlants.where((p) {
+    final visible = plants.where((p) {
       final matchesFilter =
-          _filter == _PlantFilter.all || p.status == PlantStatus.needsCare;
+          _filter == _PlantFilter.all || careSchedule.needsCare(p);
+      final matchesRoom = _room == null || p.room == _room;
       final matchesQuery =
           query.isEmpty ||
           p.name.toLowerCase().contains(query) ||
           p.room.toLowerCase().contains(query) ||
           p.species.toLowerCase().contains(query);
-      return matchesFilter && matchesQuery;
+      return matchesFilter && matchesRoom && matchesQuery;
     }).toList();
 
     return Scaffold(
       appBar: StandardAppBar(
         title: 'My plants',
         actionIcon: LucideIcons.plus,
-        onActionTap: () {},
+        actionLabel: 'Add a plant',
+        onActionTap: _addPlant,
       ),
       body: ScrollViewNoStretch(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
@@ -60,7 +110,7 @@ class _PlantsState extends State<Plants> {
             ),
             const SizedBox(height: 24),
             CollectionOverview(
-              total: ownedPlants.length,
+              total: plants.length,
               healthy: healthyCount,
               needsCare: needsCareCount,
             ),
@@ -75,7 +125,7 @@ class _PlantsState extends State<Plants> {
               child: Row(
                 children: [
                   _FilterChip(
-                    label: 'All plants (${ownedPlants.length})',
+                    label: 'All plants (${plants.length})',
                     selected: _filter == _PlantFilter.all,
                     onTap: () => setState(() => _filter = _PlantFilter.all),
                   ),
@@ -88,10 +138,10 @@ class _PlantsState extends State<Plants> {
                   ),
                   const SizedBox(width: 8),
                   _FilterChip(
-                    label: 'By room',
-                    selected: false,
+                    label: _room ?? 'By room',
+                    selected: _room != null,
                     leadingIcon: LucideIcons.chevronDown,
-                    onTap: () {},
+                    onTap: _pickRoom,
                   ),
                 ],
               ),
@@ -101,7 +151,9 @@ class _PlantsState extends State<Plants> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Text(
-                  'No plants match your search.',
+                  plants.isEmpty
+                      ? 'Your collection is empty. Add your first plant below.'
+                      : 'No plants match your filters.',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontSize: 12,
@@ -115,25 +167,18 @@ class _PlantsState extends State<Plants> {
                 name: visible[i].name,
                 subtitle: '${visible[i].room} · ${visible[i].species}',
                 image: visible[i].image,
-                status: visible[i].status,
-                statusLabel: visible[i].statusLabel,
-                scheduleLabel: visible[i].scheduleLabel,
-                onTap: () {
-                  final d = visible[i].details;
-                  if (d == null) return;
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          PersonalPlantDetails(plant: visible[i], details: d),
-                    ),
-                  );
-                },
+                status: careSchedule.needsCare(visible[i])
+                    ? PlantStatus.needsCare
+                    : PlantStatus.healthy,
+                statusLabel: careSchedule.statusLabel(visible[i]),
+                scheduleLabel: careSchedule.scheduleLabel(visible[i]),
+                onTap: () => openPlant(context, visible[i]),
               ),
             ],
             const SizedBox(height: 24),
             _AddPlantButton(
               label: 'Add a plant to your collection',
-              onPressed: () {},
+              onPressed: _addPlant,
             ),
             const SizedBox(height: 24),
             const _CollectionGuidance(),

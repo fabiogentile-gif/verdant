@@ -1,63 +1,169 @@
 import 'package:flutter/material.dart';
-import 'package:verdant/theme/theme.dart';
+import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:verdant/data/care_schedule.dart';
+import 'package:verdant/data/owned_plants.dart';
 import 'package:verdant/models/plant_details.dart';
-import 'package:verdant/widgets/components/detail_header.dart';
-import 'package:verdant/widgets/components/plant_card.dart';
-import 'package:verdant/widgets/components/scrollview_list.dart';
-import 'package:verdant/data/owned_plants.dart' show OwnedPlant;
 import 'package:verdant/pages/care_reminder.dart';
+import 'package:verdant/pages/not_found.dart';
+import 'package:verdant/theme/theme.dart';
+import 'package:verdant/widgets/components/detail_header.dart';
+import 'package:verdant/widgets/components/scrollview_list.dart';
+import 'package:verdant/widgets/plants/plant_form_sheet.dart';
 
+final _shortDate = DateFormat('MMM d', 'en_US');
+final _fullDate = DateFormat('MMM d, y', 'en_US');
+
+/// Details of a plant in the user's collection.
 class PersonalPlantDetails extends StatelessWidget {
-  const PersonalPlantDetails({
-    super.key,
-    required this.plant,
-    required this.details,
-  });
+  const PersonalPlantDetails({super.key, required this.plantId});
 
-  final OwnedPlant plant;
-  final PlantDetails details;
+  final String plantId;
+
+  Future<void> _showMenu(BuildContext context, OwnedPlant plant) async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) {
+        final scheme = Theme.of(context).colorScheme;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: Icon(LucideIcons.pencil, color: scheme.onSurface),
+                  title: const Text('Edit name & room'),
+                  onTap: () => Navigator.of(context).pop('edit'),
+                ),
+                ListTile(
+                  leading: Icon(LucideIcons.bellPlus, color: scheme.onSurface),
+                  title: const Text('Schedule a care reminder'),
+                  onTap: () => Navigator.of(context).pop('remind'),
+                ),
+                ListTile(
+                  leading: Icon(LucideIcons.trash2, color: scheme.error),
+                  title: Text(
+                    'Remove from my plants',
+                    style: TextStyle(color: scheme.error),
+                  ),
+                  onTap: () => Navigator.of(context).pop('remove'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (!context.mounted || action == null) return;
+
+    switch (action) {
+      case 'edit':
+        await showPlantFormSheet(context, plant: plant);
+      case 'remind':
+        _openReminder(context, plant);
+      case 'remove':
+        final ok = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Remove ${plant.name}?'),
+            content: const Text(
+              'Its reminders and care history will be removed too.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Keep it'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Remove'),
+              ),
+            ],
+          ),
+        );
+        if (ok == true && context.mounted) {
+          Navigator.of(context).pop();
+          plantCollection.remove(plant);
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('${plant.name} was removed.')));
+        }
+    }
+  }
+
+  static void _openReminder(
+    BuildContext context,
+    OwnedPlant plant, [
+    CareKind kind = CareKind.water,
+  ]) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CareReminderPage(plant: plant, kind: kind),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            DetailHeader(
-              title: 'Your ${plant.name}',
-              onBack: () => Navigator.of(context).maybePop(),
-              onMore: () {},
-            ),
-            Expanded(
-              child: ScrollViewNoStretch(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _PlantPortrait(image: plant.image, room: plant.room),
-                    const SizedBox(height: 26),
-                    _PlantIdentity(plant: plant, details: details),
-                    const SizedBox(height: 26),
-                    _TodaysCare(details: details),
-                    const SizedBox(height: 26),
-                    _CareGuide(requirements: details.requirements),
-                    const SizedBox(height: 26),
-                    _SeasonalNote(details: details),
-                    const SizedBox(height: 26),
-                    _BotanicalNotes(details: details),
-                    const SizedBox(height: 26),
-                    _CareRhythm(plant: plant, details: details),
-                    const SizedBox(height: 26),
-                    _CareHistory(events: details.history),
-                  ],
+    return ListenableBuilder(
+      listenable: Listenable.merge([plantCollection, careSchedule]),
+      builder: (context, _) {
+        final plant = plantCollection.byId(plantId);
+        if (plant == null) {
+          return const NotFoundPage(
+            title: 'This plant is no longer here.',
+            message: 'It may have been removed from your collection.',
+          );
+        }
+        final guide = plant.guide;
+
+        return Scaffold(
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                DetailHeader(
+                  title: 'Your ${plant.name}',
+                  onBack: () => Navigator.of(context).maybePop(),
+                  onMore: () => _showMenu(context, plant),
                 ),
-              ),
+                Expanded(
+                  child: ScrollViewNoStretch(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _PlantPortrait(image: plant.image, room: plant.room),
+                        const SizedBox(height: 26),
+                        _PlantIdentity(plant: plant, guide: guide),
+                        const SizedBox(height: 26),
+                        _TodaysCare(plant: plant, guide: guide),
+                        const SizedBox(height: 26),
+                        _CareGuide(requirements: guide.requirements),
+                        const SizedBox(height: 26),
+                        _SeasonalNote(guide: guide),
+                        const SizedBox(height: 26),
+                        _BotanicalNotes(guide: guide),
+                        const SizedBox(height: 26),
+                        _CareRhythm(plant: plant),
+                        const SizedBox(height: 26),
+                        _CareHistory(plant: plant),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -122,38 +228,44 @@ class _PlantPortrait extends StatelessWidget {
 }
 
 class _PlantIdentity extends StatelessWidget {
-  const _PlantIdentity({required this.plant, required this.details});
+  const _PlantIdentity({required this.plant, required this.guide});
 
   final OwnedPlant plant;
-  final PlantDetails details;
+  final PlantGuide guide;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final needsCare = plant.status == PlantStatus.needsCare;
+    final needsCare = careSchedule.needsCare(plant);
+    final family = guide.family;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              details.sinceLabel,
-              style: theme.textTheme.labelSmall?.copyWith(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1.8,
-                color: scheme.primary,
+            Expanded(
+              child: Text(
+                'GROWING SINCE ${_shortDate.format(plant.addedOn).toUpperCase()}',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.8,
+                  color: scheme.primary,
+                ),
               ),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
               decoration: BoxDecoration(
-                color: scheme.tertiaryContainer,
+                color: needsCare
+                    ? scheme.tertiaryContainer
+                    : scheme.primaryContainer,
                 borderRadius: BorderRadius.circular(100),
-                border: Border.all(color: scheme.tertiary),
+                border: Border.all(
+                  color: needsCare ? scheme.tertiary : scheme.primary,
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -161,15 +273,19 @@ class _PlantIdentity extends StatelessWidget {
                   Icon(
                     needsCare ? LucideIcons.triangleAlert : LucideIcons.check,
                     size: 12,
-                    color: scheme.onTertiaryContainer,
+                    color: needsCare
+                        ? scheme.onTertiaryContainer
+                        : scheme.onPrimaryContainer,
                   ),
                   const SizedBox(width: 5),
                   Text(
-                    plant.statusLabel,
+                    careSchedule.statusLabel(plant),
                     style: theme.textTheme.labelSmall?.copyWith(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
-                      color: scheme.onTertiaryContainer,
+                      color: needsCare
+                          ? scheme.onTertiaryContainer
+                          : scheme.onPrimaryContainer,
                     ),
                   ),
                 ],
@@ -190,7 +306,7 @@ class _PlantIdentity extends StatelessWidget {
         ),
         const SizedBox(height: 9),
         Text(
-          details.latinName,
+          family == null ? plant.species : '${plant.species} · $family',
           style: theme.textTheme.bodyMedium?.copyWith(
             fontSize: 14,
             fontStyle: FontStyle.italic,
@@ -199,7 +315,7 @@ class _PlantIdentity extends StatelessWidget {
         ),
         const SizedBox(height: 9),
         Text(
-          details.description,
+          guide.description,
           style: theme.textTheme.bodySmall?.copyWith(
             fontSize: 13,
             height: 1.5,
@@ -216,14 +332,43 @@ class _PlantIdentity extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _TodaysCare extends StatelessWidget {
-  const _TodaysCare({required this.details});
+  const _TodaysCare({required this.plant, required this.guide});
 
-  final PlantDetails details;
+  final OwnedPlant plant;
+  final PlantGuide guide;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final due = careSchedule.dueTasks(plantId: plant.id);
+    final task = due.isEmpty ? null : due.first;
+    final next = careSchedule.firstFrom(
+      dateOnly(DateTime.now()).add(const Duration(days: 1)),
+      plantId: plant.id,
+    );
+    final lastWater = careSchedule.lastDone(plant.id, CareKind.water);
+    final kind = task?.plan.kind ?? CareKind.water;
+
+    final headline = switch (kind) {
+      _ when task == null => 'All caught up for today.',
+      CareKind.water => 'A drink is due today.',
+      CareKind.fertilize => 'Time for a little feed.',
+      CareKind.repot => 'Time for a roomier pot.',
+    };
+    final instructions =
+        task?.plan.note ??
+        (task == null
+            ? 'Nothing to do right now. Enjoy it, and check back tomorrow.'
+            : guide.waterInstructions);
+    final lastLabel = lastWater == null
+        ? 'Not watered in Verdant yet'
+        : 'Last watered ${_shortDate.format(lastWater.date)}';
+    final nextLabel = task != null
+        ? formatDue(task.due)
+        : next == null
+        ? 'No reminders yet'
+        : 'Next · ${formatDue(next.due)}';
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -237,14 +382,14 @@ class _TodaysCare extends StatelessWidget {
           Row(
             children: [
               Icon(
-                LucideIcons.droplets,
+                task == null ? LucideIcons.sparkles : kind.icon,
                 size: 24,
                 color: scheme.surfaceContainerLowest,
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  details.careHeadline,
+                  headline,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontSize: 17,
                     fontWeight: FontWeight.w500,
@@ -256,7 +401,7 @@ class _TodaysCare extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            details.careInstructions,
+            instructions,
             style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 12,
               height: 1.6,
@@ -265,17 +410,19 @@ class _TodaysCare extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                details.lastWateredLabel,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  fontSize: 10,
-                  color: scheme.tertiaryContainer,
+              Expanded(
+                child: Text(
+                  lastLabel,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 10,
+                    color: scheme.tertiaryContainer,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Text(
-                details.nextCareLabel,
+                nextLabel,
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontSize: 10,
                   color: scheme.tertiaryContainer,
@@ -283,24 +430,47 @@ class _TodaysCare extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          FilledButton.icon(
-            onPressed: () {},
-            icon: const Icon(LucideIcons.arrowRight, size: 18),
-            label: const Text(
-              'Mark as watered',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-            ),
-            style: FilledButton.styleFrom(
-              backgroundColor: scheme.primary,
-              foregroundColor: scheme.onPrimary,
-              minimumSize: const Size.fromHeight(52),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+          if (task != null) ...[
+            const SizedBox(height: 14),
+            FilledButton.icon(
+              onPressed: () {
+                careSchedule.complete(task);
+                final upcoming = careSchedule.firstFrom(
+                  dateOnly(DateTime.now()).add(const Duration(days: 1)),
+                  plantId: plant.id,
+                );
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        upcoming == null
+                            ? '${plant.name} is happy.'
+                            : '${plant.name} is happy. '
+                                  'Next: ${formatDue(upcoming.due)}.',
+                      ),
+                    ),
+                  );
+              },
+              icon: const Icon(LucideIcons.arrowRight, size: 18),
+              label: Text(
+                'Mark as ${kind.doneLabel.toLowerCase()}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: scheme.primary,
+                foregroundColor: scheme.onPrimary,
+                minimumSize: const Size.fromHeight(52),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -312,10 +482,11 @@ class _TodaysCare extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _SectionHeading extends StatelessWidget {
-  const _SectionHeading({required this.title, this.actionLabel});
+  const _SectionHeading({required this.title, this.actionLabel, this.onAction});
 
   final String title;
   final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -337,12 +508,19 @@ class _SectionHeading extends StatelessWidget {
         ),
         if (actionLabel != null) ...[
           const SizedBox(width: 8),
-          Text(
-            actionLabel!,
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: scheme.primary,
+          TextButton(
+            onPressed: onAction,
+            style: TextButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
+            child: Text(
+              actionLabel!,
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: scheme.primary,
+              ),
             ),
           ),
         ],
@@ -438,9 +616,9 @@ class _CareGuide extends StatelessWidget {
 }
 
 class _SeasonalNote extends StatelessWidget {
-  const _SeasonalNote({required this.details});
+  const _SeasonalNote({required this.guide});
 
-  final PlantDetails details;
+  final PlantGuide guide;
 
   @override
   Widget build(BuildContext context) {
@@ -463,7 +641,7 @@ class _SeasonalNote extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  details.seasonLabel,
+                  guide.seasonLabel,
                   style: theme.textTheme.labelSmall?.copyWith(
                     fontSize: 10,
                     height: 1.45,
@@ -473,7 +651,7 @@ class _SeasonalNote extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  details.seasonTitle,
+                  guide.seasonTitle,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontSize: 14,
                     height: 1.45,
@@ -483,7 +661,7 @@ class _SeasonalNote extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  details.seasonBody,
+                  guide.seasonBody,
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontSize: 12,
                     height: 1.45,
@@ -504,9 +682,9 @@ class _SeasonalNote extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _BotanicalNotes extends StatelessWidget {
-  const _BotanicalNotes({required this.details});
+  const _BotanicalNotes({required this.guide});
 
-  final PlantDetails details;
+  final PlantGuide guide;
 
   @override
   Widget build(BuildContext context) {
@@ -525,7 +703,7 @@ class _BotanicalNotes extends StatelessWidget {
           const _SectionHeading(title: 'A little plant knowledge'),
           const SizedBox(height: 12),
           Text(
-            details.botanicalNotes,
+            guide.botanicalNotes,
             style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 12,
               height: 1.5,
@@ -541,12 +719,14 @@ class _BotanicalNotes extends StatelessWidget {
                 color: scheme.onTertiaryContainer,
               ),
               const SizedBox(width: 8),
-              Text(
-                details.petSafetyLabel,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
-                  color: scheme.onTertiaryContainer,
+              Expanded(
+                child: Text(
+                  guide.petSafetyLabel,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: scheme.onTertiaryContainer,
+                  ),
                 ),
               ),
             ],
@@ -562,92 +742,112 @@ class _BotanicalNotes extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _CareRhythm extends StatelessWidget {
-  const _CareRhythm({required this.plant, required this.details});
+  const _CareRhythm({required this.plant});
 
   final OwnedPlant plant;
-  final PlantDetails details;
-
-  void _openReminder(BuildContext context) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => CareReminderPage(plant: plant)));
-  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final plans = careSchedule.plansFor(plant.id)
+      ..sort((a, b) => a.nextDue.compareTo(b.nextDue));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
-          onTap: () => _openReminder(context),
-          child: const _SectionHeading(
-            title: 'Your care rhythm',
-            actionLabel: 'Edit →',
+        _SectionHeading(
+          title: 'Your care rhythm',
+          actionLabel: plans.isEmpty ? null : 'Edit →',
+          onAction: () => PersonalPlantDetails._openReminder(
+            context,
+            plant,
+            plans.first.kind,
           ),
         ),
-        for (final r in details.reminders) ...[
+        if (plans.isEmpty) ...[
           const SizedBox(height: 13),
-          GestureDetector(
-            onTap: () => _openReminder(context),
-            child: Container(
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: scheme.surfaceContainerLowest,
-                boxShadow: AppShadows.cardSoft(scheme),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  _IconBox(icon: r.icon, boxSize: 42, iconSize: 20, radius: 14),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          r.title,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: scheme.onSurface,
-                          ),
+          Text(
+            'No reminders yet. Add one and Verdant will nudge you at the '
+            'right moment.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: 12,
+              height: 1.5,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+        for (final plan in plans) ...[
+          const SizedBox(height: 13),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: AppShadows.cardSoft(scheme),
+            ),
+            child: Material(
+              color: scheme.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(20),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: () => PersonalPlantDetails._openReminder(
+                  context,
+                  plant,
+                  plan.kind,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: Row(
+                    children: [
+                      _IconBox(
+                        icon: plan.kind.icon,
+                        boxSize: 42,
+                        iconSize: 20,
+                        radius: 14,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${plan.kind.verb} ${plant.name}',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: scheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${formatDue(plan.nextDue)} · '
+                              '${formatEvery(plan.everyDays).toLowerCase()}',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontSize: 11,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          r.whenLabel,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            fontSize: 11,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                      Icon(
+                        LucideIcons.chevronRight,
+                        size: 16,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ],
                   ),
-                  Icon(
-                    LucideIcons.chevronRight,
-                    size: 16,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ],
+                ),
               ),
             ),
           ),
         ],
         const SizedBox(height: 13),
-        Text(
-          details.reminderRecurrence,
-          style: theme.textTheme.bodySmall?.copyWith(
-            fontSize: 11,
-            height: 1.5,
-            color: scheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 13),
         FilledButton.icon(
-          onPressed: () => _openReminder(context),
+          onPressed: () => PersonalPlantDetails._openReminder(
+            context,
+            plant,
+            _firstFreeKind(plans),
+          ),
           icon: const Icon(LucideIcons.plus, size: 18),
           label: const Text(
             'Schedule a care reminder',
@@ -666,26 +866,57 @@ class _CareRhythm extends StatelessWidget {
       ],
     );
   }
+
+  /// Suggests a care type that has no reminder yet.
+  static CareKind _firstFreeKind(List<CarePlan> plans) {
+    for (final kind in CareKind.values) {
+      if (plans.every((p) => p.kind != kind)) return kind;
+    }
+    return CareKind.water;
+  }
 }
 
-class _CareHistory extends StatelessWidget {
-  const _CareHistory({required this.events});
+class _CareHistory extends StatefulWidget {
+  const _CareHistory({required this.plant});
 
-  final List<CareEvent> events;
+  final OwnedPlant plant;
+
+  @override
+  State<_CareHistory> createState() => _CareHistoryState();
+}
+
+class _CareHistoryState extends State<_CareHistory> {
+  static const _collapsed = 3;
+  bool _showAll = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final events = careSchedule.completedFor(widget.plant.id);
+    final shown = _showAll ? events : events.take(_collapsed).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionHeading(
+        _SectionHeading(
           title: 'A history of little rituals',
-          actionLabel: 'See all →',
+          actionLabel: events.length > _collapsed
+              ? (_showAll ? 'Show less' : 'See all →')
+              : null,
+          onAction: () => setState(() => _showAll = !_showAll),
         ),
-        for (final e in events) ...[
+        if (events.isEmpty) ...[
+          const SizedBox(height: 13),
+          Text(
+            'Care you mark as done will appear here.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: 12,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+        for (final e in shown) ...[
           const SizedBox(height: 17),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -709,18 +940,19 @@ class _CareHistory extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          e.title,
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: scheme.onSurface,
+                        Expanded(
+                          child: Text(
+                            e.title,
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: scheme.onSurface,
+                            ),
                           ),
                         ),
                         Text(
-                          e.dateLabel,
+                          _fullDate.format(e.date),
                           style: theme.textTheme.labelSmall?.copyWith(
                             fontSize: 10,
                             fontWeight: FontWeight.w400,
@@ -729,14 +961,16 @@ class _CareHistory extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 5),
-                    Text(
-                      e.note,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontSize: 11,
-                        color: scheme.onSurfaceVariant,
+                    if (e.note != null) ...[
+                      const SizedBox(height: 5),
+                      Text(
+                        e.note!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 11,
+                          color: scheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
