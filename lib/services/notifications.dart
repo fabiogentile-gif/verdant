@@ -3,8 +3,10 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:verdant/data/auth.dart';
 import 'package:verdant/data/care_schedule.dart';
 import 'package:verdant/data/settings.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Phone notifications for care reminders (Android only).
 ///
@@ -18,11 +20,11 @@ abstract final class NotificationService {
 
   static const _maxScheduled = 40;
   static const _horizon = Duration(days: 30);
-  static const _details = NotificationDetails(
+  static NotificationDetails get _details => NotificationDetails(
     android: AndroidNotificationDetails(
       'care_reminders',
-      'Care reminders',
-      channelDescription: 'Gentle nudges when a plant needs care.',
+      'Care reminders'.tr,
+      channelDescription: 'Gentle nudges when a plant needs care.'.tr,
     ),
   );
 
@@ -52,6 +54,7 @@ abstract final class NotificationService {
     }
     careSchedule.addListener(sync);
     appSettings.addListener(sync);
+    authStore.addListener(sync);
     await sync();
   }
 
@@ -92,7 +95,7 @@ abstract final class NotificationService {
   static Future<void> sync() async {
     if (!_ready) return;
     await _plugin.cancelAll();
-    if (!appSettings.push) return;
+    if (!appSettings.push || !authStore.isSignedIn) return;
 
     final now = DateTime.now();
     final tasks = careSchedule
@@ -108,7 +111,7 @@ abstract final class NotificationService {
         notificationDetails: _details,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         title: task.title,
-        body: task.plan.note ?? 'A gentle nudge from Verdant.',
+        body: task.plan.note ?? 'A gentle nudge from Verdant.'.tr,
       );
     }
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:verdant/theme/theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// A reminder as shown on the homepage.
 class CareReminder {
@@ -32,7 +33,7 @@ class UpcomingCare extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'A moment of care',
+                'A moment of care'.tr,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontFamily: 'Lora',
                   fontSize: 23,
@@ -45,7 +46,7 @@ class UpcomingCare extends StatelessWidget {
             GestureDetector(
               onTap: onViewAll,
               child: Text(
-                'View all →',
+                'View all →'.tr,
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,

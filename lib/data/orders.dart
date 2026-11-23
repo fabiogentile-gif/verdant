@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:verdant/data/address.dart';
+import 'package:verdant/data/api_client.dart';
 import 'package:verdant/data/cart.dart';
 import 'package:verdant/data/payment.dart';
+import 'package:verdant/data/product_repository.dart';
 import 'package:verdant/data/storage.dart';
 
 /// A placed (demo) order: a snapshot of the cart at checkout time.
@@ -18,6 +20,7 @@ class Order {
     this.number,
     this.placedAt,
     this.address,
+    this.serverStatus,
   });
 
   /// Snapshot of the live cart (not yet placed).
@@ -46,6 +49,10 @@ class Order {
   final DateTime? placedAt;
   final DeliveryAddress? address;
 
+  /// `placed`, `shipped`, `delivered` or `cancelled`, as set by the shop.
+  /// Null for orders made before accounts existed.
+  final String? serverStatus;
+
   int get itemCount => items.fold(0, (sum, i) => sum + i.quantity);
 
   /// Earliest and latest expected delivery date.
@@ -57,9 +64,19 @@ class Order {
     );
   }
 
-  /// "Placed", "On its way" or "Delivered", estimated from the dates
-  /// (there is no real shipping partner).
+  /// "Placed", "On its way", "Delivered" or "Cancelled". Older orders with no
+  /// status from the server are estimated from their dates.
   String status({DateTime? now}) {
+    switch (serverStatus) {
+      case 'placed':
+        return 'Placed';
+      case 'shipped':
+        return 'On its way';
+      case 'delivered':
+        return 'Delivered';
+      case 'cancelled':
+        return 'Cancelled';
+    }
     final at = now ?? DateTime.now();
     final (_, latest) = arrivalWindow;
     if (at.isAfter(latest)) return 'Delivered';
@@ -68,24 +85,6 @@ class Order {
     }
     return 'Placed';
   }
-
-  Order placed({
-    required String number,
-    required DateTime at,
-    required DeliveryAddress address,
-  }) => Order(
-    items: items,
-    subtotal: subtotal,
-    discountLabel: discountLabel,
-    discountAmount: discountAmount,
-    shipping: shipping,
-    delivery: delivery,
-    total: total,
-    paymentTitle: paymentTitle,
-    number: number,
-    placedAt: at,
-    address: address,
-  );
 
   Map<String, Object?> toJson() => {
     'items': items.map((i) => i.toJson()).toList(),
@@ -99,6 +98,7 @@ class Order {
     'number': number,
     'placedAt': placedAt?.toIso8601String(),
     'address': address?.toJson(),
+    'status': serverStatus,
   };
 
   factory Order.fromJson(Map json) => Order(
@@ -122,17 +122,73 @@ class Order {
     address: json['address'] is Map
         ? DeliveryAddress.fromJson(json['address'] as Map)
         : null,
+    serverStatus: json['status'] as String?,
   );
+
+  /// An order from the API: its image paths are relative to the server.
+  factory Order.fromServer(Map json) => Order.fromJson({
+    ...json,
+    'items': [
+      for (final item in (json['items'] as List).whereType<Map>())
+        {
+          ...item,
+          'image': resolveImage(item['image'] as String? ?? '', apiOrigin),
+        },
+    ],
+  });
 }
 
-/// Orders placed on this device, most recent first.
+/// The account's orders, most recent first.
 class OrderHistory extends ChangeNotifier {
   final List<Order> _orders = [];
 
   List<Order> get orders => List.unmodifiable(_orders);
 
-  void add(Order order) {
-    _orders.insert(0, order);
+  /// Sends the cart to the server, which checks prices, stock and discount.
+  /// [requestId] makes a retry after a lost connection safe.
+  Future<Order> place({
+    required PaymentMethod method,
+    required DeliveryAddress address,
+    required String requestId,
+  }) async {
+    final json = await api.post('/orders', {
+      'idempotencyKey': requestId,
+      'items': [
+        for (final i in cart.items)
+          {'productId': i.productId, 'quantity': i.quantity},
+      ],
+      'discountCode': cart.discount?.code,
+      'shipping': cart.shipping.name,
+      'address': address.toJson(),
+      'paymentTitle': method.title,
+    });
+    final order = Order.fromServer(json as Map);
+    _orders
+      ..removeWhere((o) => o.number == order.number)
+      ..insert(0, order);
+    _save();
+    return order;
+  }
+
+  /// Replaces server orders, keeping older ones that exist only on this phone.
+  void mergeFromServer(List<dynamic> json) {
+    final remote = json.whereType<Map>().map(Order.fromServer).toList();
+    final numbers = remote.map((o) => o.number).toSet();
+    final localOnly = _orders.where(
+      (o) => o.serverStatus == null && !numbers.contains(o.number),
+    );
+    final merged = [...remote, ...localOnly]
+      ..sort(
+        (a, b) =>
+            (b.placedAt ?? DateTime(0)).compareTo(a.placedAt ?? DateTime(0)),
+      );
+    _orders
+      ..clear()
+      ..addAll(merged);
+    _save();
+  }
+
+  void _save() {
     Storage.write(StorageKeys.orders, _orders.map((o) => o.toJson()).toList());
     notifyListeners();
   }

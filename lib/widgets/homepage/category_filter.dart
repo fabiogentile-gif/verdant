@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// A homepage category chip.
 class CategoryFilter {
-  const CategoryFilter(this.label, {this.icon});
+  const CategoryFilter(this._label, {this.icon});
 
-  final String label;
+  final String _label;
+
+  String get label => _label.tr;
+
   final IconData? icon;
 }
 
@@ -38,7 +42,7 @@ class PopularCategories extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Find your kind of green',
+          'Find your kind of green'.tr,
           style: TextStyle(
             fontFamily: 'Lora',
             fontSize: 23,

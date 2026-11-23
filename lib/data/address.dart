@@ -23,16 +23,27 @@ class DeliveryAddress {
   final String email;
   final String label;
 
-  /// Demo address until user accounts exist.
-  static const demo = DeliveryAddress(
-    fullName: 'Maya Thompson',
-    street: '124 Maple Street, Apt 3B',
-    city: 'Portland, OR',
-    postalCode: '97205',
-    country: 'United States',
-    phone: '+1 (503) 555-0148',
-    email: 'maya.thompson@email.com',
+  /// No address saved yet.
+  static const empty = DeliveryAddress(
+    fullName: '',
+    street: '',
+    city: '',
+    postalCode: '',
+    country: '',
+    phone: '',
+    email: '',
   );
+
+  /// Every field the courier needs is filled in.
+  bool get isComplete => [
+    fullName,
+    street,
+    city,
+    postalCode,
+    country,
+    phone,
+    email,
+  ].every((field) => field.trim().isNotEmpty);
 
   /// Multi-line postal format.
   String get lines => '$street\n$city $postalCode\n$country';
@@ -62,7 +73,7 @@ class DeliveryAddress {
 
 /// The saved delivery address, kept on the device.
 class AddressBook extends ChangeNotifier {
-  DeliveryAddress _address = DeliveryAddress.demo;
+  DeliveryAddress _address = DeliveryAddress.empty;
 
   DeliveryAddress get address => _address;
 
@@ -80,7 +91,7 @@ class AddressBook extends ChangeNotifier {
   }
 
   void reset() {
-    _address = DeliveryAddress.demo;
+    _address = DeliveryAddress.empty;
     notifyListeners();
   }
 }

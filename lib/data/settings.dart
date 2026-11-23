@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:verdant/data/storage.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// App preferences, saved on the device.
 class AppSettings extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
+  AppLanguage _language = AppLanguage.system;
   bool _push = true;
   bool _email = false;
   DateTime? _notificationsSeenAt;
 
   ThemeMode get themeMode => _themeMode;
 
+  /// Belongs to this phone: it isn't synced and survives signing out.
+  AppLanguage get language => _language;
+
   /// Phone notifications for care reminders.
   bool get push => _push;
 
-  /// Email reminders (preference only until the backend can send email).
+  /// Email reminders, sent by the server when email is configured.
   bool get email => _email;
 
   /// Last time the user opened the notifications page.
@@ -23,10 +28,21 @@ class AppSettings extends ChangeNotifier {
   set push(bool value) => _set(() => _push = value);
   set email(bool value) => _set(() => _email = value);
 
+  set language(AppLanguage value) {
+    _language = value;
+    I18n.use(value);
+    Storage.writeLocal(StorageKeys.language, value.name);
+    notifyListeners();
+  }
+
   void markNotificationsSeen([DateTime? at]) =>
       _set(() => _notificationsSeenAt = at ?? DateTime.now());
 
   void restore() {
+    _language =
+        AppLanguage.values.asNameMap()[Storage.read(StorageKeys.language)] ??
+        AppLanguage.system;
+    I18n.use(_language);
     final json = Storage.read(StorageKeys.settings);
     if (json is! Map) return;
     _themeMode = ThemeMode.values.asNameMap()[json['themeMode']] ?? _themeMode;

@@ -4,6 +4,7 @@ import 'package:verdant/data/care_schedule.dart';
 import 'package:verdant/data/owned_plants.dart';
 import 'package:verdant/models/plant_details.dart';
 import 'package:verdant/widgets/components/filter_chip.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Adds a plant (when [plant] is null) or edits its name and room.
 /// Resolves to the saved plant, or null when dismissed.
@@ -96,9 +97,15 @@ class _PlantFormSheetState extends State<_PlantFormSheet> {
       SnackBar(
         content: Text(
           _isEdit
-              ? '${saved.name} updated.'
-              : '${saved.name} joined your collection. First watering '
-                    '${formatDue(careSchedule.firstFrom(DateTime.now(), plantId: saved.id)!.due).toLowerCase()}.',
+              ? trArgs('{0} updated.', [saved.name])
+              : trArgs('{0} joined your collection. First watering {1}.', [
+                  saved.name,
+                  formatDue(
+                    careSchedule
+                        .firstFrom(DateTime.now(), plantId: saved.id)!
+                        .due,
+                  ).toLowerCase(),
+                ]),
         ),
       ),
     );
@@ -108,7 +115,10 @@ class _PlantFormSheetState extends State<_PlantFormSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final rooms = {...plantCollection.rooms, ..._suggestedRooms}.toList();
+    final rooms = {
+      ...plantCollection.rooms,
+      for (final room in _suggestedRooms) room.tr,
+    }.toList();
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -132,7 +142,7 @@ class _PlantFormSheetState extends State<_PlantFormSheet> {
               ),
               const SizedBox(height: 20),
               Text(
-                _isEdit ? 'Edit your plant' : 'Welcome a new plant',
+                _isEdit ? 'Edit your plant'.tr : 'Welcome a new plant'.tr,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontSize: 23,
                   letterSpacing: -0.5,
@@ -141,7 +151,10 @@ class _PlantFormSheetState extends State<_PlantFormSheet> {
               ),
               const SizedBox(height: 6),
               Text(
-                _isEdit ? 'Give it a new name or move it to another room.' : 'We’ll set up a watering reminder that suits its species.',
+                _isEdit
+                    ? 'Give it a new name or move it to another room.'.tr
+                    : 'We’ll set up a watering reminder that suits its species.'
+                          .tr,
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: 12,
                   height: 1.5,
@@ -150,7 +163,7 @@ class _PlantFormSheetState extends State<_PlantFormSheet> {
               ),
               if (!_isEdit) ...[
                 const SizedBox(height: 20),
-                _Label('Which plant is it?'),
+                _Label('Which plant is it?'.tr),
                 const SizedBox(height: 10),
                 SizedBox(
                   height: 132,
@@ -172,25 +185,26 @@ class _PlantFormSheetState extends State<_PlantFormSheet> {
                 ),
               ],
               const SizedBox(height: 20),
-              _Label('Name'),
+              _Label('Name'.tr),
               const SizedBox(height: 9),
               TextFormField(
                 controller: _name,
                 textCapitalization: TextCapitalization.words,
                 onChanged: (_) => _nameEdited = true,
-                decoration: _decoration(context, 'e.g. Monstera'),
-                validator: (v) =>
-                    (v ?? '').trim().isEmpty ? 'Give your plant a name.' : null,
+                decoration: _decoration(context, 'e.g. Monstera'.tr),
+                validator: (v) => (v ?? '').trim().isEmpty
+                    ? 'Give your plant a name.'.tr
+                    : null,
               ),
               const SizedBox(height: 16),
-              _Label('Room'),
+              _Label('Room'.tr),
               const SizedBox(height: 9),
               TextFormField(
                 controller: _room,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: _decoration(context, 'e.g. Living room'),
+                decoration: _decoration(context, 'e.g. Living room'.tr),
                 validator: (v) =>
-                    (v ?? '').trim().isEmpty ? 'Where does it live?' : null,
+                    (v ?? '').trim().isEmpty ? 'Where does it live?'.tr : null,
               ),
               const SizedBox(height: 10),
               Wrap(
@@ -213,7 +227,7 @@ class _PlantFormSheetState extends State<_PlantFormSheet> {
                   size: 18,
                 ),
                 label: Text(
-                  _isEdit ? 'Save changes' : 'Add to my plants',
+                  _isEdit ? 'Save changes'.tr : 'Add to my plants'.tr,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,

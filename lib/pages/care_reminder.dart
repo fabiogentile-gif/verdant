@@ -9,10 +9,11 @@ import 'package:verdant/widgets/components/app_toggle.dart';
 import 'package:verdant/widgets/components/detail_header.dart';
 import 'package:verdant/widgets/components/filter_chip.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
+import 'package:verdant/l10n/i18n.dart';
 
-final _longDate = DateFormat('EEE, MMMM d, y', 'en_US');
-final _dayName = DateFormat('EEEE', 'en_US');
-final _shortDay = DateFormat('EEE', 'en_US');
+DateFormat get _longDate => appDate('EEE, MMMM d, y');
+DateFormat get _dayName => appDate('EEEE');
+DateFormat get _shortDay => appDate('EEE');
 
 /// Create or edit the care reminder of one plant for one kind of care
 /// (Figma: Care reminder scheduling). Saved into [careSchedule].
@@ -33,7 +34,9 @@ class CareReminderPage extends StatefulWidget {
 /// Form state: repeat interval, weekdays, start date, time, note and channels.
 class _CareReminderPageState extends State<CareReminderPage> {
   static const _repeatOptions = [1, 7, 14, 30];
-  static const _weekdayLetters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  List<String> get _weekdayLetters => I18n.isItalian
+      ? const ['L', 'M', 'M', 'G', 'V', 'S', 'D']
+      : const ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   late OwnedPlant _plant;
   late CareKind _kind;
@@ -101,7 +104,9 @@ class _CareReminderPageState extends State<CareReminderPage> {
   List<CarePlan> _buildPlans() {
     DateTime at(DateTime day) =>
         day.add(Duration(hours: _time.hour, minutes: _time.minute));
-    final note = _note.text.trim().isEmpty ? null : _note.text.trim();
+    final note = _note.text.trim().isEmpty
+        ? null
+        : I18n.source(_note.text.trim());
 
     CarePlan plan(DateTime due) => careSchedule.newPlan(
       plantId: _plant.id,
@@ -144,14 +149,19 @@ class _CareReminderPageState extends State<CareReminderPage> {
       return short ? _shortDay.format(d) : _dayName.format(d);
     }
 
-    final every = _everyDays == 14 ? 'Every other' : 'Every';
+    final every = _everyDays == 14 ? 'Every other'.tr : 'Every'.tr;
     if (days.length == 1) return '$every ${name(days.first)}';
     if (days.length == 7) {
-      return _everyDays == 14 ? 'Every day, every other week' : 'Every day';
+      return _everyDays == 14
+          ? 'Every day, every other week'.tr
+          : 'Every day'.tr;
     }
     final names = days.map((d) => name(d, short: true)).toList();
-    return '$every ${names.sublist(0, names.length - 1).join(', ')} '
-        'and ${names.last}';
+    return trArgs('{0} {1} and {2}', [
+      every,
+      names.sublist(0, names.length - 1).join(', '),
+      names.last,
+    ]);
   }
 
   Future<T?> _sheet<T>(WidgetBuilder builder) => showModalBottomSheet<T>(
@@ -240,7 +250,7 @@ class _CareReminderPageState extends State<CareReminderPage> {
   Future<void> _setPush(bool value) async {
     if (value) {
       if (!appSettings.push) {
-        _snack('Phone notifications are off in your profile settings.');
+        _snack('Phone notifications are off in your profile settings.'.tr);
       } else {
         await NotificationService.requestPermission();
       }
@@ -256,7 +266,7 @@ class _CareReminderPageState extends State<CareReminderPage> {
 
   void _save() {
     if (_weekly && _weekdays.isEmpty) {
-      _snack('Pick at least one day.');
+      _snack('Pick at least one day.'.tr);
       return;
     }
     final plans = _buildPlans();
@@ -268,8 +278,8 @@ class _CareReminderPageState extends State<CareReminderPage> {
       SnackBar(
         content: Text(
           next.isEmpty
-              ? 'Reminder saved.'
-              : 'Reminder saved. Next: ${formatDue(next.first)}.',
+              ? 'Reminder saved.'.tr
+              : trArgs('Reminder saved. Next: {0}.', [formatDue(next.first)]),
         ),
       ),
     );
@@ -277,7 +287,7 @@ class _CareReminderPageState extends State<CareReminderPage> {
 
   Future<void> _showMenu() async {
     if (!_existing) {
-      _snack('This reminder isn’t saved yet.');
+      _snack('This reminder isn’t saved yet.'.tr);
       return;
     }
     final delete = await _sheet<bool>((context) {
@@ -288,7 +298,7 @@ class _CareReminderPageState extends State<CareReminderPage> {
           child: ListTile(
             leading: Icon(LucideIcons.trash2, color: scheme.error),
             title: Text(
-              'Delete this reminder',
+              'Delete this reminder'.tr,
               style: TextStyle(color: scheme.error),
             ),
             onTap: () => Navigator.of(context).pop(true),
@@ -302,7 +312,9 @@ class _CareReminderPageState extends State<CareReminderPage> {
     Navigator.of(context).maybePop();
     messenger.showSnackBar(
       SnackBar(
-        content: Text('${_kind.verb} reminder for ${_plant.name} deleted.'),
+        content: Text(
+          trArgs('{0} reminder for {1} deleted.', [_kind.verb, _plant.name]),
+        ),
       ),
     );
   }
@@ -319,7 +331,9 @@ class _CareReminderPageState extends State<CareReminderPage> {
         child: Column(
           children: [
             DetailHeader(
-              title: _existing ? 'Edit care reminder' : 'New care reminder',
+              title: _existing
+                  ? 'Edit care reminder'.tr
+                  : 'New care reminder'.tr,
               onBack: () => Navigator.of(context).maybePop(),
               onMore: _showMenu,
             ),
@@ -333,7 +347,7 @@ class _CareReminderPageState extends State<CareReminderPage> {
                     const SizedBox(height: 26),
                     _SelectedPlant(plant: _plant, onTap: _pickPlant),
                     const SizedBox(height: 26),
-                    const _FieldLabel('What kind of care?', strong: true),
+                    _FieldLabel('What kind of care?'.tr, strong: true),
                     const SizedBox(height: 13),
                     Wrap(
                       spacing: 8,
@@ -352,7 +366,7 @@ class _CareReminderPageState extends State<CareReminderPage> {
                       ],
                     ),
                     const SizedBox(height: 26),
-                    const _FieldLabel('Repeat'),
+                    _FieldLabel('Repeat'.tr),
                     const SizedBox(height: 9),
                     _ValueField(
                       icon: LucideIcons.repeat,
@@ -361,7 +375,7 @@ class _CareReminderPageState extends State<CareReminderPage> {
                     ),
                     if (_weekly) ...[
                       const SizedBox(height: 16),
-                      const _FieldLabel('On these days'),
+                      _FieldLabel('On these days'.tr),
                       const SizedBox(height: 11),
                       Row(
                         children: [
@@ -383,12 +397,14 @@ class _CareReminderPageState extends State<CareReminderPage> {
                       ),
                       const SizedBox(height: 11),
                       _Hint(
-                        _weekdays.isEmpty ? 'Pick at least one day' : _daysHint,
+                        _weekdays.isEmpty
+                            ? 'Pick at least one day'.tr
+                            : _daysHint,
                         accent: true,
                       ),
                     ],
                     const SizedBox(height: 26),
-                    const _FieldLabel('Starting on'),
+                    _FieldLabel('Starting on'.tr),
                     const SizedBox(height: 9),
                     _ValueField(
                       icon: LucideIcons.calendarDays,
@@ -396,7 +412,7 @@ class _CareReminderPageState extends State<CareReminderPage> {
                       onTap: _pickStart,
                     ),
                     const SizedBox(height: 16),
-                    const _FieldLabel('Reminder time'),
+                    _FieldLabel('Reminder time'.tr),
                     const SizedBox(height: 9),
                     _ValueField(
                       icon: LucideIcons.clock3,
@@ -406,18 +422,18 @@ class _CareReminderPageState extends State<CareReminderPage> {
                     const SizedBox(height: 16),
                     _Hint(
                       timeZone == null
-                          ? 'Your phone’s local time'
-                          : 'Your local time · $timeZone',
+                          ? 'Your phone’s local time'.tr
+                          : trArgs('Your local time · {0}', [timeZone]),
                     ),
                     const SizedBox(height: 26),
-                    const _FieldLabel('A note for yourself (optional)'),
+                    _FieldLabel('A note for yourself (optional)'.tr),
                     const SizedBox(height: 10),
                     _NoteField(controller: _note),
                     const SizedBox(height: 26),
                     _NotificationRow(
                       icon: LucideIcons.bell,
-                      title: 'Push notification',
-                      subtitle: 'A gentle nudge on your phone',
+                      title: 'Push notification'.tr,
+                      subtitle: 'A gentle nudge on your phone'.tr,
                       value: _push,
                       onChanged: _setPush,
                     ),
@@ -430,8 +446,8 @@ class _CareReminderPageState extends State<CareReminderPage> {
                     const SizedBox(height: 17),
                     _NotificationRow(
                       icon: LucideIcons.mail,
-                      title: 'Email reminder',
-                      subtitle: 'Saved for when email reminders arrive',
+                      title: 'Email reminder'.tr,
+                      subtitle: 'Sent to your account email'.tr,
                       value: _email,
                       onChanged: (v) => setState(() => _email = v),
                     ),
@@ -476,7 +492,7 @@ class _Introduction extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'A LITTLE CONSISTENCY',
+          'A LITTLE CONSISTENCY'.tr,
           style: theme.textTheme.labelSmall?.copyWith(
             fontSize: 10,
             fontWeight: FontWeight.w600,
@@ -486,7 +502,7 @@ class _Introduction extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Make care a ritual.',
+          'Make care a ritual.'.tr,
           style: theme.textTheme.headlineMedium?.copyWith(
             fontFamily: 'Lora',
             fontSize: 32,
@@ -497,8 +513,8 @@ class _Introduction extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'A gentle nudge, right when your plant needs it. '
-          'You can change this anytime.',
+          'A gentle nudge, right when your plant needs it. You can change this anytime.'
+              .tr,
           style: theme.textTheme.bodySmall?.copyWith(
             fontSize: 13,
             height: 1.5,
@@ -825,24 +841,27 @@ class _SchedulePreview extends StatelessWidget {
   final DateTime? second;
   final String everyLabel;
 
-  static final _date = DateFormat('MMM d', 'en_US');
-  static final _time = DateFormat('h:mm a', 'en_US');
+  static DateFormat get _date => appDate('MMM d');
+  static DateFormat get _time => appDate('h:mm a');
 
   String get _lines {
     final f = first;
-    if (f == null) return 'Pick a day to see your first reminder.';
+    if (f == null) return 'Pick a day to see your first reminder.'.tr;
     final today = dateOnly(DateTime.now());
     final day = dateOnly(f);
     final when = day == today
-        ? 'Today, ${_date.format(f)}'
+        ? trArgs('Today, {0}', [_date.format(f)])
         : day == today.add(const Duration(days: 1))
-        ? 'Tomorrow, ${_date.format(f)}'
-        : DateFormat('EEE, MMM d', 'en_US').format(f);
+        ? trArgs('Tomorrow, {0}', [_date.format(f)])
+        : appDate('EEE, MMM d').format(f);
     final s = second;
     final then = s == null
         ? ''
-        : '\nThen ${everyLabel.toLowerCase()} · next ${_date.format(s)}';
-    return '$when at ${_time.format(f)}$then';
+        : trArgs('\nThen {0} · next {1}', [
+            everyLabel.toLowerCase(),
+            _date.format(s),
+          ]);
+    return trArgs('{0} at {1}{2}', [when, _time.format(f), then]);
   }
 
   @override
@@ -867,7 +886,7 @@ class _SchedulePreview extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Your next moment of care',
+                  'Your next moment of care'.tr,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -910,8 +929,8 @@ class _FormActions extends StatelessWidget {
         FilledButton.icon(
           onPressed: onSave,
           icon: const Icon(LucideIcons.arrowRight, size: 18),
-          label: const Text(
-            'Save reminder',
+          label: Text(
+            'Save reminder'.tr,
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
           style: FilledButton.styleFrom(
@@ -928,7 +947,7 @@ class _FormActions extends StatelessWidget {
         TextButton(
           onPressed: onCancel,
           child: Text(
-            'Cancel changes',
+            'Cancel changes'.tr,
             style: theme.textTheme.labelMedium?.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.w500,

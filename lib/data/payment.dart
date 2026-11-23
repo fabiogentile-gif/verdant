@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:verdant/data/storage.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 // ---------------------------------------------------------------------------
 // DEMO ONLY. Nothing here talks to a real payment provider.
@@ -16,9 +17,12 @@ enum CardBrand {
   amex('American Express', 'AMEX'),
   unknown('Card', 'CARD');
 
-  const CardBrand(this.displayName, this.badge);
+  const CardBrand(this._displayName, this.badge);
 
-  final String displayName;
+  final String _displayName;
+
+  String get displayName => _displayName.tr;
+
   final String badge;
 
   /// Brand from the first digits of a card number.
@@ -86,12 +90,14 @@ class CardPayment extends PaymentMethod {
   String get badge => brand.badge;
 
   @override
-  String get title => '${brand.displayName} ending in $last4';
+  String get title => trArgs('{0} ending in {1}', [brand.displayName, last4]);
 
   @override
-  String get subtitle =>
-      '$holder · Exp. ${expMonth.toString().padLeft(2, '0')}/'
-      '${expYear.toString().padLeft(2, '0')}';
+  String get subtitle => trArgs('{0} · Exp. {1}/{2}', [
+    holder,
+    expMonth.toString().padLeft(2, '0'),
+    expYear.toString().padLeft(2, '0'),
+  ]);
 
   /// Only non-sensitive fields: never the full number or the CVC.
   @override
@@ -239,16 +245,6 @@ class Wallet extends ChangeNotifier {
 /// Payment methods shared by checkout and the profile.
 final wallet = Wallet();
 
-/// Fake payment processing: always succeeds after a short delay.
-Future<String> processDemoPayment({
-  required PaymentMethod method,
-  required double amount,
-}) async {
-  await Future<void>.delayed(const Duration(milliseconds: 1500));
-  final n = Random().nextInt(900000) + 100000;
-  return 'VRD-$n';
-}
-
 // ---------------------------------------------------------------------------
 // Validation (returns an error message, or null when valid)
 // ---------------------------------------------------------------------------
@@ -259,30 +255,30 @@ String digitsOnly(String s) => s.replaceAll(RegExp(r'\D'), '');
 /// Validation of the card form fields.
 abstract final class CardValidator {
   static String? holder(String value) =>
-      value.trim().length < 2 ? 'Enter the name on the card.' : null;
+      value.trim().length < 2 ? 'Enter the name on the card.'.tr : null;
 
   static String? number(String value) {
     final n = digitsOnly(value);
-    if (n.isEmpty) return 'Enter the card number.';
+    if (n.isEmpty) return 'Enter the card number.'.tr;
     final brand = CardBrand.detect(n);
     final expected = brand == CardBrand.unknown ? null : brand.numberLength;
     if (expected != null
         ? n.length != expected
         : (n.length < 13 || n.length > 19)) {
-      return 'This card number looks incomplete.';
+      return 'This card number looks incomplete.'.tr;
     }
-    if (!luhn(n)) return 'This card number isn’t valid.';
+    if (!luhn(n)) return 'This card number isn’t valid.'.tr;
     return null;
   }
 
   /// Accepts `MM/YY`. The card is valid through the end of that month.
   static String? expiry(String value, {DateTime? now}) {
     final parsed = parseExpiry(value);
-    if (parsed == null) return 'Use the MM/YY format.';
+    if (parsed == null) return 'Use the MM/YY format.'.tr;
     final (month, year) = parsed;
     final today = now ?? DateTime.now();
     final firstDayAfter = DateTime(2000 + year, month + 1);
-    if (!firstDayAfter.isAfter(today)) return 'This card has expired.';
+    if (!firstDayAfter.isAfter(today)) return 'This card has expired.'.tr;
     return null;
   }
 
@@ -290,7 +286,7 @@ abstract final class CardValidator {
     final n = digitsOnly(value);
     return n.length == brand.cvcLength
         ? null
-        : 'Enter the ${brand.cvcLength}-digit security code.';
+        : trArgs('Enter the {0}-digit security code.', [brand.cvcLength]);
   }
 
   static (int, int)? parseExpiry(String value) {
@@ -324,8 +320,8 @@ abstract final class PayPalValidator {
   static final _email = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
   static String? email(String value) =>
-      _email.hasMatch(value.trim()) ? null : 'Enter a valid email address.';
+      _email.hasMatch(value.trim()) ? null : 'Enter a valid email address.'.tr;
 
   static String? password(String value) =>
-      value.isEmpty ? 'Enter your PayPal password.' : null;
+      value.isEmpty ? 'Enter your PayPal password.'.tr : null;
 }

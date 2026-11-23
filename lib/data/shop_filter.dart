@@ -1,18 +1,22 @@
 import 'package:flutter/foundation.dart';
 import 'package:verdant/models/product.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// A Greenhouse category chip, matched on the client against the catalogue.
 class ShopCategory {
-  const ShopCategory(this.label, this.matches);
+  const ShopCategory(this._label, this.matches);
 
-  final String label;
+  final String _label;
+
+  String get label => _label.tr;
+
   final bool Function(ProductSummary p) matches;
 
   static bool _hasTag(ProductSummary p, String tag) =>
       p.tags.any((t) => t.toLowerCase() == tag.toLowerCase());
 
   static bool _mentions(ProductSummary p, List<String> words) {
-    final text = [p.name, ...p.tags].join(' ').toLowerCase();
+    final text = [p.rawName, ...p.tags].join(' ').toLowerCase();
     return words.any(text.contains);
   }
 
@@ -59,8 +63,10 @@ enum ShopSort {
   rating('Top rated'),
   name('Name: A to Z');
 
-  const ShopSort(this.label);
-  final String label;
+  const ShopSort(this._label);
+  final String _label;
+
+  String get label => _label.tr;
 }
 
 /// Search, category, sort and filter state of the Greenhouse.
@@ -118,8 +124,12 @@ class ShopFilter extends ChangeNotifier {
       if (_favoritesOnly && !favoriteIds.contains(p.id)) return false;
       if (q.isEmpty) return true;
       return p.name.toLowerCase().contains(q) ||
+          p.rawName.toLowerCase().contains(q) ||
           (p.tag?.toLowerCase().contains(q) ?? false) ||
-          p.tags.any((t) => t.toLowerCase().contains(q)) ||
+          p.tags.any(
+            (t) =>
+                t.toLowerCase().contains(q) || t.tr.toLowerCase().contains(q),
+          ) ||
           (p.category?.toLowerCase().contains(q) ?? false);
     }).toList();
 

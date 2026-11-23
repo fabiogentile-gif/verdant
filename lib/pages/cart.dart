@@ -8,6 +8,7 @@ import 'package:verdant/shell.dart';
 import 'package:verdant/utils/money.dart';
 import 'package:verdant/widgets/components/detail_header.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// "Your cart" screen (Figma: Shopping cart).
 class CartPage extends StatelessWidget {
@@ -30,7 +31,7 @@ class CartPage extends StatelessWidget {
         child: Column(
           children: [
             DetailHeader(
-              title: 'Your cart',
+              title: 'Your cart'.tr,
               actionIcon: LucideIcons.shoppingBag,
               onBack: () => Navigator.of(context).maybePop(),
               onMore: () {},
@@ -94,7 +95,7 @@ class _Introduction extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Good things, growing.',
+          'Good things, growing.'.tr,
           style: theme.textTheme.headlineMedium?.copyWith(
             fontFamily: 'Lora',
             fontSize: 32,
@@ -105,8 +106,10 @@ class _Introduction extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          '$count lovely ${count == 1 ? 'addition' : 'additions'} '
-          'to your green space.',
+          trArgs('{0} lovely {1} to your green space.', [
+            count,
+            count == 1 ? 'addition'.tr : 'additions'.tr,
+          ]),
           style: theme.textTheme.bodyMedium?.copyWith(
             fontSize: 14,
             height: 1.5,
@@ -128,9 +131,10 @@ class _ShippingIncentive extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     final message = cart.hasFreeDelivery
-        ? 'Your delivery is on us.'
-        : 'You’re ${formatCompactMoney(cart.amountToFreeDelivery)} away '
-              'from free delivery.';
+        ? 'Your delivery is on us.'.tr
+        : trArgs('You’re {0} away from free delivery.', [
+            formatCompactMoney(cart.amountToFreeDelivery),
+          ]);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -172,8 +176,9 @@ class _ShippingIncentive extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Based on your ${formatCompactMoney(cart.subtotal)} '
-            'merchandise subtotal.',
+            trArgs('Based on your {0} merchandise subtotal.', [
+              formatCompactMoney(cart.subtotal),
+            ]),
             style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 10,
               color: scheme.onSurfaceVariant,
@@ -246,7 +251,7 @@ class _CartItemCard extends StatelessWidget {
                     _IconTap(
                       icon: LucideIcons.x,
                       size: 14,
-                      semanticLabel: 'Remove ${item.name}',
+                      semanticLabel: trArgs('Remove {0}', [item.name]),
                       onTap: () => cart.remove(item.productId),
                     ),
                   ],
@@ -309,7 +314,7 @@ class _QuantitySelector extends StatelessWidget {
           _IconTap(
             icon: LucideIcons.minus,
             size: 14,
-            semanticLabel: 'Decrease quantity',
+            semanticLabel: 'Decrease quantity'.tr,
             enabled: q > 1,
             onTap: () => cart.setQuantity(item.productId, q - 1),
           ),
@@ -325,7 +330,7 @@ class _QuantitySelector extends StatelessWidget {
           _IconTap(
             icon: LucideIcons.plus,
             size: 14,
-            semanticLabel: 'Increase quantity',
+            semanticLabel: 'Increase quantity'.tr,
             enabled: q < Cart.maxQuantity,
             onTap: () => cart.setQuantity(item.productId, q + 1),
           ),
@@ -347,6 +352,7 @@ class _DiscountCode extends StatefulWidget {
 class _DiscountCodeState extends State<_DiscountCode> {
   final _controller = TextEditingController();
   String? _error;
+  bool _checking = false;
 
   @override
   void dispose() {
@@ -354,12 +360,17 @@ class _DiscountCodeState extends State<_DiscountCode> {
     super.dispose();
   }
 
-  void _apply() {
+  Future<void> _apply() async {
     final code = _controller.text;
-    if (code.trim().isEmpty) return;
-    final ok = cart.applyDiscount(code);
-    setState(() => _error = ok ? null : 'That code doesn’t look right.');
-    if (ok) {
+    if (code.trim().isEmpty || _checking) return;
+    setState(() => _checking = true);
+    final error = await cart.applyDiscount(code);
+    if (!mounted) return;
+    setState(() {
+      _checking = false;
+      _error = error;
+    });
+    if (error == null) {
       _controller.clear();
       FocusScope.of(context).unfocus();
     }
@@ -423,7 +434,7 @@ class _DiscountCodeState extends State<_DiscountCode> {
                           isDense: true,
                           isCollapsed: true,
                           border: InputBorder.none,
-                          hintText: 'Discount code',
+                          hintText: 'Discount code'.tr,
                           hintStyle: TextStyle(
                             fontSize: 13,
                             color: scheme.onSurfaceVariant,
@@ -433,25 +444,28 @@ class _DiscountCodeState extends State<_DiscountCode> {
               ),
               const SizedBox(width: 10),
               if (applied != null) ...[
-                Text('Applied', style: actionStyle),
+                Text('Applied'.tr, style: actionStyle),
                 const SizedBox(width: 10),
                 _IconTap(
                   icon: LucideIcons.x,
                   size: 14,
-                  semanticLabel: 'Remove discount code',
+                  semanticLabel: 'Remove discount code'.tr,
                   onTap: cart.removeDiscount,
                 ),
               ] else
                 GestureDetector(
                   onTap: _apply,
-                  child: Text('Apply', style: actionStyle),
+                  child: Text(
+                    _checking ? 'Checking…'.tr : 'Apply'.tr,
+                    style: actionStyle,
+                  ),
                 ),
             ],
           ),
         ),
         const SizedBox(height: 10),
         Text(
-          _error ?? 'A greener welcome: 10% off your first order.',
+          _error ?? 'A greener welcome: 10% off your first order.'.tr,
           style: theme.textTheme.bodySmall?.copyWith(
             fontSize: 11,
             height: 1.5,
@@ -478,7 +492,10 @@ class _OrderTotals extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _SummaryRow(
-          label: 'Subtotal · $count ${count == 1 ? 'item' : 'items'}',
+          label: trArgs('Subtotal · {0} {1}', [
+            count,
+            count == 1 ? 'item'.tr : 'items'.tr,
+          ]),
           value: formatMoney(cart.subtotal),
         ),
         if (discount != null) ...[
@@ -491,7 +508,7 @@ class _OrderTotals extends StatelessWidget {
         const SizedBox(height: 15),
         _SummaryRow(
           label: cart.shipping.label,
-          value: cart.delivery == 0 ? 'Free' : formatMoney(cart.delivery),
+          value: cart.delivery == 0 ? 'Free'.tr : formatMoney(cart.delivery),
         ),
         const SizedBox(height: 15),
         Divider(height: 1, thickness: 1, color: scheme.outlineVariant),
@@ -501,7 +518,7 @@ class _OrderTotals extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              'Total',
+              'Total'.tr,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
@@ -520,7 +537,7 @@ class _OrderTotals extends StatelessWidget {
         ),
         const SizedBox(height: 15),
         Text(
-          'All prices in USD. Applicable taxes included.',
+          'All prices in USD. Applicable taxes included.'.tr,
           style: theme.textTheme.bodySmall?.copyWith(
             fontSize: 10,
             height: 1.5,
@@ -547,13 +564,16 @@ class _SummaryRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontSize: 13,
-            color: scheme.onSurfaceVariant,
+        Expanded(
+          child: Text(
+            label,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontSize: 13,
+              color: scheme.onSurfaceVariant,
+            ),
           ),
         ),
+        const SizedBox(width: 12),
         Text(
           value,
           style: theme.textTheme.bodyMedium?.copyWith(
@@ -585,8 +605,8 @@ class _CartActions extends StatelessWidget {
         FilledButton.icon(
           onPressed: onCheckout,
           icon: const Icon(LucideIcons.arrowRight, size: 18),
-          label: const Text(
-            'Continue to checkout',
+          label: Text(
+            'Continue to checkout'.tr,
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
           style: FilledButton.styleFrom(
@@ -609,11 +629,13 @@ class _CartActions extends StatelessWidget {
               color: scheme.onSurfaceVariant,
             ),
             const SizedBox(width: 7),
-            Text(
-              'Secure checkout. Happy plants, guaranteed.',
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontSize: 11,
-                color: scheme.onSurfaceVariant,
+            Flexible(
+              child: Text(
+                'Secure checkout. Happy plants, guaranteed.'.tr,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontSize: 11,
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],
@@ -622,7 +644,7 @@ class _CartActions extends StatelessWidget {
         TextButton(
           onPressed: onBack,
           child: Text(
-            '← Back to the greenhouse',
+            '← Back to the greenhouse'.tr,
             style: theme.textTheme.labelMedium?.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -655,7 +677,7 @@ class _EmptyCart extends StatelessWidget {
           Icon(LucideIcons.shoppingBag, size: 40, color: scheme.primary),
           const SizedBox(height: 16),
           Text(
-            'Your cart is resting.',
+            'Your cart is resting.'.tr,
             textAlign: TextAlign.center,
             style: theme.textTheme.headlineSmall?.copyWith(
               fontFamily: 'Lora',
@@ -665,7 +687,7 @@ class _EmptyCart extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Find a new green companion in the greenhouse.',
+            'Find a new green companion in the greenhouse.'.tr,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
               fontSize: 13,
@@ -684,8 +706,8 @@ class _EmptyCart extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
-            child: const Text(
-              'Browse the greenhouse',
+            child: Text(
+              'Browse the greenhouse'.tr,
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
           ),
@@ -739,9 +761,9 @@ void showAddedToCart(BuildContext context, String productName) {
       SnackBar(
         persist: false,
         duration: const Duration(seconds: 2),
-        content: Text('$productName added to your cart.'),
+        content: Text(trArgs('{0} added to your cart.', [productName])),
         action: SnackBarAction(
-          label: 'View cart',
+          label: 'View cart'.tr,
           onPressed: () => Navigator.of(
             context,
             rootNavigator: true,

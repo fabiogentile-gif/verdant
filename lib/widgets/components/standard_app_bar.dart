@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Top app bar of the main tabs: a title (or the Verdant wordmark on the
 /// homepage) and one circular action on the right.
@@ -15,16 +16,13 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
   }) : _isHome = false,
        hasUnread = false;
 
-  const StandardAppBar.home({
-    super.key,
-    this.onActionTap,
-    this.hasUnread = false,
-  }) : title = 'verdant',
-       actionIcon = LucideIcons.bell,
-       actionLabel = 'Notifications',
-       badgeCount = 0,
-       backgroundColor = null,
-       _isHome = true;
+  StandardAppBar.home({super.key, this.onActionTap, this.hasUnread = false})
+    : title = 'verdant',
+      actionIcon = LucideIcons.bell,
+      actionLabel = 'Notifications'.tr,
+      badgeCount = 0,
+      backgroundColor = null,
+      _isHome = true;
 
   final String title;
   final IconData? actionIcon;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/widgets/components/plant_card.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Homepage section highlighting one plant of the collection.
 class PersonalCollection extends StatelessWidget {
@@ -42,7 +43,7 @@ class PersonalCollection extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'Your little jungle',
+                'Your little jungle'.tr,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontFamily: 'Lora',
                   fontSize: 23,
@@ -55,7 +56,7 @@ class PersonalCollection extends StatelessWidget {
             GestureDetector(
               onTap: onSeeAll,
               child: Text(
-                'My plants →',
+                'My plants →'.tr,
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,

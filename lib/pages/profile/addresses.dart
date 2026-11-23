@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/address.dart';
+import 'package:verdant/data/auth.dart';
 import 'package:verdant/widgets/components/subpage_scaffold.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Edit the saved delivery address (used at checkout).
 class AddressPage extends StatefulWidget {
@@ -25,13 +27,18 @@ class _AddressPageState extends State<AddressPage> {
     final a = addressBook.address;
     _label = a.label;
     _fields = {
-      'fullName': TextEditingController(text: a.fullName),
+      // A first address starts from the account's name and email.
+      'fullName': TextEditingController(
+        text: a.fullName.isEmpty ? authStore.user?.name : a.fullName,
+      ),
       'street': TextEditingController(text: a.street),
       'city': TextEditingController(text: a.city),
       'postalCode': TextEditingController(text: a.postalCode),
       'country': TextEditingController(text: a.country),
       'phone': TextEditingController(text: a.phone),
-      'email': TextEditingController(text: a.email),
+      'email': TextEditingController(
+        text: a.email.isEmpty ? authStore.user?.email : a.email,
+      ),
     };
   }
 
@@ -60,7 +67,7 @@ class _AddressPageState extends State<AddressPage> {
     final messenger = ScaffoldMessenger.of(context);
     Navigator.of(context).maybePop();
     messenger.showSnackBar(
-      const SnackBar(content: Text('Delivery address saved.')),
+      SnackBar(content: Text('Delivery address saved.'.tr)),
     );
   }
 
@@ -73,10 +80,10 @@ class _AddressPageState extends State<AddressPage> {
     final scheme = theme.colorScheme;
 
     return SubpageScaffold(
-      title: 'Saved address',
+      title: 'Saved address'.tr,
       actionIcon: LucideIcons.mapPin,
-      heading: 'Where should we deliver?',
-      lede: 'Your plants will travel here. You can change it anytime.',
+      heading: 'Where should we deliver?'.tr,
+      lede: 'Your plants will travel here. You can change it anytime.'.tr,
       children: [
         Form(
           key: _formKey,
@@ -84,16 +91,16 @@ class _AddressPageState extends State<AddressPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _Field(
-                label: 'Full name',
+                label: 'Full name'.tr,
                 controller: _fields['fullName']!,
                 autofill: AutofillHints.name,
-                validator: (v) => _required(v, 'Who will receive it?'),
+                validator: (v) => _required(v, 'Who will receive it?'.tr),
               ),
               _Field(
-                label: 'Street and number',
+                label: 'Street and number'.tr,
                 controller: _fields['street']!,
                 autofill: AutofillHints.streetAddressLine1,
-                validator: (v) => _required(v, 'Add your street.'),
+                validator: (v) => _required(v, 'Add your street.'.tr),
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,39 +108,40 @@ class _AddressPageState extends State<AddressPage> {
                   Expanded(
                     flex: 3,
                     child: _Field(
-                      label: 'City',
+                      label: 'City'.tr,
                       controller: _fields['city']!,
                       autofill: AutofillHints.addressCity,
-                      validator: (v) => _required(v, 'Add your city.'),
+                      validator: (v) => _required(v, 'Add your city.'.tr),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     flex: 2,
                     child: _Field(
-                      label: 'Postal code',
+                      label: 'Postal code'.tr,
                       controller: _fields['postalCode']!,
                       autofill: AutofillHints.postalCode,
-                      validator: (v) => _required(v, 'Required.'),
+                      validator: (v) => _required(v, 'Required.'.tr),
                     ),
                   ),
                 ],
               ),
               _Field(
-                label: 'Country',
+                label: 'Country'.tr,
                 controller: _fields['country']!,
                 autofill: AutofillHints.countryName,
-                validator: (v) => _required(v, 'Add your country.'),
+                validator: (v) => _required(v, 'Add your country.'.tr),
               ),
               _Field(
-                label: 'Phone',
+                label: 'Phone'.tr,
                 controller: _fields['phone']!,
                 autofill: AutofillHints.telephoneNumber,
                 keyboardType: TextInputType.phone,
-                validator: (v) => _required(v, 'So the courier can reach you.'),
+                validator: (v) =>
+                    _required(v, 'So the courier can reach you.'.tr),
               ),
               _Field(
-                label: 'Email for updates',
+                label: 'Email for updates'.tr,
                 controller: _fields['email']!,
                 autofill: AutofillHints.email,
                 keyboardType: TextInputType.emailAddress,
@@ -141,10 +149,10 @@ class _AddressPageState extends State<AddressPage> {
                     RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
                         .hasMatch((v ?? '').trim())
                     ? null
-                    : 'Enter a valid email address.',
+                    : 'Enter a valid email address.'.tr,
               ),
               Text(
-                'Label',
+                'Label'.tr,
                 style: theme.textTheme.labelMedium?.copyWith(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -155,7 +163,7 @@ class _AddressPageState extends State<AddressPage> {
               SegmentedButton<String>(
                 segments: [
                   for (final l in _labels)
-                    ButtonSegment(value: l, label: Text(l)),
+                    ButtonSegment(value: l, label: Text(l.tr)),
                 ],
                 selected: {_labels.contains(_label) ? _label : 'Other'},
                 onSelectionChanged: (s) => setState(() => _label = s.first),
@@ -173,8 +181,8 @@ class _AddressPageState extends State<AddressPage> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text(
-                  'Save address',
+                child: Text(
+                  'Save address'.tr,
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ),

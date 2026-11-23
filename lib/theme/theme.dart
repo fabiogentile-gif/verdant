@@ -101,12 +101,14 @@ class AppTheme {
       // Keeps the floating button from jumping above snackbars
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        insetPadding: const EdgeInsets.fromLTRB(16,0,16,4),
+        insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
         backgroundColor: scheme.inverseSurface,
-        contentTextStyle: base.textTheme.bodyMedium?.copyWith(color: scheme.onInverseSurface),
+        contentTextStyle: base.textTheme.bodyMedium?.copyWith(
+          color: scheme.onInverseSurface,
+        ),
         actionTextColor: scheme.inversePrimary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
-      )
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
     );
   }
 }

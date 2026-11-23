@@ -10,9 +10,10 @@ import 'package:verdant/theme/theme.dart';
 import 'package:verdant/widgets/components/detail_header.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
 import 'package:verdant/widgets/plants/plant_form_sheet.dart';
+import 'package:verdant/l10n/i18n.dart';
 
-final _shortDate = DateFormat('MMM d', 'en_US');
-final _fullDate = DateFormat('MMM d, y', 'en_US');
+DateFormat get _shortDate => appDate('MMM d');
+DateFormat get _fullDate => appDate('MMM d, y');
 
 /// Details of a plant in the user's collection.
 class PersonalPlantDetails extends StatelessWidget {
@@ -39,18 +40,18 @@ class PersonalPlantDetails extends StatelessWidget {
               children: [
                 ListTile(
                   leading: Icon(LucideIcons.pencil, color: scheme.onSurface),
-                  title: const Text('Edit name & room'),
+                  title: Text('Edit name & room'.tr),
                   onTap: () => Navigator.of(context).pop('edit'),
                 ),
                 ListTile(
                   leading: Icon(LucideIcons.bellPlus, color: scheme.onSurface),
-                  title: const Text('Schedule a care reminder'),
+                  title: Text('Schedule a care reminder'.tr),
                   onTap: () => Navigator.of(context).pop('remind'),
                 ),
                 ListTile(
                   leading: Icon(LucideIcons.trash2, color: scheme.error),
                   title: Text(
-                    'Remove from my plants',
+                    'Remove from my plants'.tr,
                     style: TextStyle(color: scheme.error),
                   ),
                   onTap: () => Navigator.of(context).pop('remove'),
@@ -72,18 +73,18 @@ class PersonalPlantDetails extends StatelessWidget {
         final ok = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text('Remove ${plant.name}?'),
-            content: const Text(
-              'Its reminders and care history will be removed too.',
+            title: Text(trArgs('Remove {0}?', [plant.name])),
+            content: Text(
+              'Its reminders and care history will be removed too.'.tr,
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Keep it'),
+                child: Text('Keep it'.tr),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Remove'),
+                child: Text('Remove'.tr),
               ),
             ],
           ),
@@ -91,9 +92,9 @@ class PersonalPlantDetails extends StatelessWidget {
         if (ok == true && context.mounted) {
           Navigator.of(context).pop();
           plantCollection.remove(plant);
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('${plant.name} was removed.')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(trArgs('{0} was removed.', [plant.name]))),
+          );
         }
     }
   }
@@ -117,9 +118,9 @@ class PersonalPlantDetails extends StatelessWidget {
       builder: (context, _) {
         final plant = plantCollection.byId(plantId);
         if (plant == null) {
-          return const NotFoundPage(
-            title: 'This plant is no longer here.',
-            message: 'It may have been removed from your collection.',
+          return NotFoundPage(
+            title: 'This plant is no longer here.'.tr,
+            message: 'It may have been removed from your collection.'.tr,
           );
         }
         final guide = plant.guide;
@@ -130,7 +131,7 @@ class PersonalPlantDetails extends StatelessWidget {
             child: Column(
               children: [
                 DetailHeader(
-                  title: 'Your ${plant.name}',
+                  title: trArgs('Your {0}', [plant.name]),
                   onBack: () => Navigator.of(context).maybePop(),
                   onMore: () => _showMenu(context, plant),
                 ),
@@ -249,7 +250,9 @@ class _PlantIdentity extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'GROWING SINCE ${_shortDate.format(plant.addedOn).toUpperCase()}',
+                trArgs('GROWING SINCE {0}', [
+                  _shortDate.format(plant.addedOn).toUpperCase(),
+                ]),
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
@@ -354,24 +357,24 @@ class _TodaysCare extends StatelessWidget {
     final kind = task?.plan.kind ?? CareKind.water;
 
     final headline = switch (kind) {
-      _ when task == null => 'All caught up for today.',
-      CareKind.water => 'A drink is due today.',
-      CareKind.fertilize => 'Time for a little feed.',
-      CareKind.repot => 'Time for a roomier pot.',
+      _ when task == null => 'All caught up for today.'.tr,
+      CareKind.water => 'A drink is due today.'.tr,
+      CareKind.fertilize => 'Time for a little feed.'.tr,
+      CareKind.repot => 'Time for a roomier pot.'.tr,
     };
     final instructions =
         task?.plan.note ??
         (task == null
-            ? 'Nothing to do right now. Enjoy it, and check back tomorrow.'
+            ? 'Nothing to do right now. Enjoy it, and check back tomorrow.'.tr
             : guide.waterInstructions);
     final lastLabel = lastWater == null
-        ? 'Not watered in Verdant yet'
-        : 'Last watered ${_shortDate.format(lastWater.date)}';
+        ? 'Not watered in Verdant yet'.tr
+        : trArgs('Last watered {0}', [_shortDate.format(lastWater.date)]);
     final nextLabel = task != null
         ? formatDue(task.due)
         : next == null
-        ? 'No reminders yet'
-        : 'Next · ${formatDue(next.due)}';
+        ? 'No reminders yet'.tr
+        : trArgs('Next · {0}', [formatDue(next.due)]);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -448,16 +451,18 @@ class _TodaysCare extends StatelessWidget {
                     SnackBar(
                       content: Text(
                         upcoming == null
-                            ? '${plant.name} is happy.'
-                            : '${plant.name} is happy. '
-                                  'Next: ${formatDue(upcoming.due)}.',
+                            ? trArgs('{0} is happy.', [plant.name])
+                            : trArgs('{0} is happy. Next: {1}.', [
+                                plant.name,
+                                formatDue(upcoming.due),
+                              ]),
                       ),
                     ),
                   );
               },
               icon: const Icon(LucideIcons.arrowRight, size: 18),
               label: Text(
-                'Mark as ${kind.doneLabel.toLowerCase()}',
+                trArgs('Mark as {0}', [kind.doneLabel.toLowerCase()]),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -581,7 +586,7 @@ class _CareGuide extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionHeading(title: 'What makes it thrive'),
+        _SectionHeading(title: 'What makes it thrive'.tr),
         for (final r in requirements) ...[
           const SizedBox(height: 18),
           Row(
@@ -708,7 +713,7 @@ class _BotanicalNotes extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SectionHeading(title: 'A little plant knowledge'),
+          _SectionHeading(title: 'A little plant knowledge'.tr),
           const SizedBox(height: 12),
           Text(
             guide.botanicalNotes,
@@ -766,8 +771,8 @@ class _CareRhythm extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionHeading(
-          title: 'Your care rhythm',
-          actionLabel: plans.isEmpty ? null : 'Edit →',
+          title: 'Your care rhythm'.tr,
+          actionLabel: plans.isEmpty ? null : 'Edit →'.tr,
           onAction: () => PersonalPlantDetails._openReminder(
             context,
             plant,
@@ -777,8 +782,8 @@ class _CareRhythm extends StatelessWidget {
         if (plans.isEmpty) ...[
           const SizedBox(height: 13),
           Text(
-            'No reminders yet. Add one and Verdant will nudge you at the '
-            'right moment.',
+            'No reminders yet. Add one and Verdant will nudge you at the right moment.'
+                .tr,
             style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 12,
               height: 1.5,
@@ -858,8 +863,8 @@ class _CareRhythm extends StatelessWidget {
             _firstFreeKind(plans),
           ),
           icon: const Icon(LucideIcons.plus, size: 18),
-          label: const Text(
-            'Schedule a care reminder',
+          label: Text(
+            'Schedule a care reminder'.tr,
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
           style: FilledButton.styleFrom(
@@ -911,16 +916,16 @@ class _CareHistoryState extends State<_CareHistory> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionHeading(
-          title: 'A history of little rituals',
+          title: 'A history of little rituals'.tr,
           actionLabel: events.length > _collapsed
-              ? (_showAll ? 'Show less' : 'See all →')
+              ? (_showAll ? 'Show less'.tr : 'See all →'.tr)
               : null,
           onAction: () => setState(() => _showAll = !_showAll),
         ),
         if (events.isEmpty) ...[
           const SizedBox(height: 13),
           Text(
-            'Care you mark as done will appear here.',
+            'Care you mark as done will appear here.'.tr,
             style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 12,
               color: scheme.onSurfaceVariant,

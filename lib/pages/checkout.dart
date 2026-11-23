@@ -1,8 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:verdant/theme/theme.dart';
-import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/address.dart';
+import 'package:verdant/data/api_client.dart';
 import 'package:verdant/data/cart.dart';
 import 'package:verdant/data/orders.dart';
 import 'package:verdant/data/payment.dart';
@@ -13,17 +15,14 @@ import 'package:verdant/widgets/checkout/add_payment_sheet.dart';
 import 'package:verdant/widgets/checkout/order_summary_card.dart';
 import 'package:verdant/widgets/components/detail_header.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// "Arrives Nov 10–12" style label for a shipping option.
 String _arrivalLabel(ShippingOption option, {DateTime? from}) {
   final today = from ?? DateTime.now();
   final start = today.add(Duration(days: option.minDays));
   final end = today.add(Duration(days: option.maxDays));
-  final month = DateFormat('MMM', 'en_US');
-  final range = start.month == end.month
-      ? '${month.format(start)} ${start.day}–${end.day}'
-      : '${month.format(start)} ${start.day} – ${month.format(end)} ${end.day}';
-  return 'Arrives $range';
+  return trArgs('Arrives {0}', [formatDateRange(start, end)]);
 }
 
 /// Checkout screen (Figma: Checkout). Payment is simulated.
@@ -37,6 +36,7 @@ class CheckoutPage extends StatefulWidget {
 /// Places the order: simulates the payment, saves the order and empties the cart.
 class _CheckoutPageState extends State<CheckoutPage> {
   bool _placing = false;
+  String? _requestId;
 
   Future<void> _addPaymentMethod() async {
     await showAddPaymentSheet(context);
@@ -64,28 +64,42 @@ class _CheckoutPageState extends State<CheckoutPage> {
       return;
     }
 
-    setState(() => _placing = true);
-    final draft = Order.fromCart(method);
-    final orderNumber = await processDemoPayment(
-      method: method,
-      amount: draft.total,
-    );
-    if (!mounted) return;
+    if (!addressBook.address.isComplete) {
+      await pushRoot(context, AppRoutes.addresses);
+      return;
+    }
 
-    final summary = draft.placed(
-      number: orderNumber,
-      at: DateTime.now(),
-      address: addressBook.address,
-    );
-    orderHistory.add(summary);
-    cart.clear();
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) =>
-            OrderConfirmationPage(orderNumber: orderNumber, summary: summary),
-      ),
-      (route) => route.isFirst,
-    );
+    setState(() => _placing = true);
+    // Kept after a lost connection, so retrying can't create a second order.
+    final requestId = _requestId ??=
+        '${DateTime.now().microsecondsSinceEpoch}-${Random().nextInt(1 << 30)}';
+    try {
+      final summary = await orderHistory.place(
+        method: method,
+        address: addressBook.address,
+        requestId: requestId,
+      );
+      if (!mounted) return;
+      cart.clear();
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => OrderConfirmationPage(
+            orderNumber: summary.number!,
+            summary: summary,
+          ),
+        ),
+        (route) => route.isFirst,
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      if (!e.isNetwork) _requestId = null;
+      // A code that is no longer valid must not block the order.
+      if (e.fields.containsKey('code')) cart.removeDiscount();
+      setState(() => _placing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.fields.values.firstOrNull ?? e.message)),
+      );
+    }
   }
 
   @override
@@ -96,7 +110,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         child: Column(
           children: [
             DetailHeader(
-              title: 'Checkout',
+              title: 'Checkout'.tr,
               actionIcon: LucideIcons.lockKeyhole,
               onBack: () => Navigator.of(context).maybePop(),
               onMore: () {},
@@ -106,7 +120,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 listenable: Listenable.merge([cart, wallet, addressBook]),
                 builder: (context, _) {
                   if (cart.isEmpty) {
-                    return const Center(child: Text('Your cart is empty.'));
+                    return Center(child: Text('Your cart is empty.'.tr));
                   }
                   return ScrollViewNoStretch(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
@@ -129,7 +143,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         const SizedBox(height: 26),
                         _PurchaseAction(
                           total: cart.total,
-                          enabled: wallet.selected != null,
+                          enabled:
+                              wallet.selected != null &&
+                              addressBook.address.isComplete,
                           loading: _placing,
                           onPressed: _placeOrder,
                         ),
@@ -163,7 +179,7 @@ class _Introduction extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'THE LAST LITTLE STEP',
+          'THE LAST LITTLE STEP'.tr,
           style: theme.textTheme.labelSmall?.copyWith(
             fontSize: 10,
             fontWeight: FontWeight.w600,
@@ -173,7 +189,7 @@ class _Introduction extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'On their way to you.',
+          'On their way to you.'.tr,
           style: theme.textTheme.headlineMedium?.copyWith(
             fontFamily: 'Lora',
             fontSize: 31,
@@ -184,7 +200,7 @@ class _Introduction extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Review your details and let the growing begin.',
+          'Review your details and let the growing begin.'.tr,
           style: theme.textTheme.bodySmall?.copyWith(
             fontSize: 13,
             height: 1.5,
@@ -257,12 +273,41 @@ class _DeliveryAddress extends StatelessWidget {
     );
 
     final address = addressBook.address;
+    if (!address.isComplete) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SectionHeading('Delivery address'.tr),
+          const SizedBox(height: 14),
+          _SelectableCard(
+            selected: false,
+            onTap: () => pushRoot(context, AppRoutes.addresses),
+            child: Row(
+              children: [
+                Icon(LucideIcons.mapPin, size: 20, color: scheme.onSurface),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Add where your plants should arrive.'.tr,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 12,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                Icon(LucideIcons.plus, size: 16, color: scheme.primary),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _SectionHeading(
-          'Delivery address',
-          actionLabel: 'Edit →',
+          'Delivery address'.tr,
+          actionLabel: 'Edit →'.tr,
           onAction: () => pushRoot(context, AppRoutes.addresses),
         ),
         const SizedBox(height: 14),
@@ -302,7 +347,7 @@ class _DeliveryAddress extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                address.label.toUpperCase(),
+                address.label.tr.toUpperCase(),
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontSize: 9,
                   fontWeight: FontWeight.w600,
@@ -319,7 +364,7 @@ class _DeliveryAddress extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Updates to ${address.email}',
+                trArgs('Contact email: {0}', [address.email]),
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: 12,
                   color: scheme.onSurfaceVariant,
@@ -340,7 +385,7 @@ class _ShippingOptions extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _SectionHeading('A gentle journey'),
+        _SectionHeading('A gentle journey'.tr),
         for (final option in ShippingOption.values) ...[
           const SizedBox(height: 12),
           _ShippingTile(option: option),
@@ -397,7 +442,7 @@ class _ShippingTile extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Text(
-            fee == 0 ? 'Free' : formatMoney(fee),
+            fee == 0 ? 'Free'.tr : formatMoney(fee),
             style: theme.textTheme.bodyMedium?.copyWith(
               fontSize: 13,
               color: scheme.onSurface,
@@ -426,8 +471,8 @@ class _PaymentChoice extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _SectionHeading(
-          'Payment',
-          actionLabel: method == null ? null : 'Change →',
+          'Payment'.tr,
+          actionLabel: method == null ? null : 'Change →'.tr,
           onAction: onChange,
         ),
         const SizedBox(height: 12),
@@ -443,7 +488,7 @@ class _PaymentChoice extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Add a card or PayPal to place your order.',
+                    'Add a card or PayPal to place your order.'.tr,
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontSize: 12,
                       color: scheme.onSurfaceVariant,
@@ -459,8 +504,8 @@ class _PaymentChoice extends StatelessWidget {
           onTap: onAdd,
           child: Text(
             method == null
-                ? '+ Add a payment method'
-                : '+ Add a different payment method',
+                ? '+ Add a payment method'.tr
+                : '+ Add a different payment method'.tr,
             style: theme.textTheme.labelMedium?.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -566,7 +611,7 @@ class _ChoosePaymentSheet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const _SectionHeading('Pay with'),
+            _SectionHeading('Pay with'.tr),
             for (final m in wallet.methods) ...[
               const SizedBox(height: 12),
               _PaymentTile(
@@ -583,7 +628,7 @@ class _ChoosePaymentSheet extends StatelessWidget {
               onPressed: () => Navigator.of(context).pop(true),
               icon: Icon(LucideIcons.plus, size: 16, color: scheme.primary),
               label: Text(
-                'Add a different payment method',
+                'Add a different payment method'.tr,
                 style: theme.textTheme.labelMedium?.copyWith(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -633,8 +678,8 @@ class _PurchaseAction extends StatelessWidget {
               : const Icon(LucideIcons.arrowRight, size: 18),
           label: Text(
             loading
-                ? 'Processing payment…'
-                : 'Place order · ${formatMoney(total)}',
+                ? 'Processing payment…'.tr
+                : trArgs('Place order · {0}', [formatMoney(total)]),
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
           style: FilledButton.styleFrom(
@@ -651,8 +696,8 @@ class _PurchaseAction extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          'By placing your order, you agree to our Terms & Returns. '
-          'Your plants are covered by our 30-day happiness promise.',
+          'By placing your order, you agree to our Terms & Returns. Your plants are covered by our 30-day happiness promise.'
+              .tr,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodySmall?.copyWith(
             fontSize: 10,
@@ -783,7 +828,7 @@ class OrderConfirmationPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'ORDER $orderNumber',
+                  trArgs('ORDER {0}', [orderNumber]),
                   textAlign: TextAlign.center,
                   style: theme.textTheme.labelSmall?.copyWith(
                     fontSize: 10,
@@ -794,7 +839,7 @@ class OrderConfirmationPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Thank you. Growing soon.',
+                  'Thank you. Growing soon.'.tr,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontFamily: 'Lora',
@@ -806,8 +851,9 @@ class OrderConfirmationPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${_arrivalLabel(summary.shipping)} · '
-                  'we’ll email ${summary.address?.email ?? addressBook.address.email} along the way.',
+                  trArgs('{0} · follow it anytime in My orders.', [
+                    _arrivalLabel(summary.shipping),
+                  ]),
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontSize: 13,
@@ -816,7 +862,7 @@ class OrderConfirmationPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 26),
-                OrderSummaryCard(data: summary, title: 'Your order'),
+                OrderSummaryCard(data: summary, title: 'Your order'.tr),
                 const SizedBox(height: 26),
                 FilledButton(
                   onPressed: () => _done(context, AppRoutes.homepage),
@@ -829,8 +875,8 @@ class OrderConfirmationPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: const Text(
-                    'Back to home',
+                  child: Text(
+                    'Back to home'.tr,
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -838,7 +884,7 @@ class OrderConfirmationPage extends StatelessWidget {
                 TextButton(
                   onPressed: () => _done(context, AppRoutes.greenhouse),
                   child: Text(
-                    'Keep exploring the greenhouse',
+                    'Keep exploring the greenhouse'.tr,
                     style: theme.textTheme.labelMedium?.copyWith(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,

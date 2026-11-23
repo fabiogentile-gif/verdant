@@ -11,19 +11,26 @@ import 'package:verdant/widgets/components/filter_chip.dart';
 import 'package:verdant/widgets/components/page_header.dart';
 import 'package:verdant/widgets/components/plant_card.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
+import 'package:verdant/l10n/i18n.dart';
 
-final _day = DateFormat('EEE, MMM d', 'en_US');
-final _time = DateFormat('h:mm a', 'en_US');
-final _fullDate = DateFormat('MMM d, y', 'en_US');
+DateFormat get _day => appDate('EEE, MMM d');
+DateFormat get _time => appDate('h:mm a');
+DateFormat get _fullDate => appDate('MMM d, y');
 
 /// Midnight of [d]: drops the time so days can be compared.
 DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
 /// "November 5–11, 2026", across months/years when needed.
 String _rangeLabel(DateTime start, DateTime endInclusive) {
-  final month = DateFormat('MMMM', 'en_US');
+  if (I18n.isItalian) {
+    final full = appDate('MMMM d, y');
+    return start.month == endInclusive.month && start.year == endInclusive.year
+        ? '${start.day}–${full.format(endInclusive)}'
+        : '${full.format(start)} – ${full.format(endInclusive)}';
+  }
+  final month = appDate('MMMM');
   if (start.year != endInclusive.year) {
-    final f = DateFormat('MMMM d, y', 'en_US');
+    final f = appDate('MMMM d, y');
     return '${f.format(start)} – ${f.format(endInclusive)}';
   }
   if (start.month != endInclusive.month) {
@@ -61,7 +68,7 @@ class _ActivityState extends State<Activity> {
     final target = plant ?? _plant ?? ownedPlants.firstOrNull;
     if (target == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add a plant first to set a reminder.')),
+        SnackBar(content: Text('Add a plant first to set a reminder.'.tr)),
       );
       return;
     }
@@ -82,8 +89,10 @@ class _ActivityState extends State<Activity> {
       ..showSnackBar(
         SnackBar(
           content: Text(
-            '${task.plant.name} is happy. '
-            'Next: ${_day.format(task.plan.nextDue)}.',
+            trArgs('{0} is happy. Next: {1}.', [
+              task.plant.name,
+              _day.format(task.plan.nextDue),
+            ]),
           ),
         ),
       );
@@ -92,8 +101,10 @@ class _ActivityState extends State<Activity> {
   Future<void> _pickRange() async {
     final choice = await _showOptions<int>(
       context,
-      title: 'Show reminders for',
-      options: {for (final d in _ranges) d: 'Next $d days'},
+      title: 'Show reminders for'.tr,
+      options: {
+        for (final d in _ranges) d: trArgs('Next {0} days', [d]),
+      },
       selected: _rangeDays,
     );
     if (choice case _OptionPicked(:final value)) {
@@ -104,9 +115,9 @@ class _ActivityState extends State<Activity> {
   Future<void> _pickPlant() async {
     final choice = await _showOptions<OwnedPlant?>(
       context,
-      title: 'Show care for',
+      title: 'Show care for'.tr,
       options: {
-        null: 'All plants',
+        null: 'All plants'.tr,
         for (final p in ownedPlants) p: '${p.name} · ${p.room}',
       },
       selected: _plant,
@@ -120,7 +131,7 @@ class _ActivityState extends State<Activity> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: StandardAppBar(
-        title: 'Activity',
+        title: 'Activity'.tr,
         actionIcon: LucideIcons.calendarDays,
         onActionTap: _pickRange,
       ),
@@ -149,8 +160,9 @@ class _ActivityState extends State<Activity> {
               children: [
                 PageHeader.eyebrowDate(
                   now,
-                  title: 'A moment of care.',
-                  subtitle: 'Little rituals. Happier plants. All in one place.',
+                  title: 'A moment of care.'.tr,
+                  subtitle:
+                      'Little rituals. Happier plants. All in one place.'.tr,
                 ),
                 const SizedBox(height: 24),
                 _CareOverview(
@@ -168,7 +180,7 @@ class _ActivityState extends State<Activity> {
                   onRangeTap: _pickRange,
                   kind: _kind,
                   onKindChanged: (k) => setState(() => _kind = k),
-                  plantLabel: _plant?.name ?? 'All plants',
+                  plantLabel: _plant?.name ?? 'All plants'.tr,
                   plantSelected: _plant != null,
                   onPlantTap: _pickPlant,
                 ),
@@ -258,11 +270,11 @@ class _CareOverview extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          metric(dueToday, 'due today'),
+          metric(dueToday, 'due today'.tr),
           const SizedBox(width: 12),
-          metric(comingUp, 'coming up'),
+          metric(comingUp, 'coming up'.tr),
           const SizedBox(width: 12),
-          metric(plants, 'plants at home'),
+          metric(plants, 'plants at home'.tr),
         ],
       ),
     );
@@ -317,7 +329,7 @@ class _ReviewControls extends StatelessWidget {
               child: Row(
                 children: [
                   Text(
-                    'Next $rangeDays days',
+                    trArgs('Next {0} days', [rangeDays]),
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontSize: 11,
                       color: scheme.primary,
@@ -340,7 +352,7 @@ class _ReviewControls extends StatelessWidget {
           runSpacing: 8,
           children: [
             AppFilterChip(
-              label: 'All care',
+              label: 'All care'.tr,
               selected: kind == null,
               onTap: () => onKindChanged(null),
             ),
@@ -379,9 +391,12 @@ class _TodaySection extends StatelessWidget {
 
   String _schedule(CareTask t) {
     if (t.due.isBefore(today)) {
-      return '${t.plan.kind.verb} · overdue since ${_day.format(t.due)}';
+      return trArgs('{0} · overdue since {1}', [
+        t.plan.kind.verb,
+        _day.format(t.due),
+      ]);
     }
-    return '${t.plan.kind.verb} today · ${_time.format(t.due)}';
+    return trArgs('{0} today · {1}', [t.plan.kind.verb, _time.format(t.due)]);
   }
 
   @override
@@ -393,15 +408,15 @@ class _TodaySection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _SectionHeading(
-          'Today',
+          'Today'.tr,
           actionLabel:
-              '${tasks.length} ${tasks.length == 1 ? 'task' : 'tasks'}',
+              '${tasks.length} ${tasks.length == 1 ? 'task'.tr : 'tasks'.tr}',
         ),
         if (tasks.isEmpty) ...[
           const SizedBox(height: 12),
           _SoftNote(
             icon: LucideIcons.sparkles,
-            text: 'Nothing due today. Enjoy the green.',
+            text: 'Nothing due today. Enjoy the green.'.tr,
           ),
         ],
         for (final task in tasks) ...[
@@ -431,7 +446,7 @@ class _TodaySection extends StatelessWidget {
             onPressed: () => onComplete(task),
             icon: const Icon(LucideIcons.arrowRight, size: 18),
             label: Text(
-              'Mark as ${task.plan.kind.doneLabel.toLowerCase()}',
+              trArgs('Mark as {0}', [task.plan.kind.doneLabel.toLowerCase()]),
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             style: FilledButton.styleFrom(
@@ -474,15 +489,15 @@ class _ComingUpSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _SectionHeading(
-          'Coming up',
-          actionLabel: 'Manage →',
+          'Coming up'.tr,
+          actionLabel: 'Manage →'.tr,
           onAction: onManage,
         ),
         if (tasks.isEmpty) ...[
           const SizedBox(height: 12),
           _SoftNote(
             icon: LucideIcons.calendarCheck,
-            text: 'No other reminders in this period.',
+            text: 'No other reminders in this period.'.tr,
           ),
         ],
         for (final task in tasks) ...[
@@ -493,17 +508,19 @@ class _ComingUpSection extends StatelessWidget {
           const SizedBox(height: 12),
           _SoftNote(
             icon: LucideIcons.calendarDays,
-            text:
-                'Then ${next!.title} · ${_day.format(next!.due)}, '
-                '${_time.format(next!.due)}',
+            text: trArgs('Then {0} · {1}, {2}', [
+              next!.title,
+              _day.format(next!.due),
+              _time.format(next!.due),
+            ]),
           ),
         ],
         const SizedBox(height: 12),
         FilledButton.icon(
           onPressed: onSchedule,
           icon: const Icon(LucideIcons.plus, size: 18),
-          label: const Text(
-            'Schedule a care reminder',
+          label: Text(
+            'Schedule a care reminder'.tr,
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
           style: FilledButton.styleFrom(
@@ -633,20 +650,22 @@ class _HistorySection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _SectionHeading(
-          'Little rituals, completed.',
-          actionLabel: canToggle ? (showAll ? 'Show less' : 'See all →') : null,
+          'Little rituals, completed.'.tr,
+          actionLabel: canToggle
+              ? (showAll ? 'Show less'.tr : 'See all →'.tr)
+              : null,
           onAction: onToggle,
         ),
         if (events.isEmpty) ...[
           const SizedBox(height: 17),
           _SoftNote(
             icon: LucideIcons.leaf,
-            text: 'Completed care will appear here.',
+            text: 'Completed care will appear here.'.tr,
           ),
         ],
         if (thisWeek.isNotEmpty) ...[
           const SizedBox(height: 17),
-          const _GroupLabel('THIS WEEK'),
+          _GroupLabel('THIS WEEK'.tr),
           for (final e in thisWeek) ...[
             const SizedBox(height: 17),
             _CompletedRow(event: e),
@@ -658,7 +677,7 @@ class _HistorySection extends StatelessWidget {
         ],
         if (earlier.isNotEmpty) ...[
           const SizedBox(height: 17),
-          const _GroupLabel('EARLIER'),
+          _GroupLabel('EARLIER'.tr),
           for (final e in earlier) ...[
             const SizedBox(height: 17),
             _CompletedRow(event: e),
@@ -723,7 +742,7 @@ class _CompletedRow extends StatelessWidget {
               const SizedBox(height: 5),
               Text(
                 event.plant == null
-                    ? 'A plant you no longer have'
+                    ? 'A plant you no longer have'.tr
                     : '${event.plant!.name} · ${event.plant!.room}',
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: 11,

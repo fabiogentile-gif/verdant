@@ -5,6 +5,7 @@ import 'package:verdant/data/owned_plants.dart';
 import 'package:verdant/pages/care_reminder.dart';
 import 'package:verdant/router/router.dart';
 import 'package:verdant/widgets/components/subpage_scaffold.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Every care reminder, grouped by plant.
 class CareRemindersPage extends StatelessWidget {
@@ -28,15 +29,15 @@ class CareRemindersPage extends StatelessWidget {
       builder: (context, _) {
         final plants = ownedPlants;
         return SubpageScaffold(
-          title: 'Care reminders',
+          title: 'Care reminders'.tr,
           actionIcon: LucideIcons.calendarDays,
           onAction: () => goToTab(context, AppRoutes.activity),
-          heading: 'Your care rhythm.',
-          lede: 'Every reminder for every plant. Tap one to change it.',
+          heading: 'Your care rhythm.'.tr,
+          lede: 'Every reminder for every plant. Tap one to change it.'.tr,
           children: [
             if (plants.isEmpty)
               Text(
-                'Add a plant to start a care routine.',
+                'Add a plant to start a care routine.'.tr,
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: 13,
                   color: scheme.onSurfaceVariant,
@@ -58,7 +59,7 @@ class CareRemindersPage extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Add a reminder for ${plant.name}',
+                    tooltip: trArgs('Add a reminder for {0}', [plant.name]),
                     onPressed: () {
                       final used = careSchedule
                           .plansFor(plant.id)
@@ -101,7 +102,7 @@ class CareRemindersPage extends StatelessWidget {
     if (byKind.isEmpty) {
       return [
         Text(
-          'No reminders yet.',
+          'No reminders yet.'.tr,
           style: theme.textTheme.bodySmall?.copyWith(
             fontSize: 12,
             color: scheme.onSurfaceVariant,
@@ -128,7 +129,7 @@ class CareRemindersPage extends StatelessWidget {
                     Text(
                       '${entry.key.verb} · '
                       '${formatEvery(entry.value.first.everyDays).toLowerCase()}'
-                      '${entry.value.length > 1 ? ' (${entry.value.length} days)' : ''}',
+                      '${entry.value.length > 1 ? trArgs(' ({0} days)', [entry.value.length]) : ''}',
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -137,8 +138,16 @@ class CareRemindersPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Next: ${formatDue((entry.value..sort((a, b) => a.nextDue.compareTo(b.nextDue))).first.nextDue)}'
-                      '${entry.value.first.push ? '' : ' · notifications off'}',
+                      trArgs('Next: {0}{1}', [
+                        formatDue(
+                          (entry.value..sort(
+                                (a, b) => a.nextDue.compareTo(b.nextDue),
+                              ))
+                              .first
+                              .nextDue,
+                        ),
+                        entry.value.first.push ? '' : ' · notifications off'.tr,
+                      ]),
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontSize: 11,
                         color: scheme.onSurfaceVariant,

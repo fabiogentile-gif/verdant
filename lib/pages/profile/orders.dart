@@ -7,16 +7,14 @@ import 'package:verdant/router/router.dart';
 import 'package:verdant/utils/money.dart';
 import 'package:verdant/widgets/checkout/order_summary_card.dart';
 import 'package:verdant/widgets/components/subpage_scaffold.dart';
+import 'package:verdant/l10n/i18n.dart';
 
-final _date = DateFormat('MMM d, y', 'en_US');
-final _short = DateFormat('MMM d', 'en_US');
+DateFormat get _date => appDate('MMM d, y');
 
 /// "Nov 10–12" or "Nov 30 – Dec 2" for the expected delivery window.
 String _arrival(Order o) {
   final (from, to) = o.arrivalWindow;
-  return from.month == to.month
-      ? '${_short.format(from)}–${to.day}'
-      : '${_short.format(from)} – ${_short.format(to)}';
+  return formatDateRange(from, to);
 }
 
 /// List of the orders placed on this device.
@@ -33,13 +31,13 @@ class OrdersPage extends StatelessWidget {
       builder: (context, _) {
         final orders = orderHistory.orders;
         return SubpageScaffold(
-          title: 'My orders',
+          title: 'My orders'.tr,
           actionIcon: LucideIcons.shoppingBag,
           onAction: () => goToTab(context, AppRoutes.greenhouse),
-          heading: 'Good things, delivered.',
+          heading: 'Good things, delivered.'.tr,
           lede: orders.isEmpty
-              ? 'Your orders will appear here once you check out.'
-              : 'Track deliveries and revisit what you’ve grown.',
+              ? 'Your orders will appear here once you check out.'.tr
+              : 'Track deliveries and revisit what you’ve grown.'.tr,
           children: [
             if (orders.isEmpty)
               FilledButton(
@@ -53,8 +51,8 @@ class OrdersPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text(
-                  'Browse the greenhouse',
+                child: Text(
+                  'Browse the greenhouse'.tr,
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ),
@@ -82,7 +80,7 @@ class OrdersPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Order ${o.number}',
+                            trArgs('Order {0}', [o.number]),
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -92,7 +90,7 @@ class OrdersPage extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             '${_date.format(o.placedAt!)} · ${o.itemCount} '
-                            '${o.itemCount == 1 ? 'item' : 'items'} · '
+                            '${o.itemCount == 1 ? 'item'.tr : 'items'.tr} · '
                             '${formatMoney(o.total)}',
                             style: theme.textTheme.bodySmall?.copyWith(
                               fontSize: 11,
@@ -101,9 +99,15 @@ class OrdersPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            o.status() == 'Delivered'
-                                ? 'Delivered'
-                                : '${o.status()} · arrives ${_arrival(o)}',
+                            {
+                                  'Delivered'.tr,
+                                  'Cancelled'.tr,
+                                }.contains(o.status())
+                                ? o.status().tr
+                                : trArgs('{0} · arrives {1}', [
+                                    o.status().tr,
+                                    _arrival(o),
+                                  ]),
                             style: theme.textTheme.bodySmall?.copyWith(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
@@ -145,21 +149,33 @@ class OrderDetailsPage extends StatelessWidget {
       if (o.number == number) order = o;
     }
     if (order == null) {
-      return const NotFoundPage(
-        title: 'We can’t find this order.',
-        message: 'It may have been placed on another device.',
+      return NotFoundPage(
+        title: 'We can’t find this order.'.tr,
+        message: 'It may have been placed on another device.'.tr,
       );
     }
     final o = order;
     final address = o.address;
 
     return SubpageScaffold(
-      title: 'Order ${o.number}',
+      title: trArgs('Order {0}', [o.number]),
       actionIcon: LucideIcons.package,
-      heading: o.status() == 'Delivered' ? 'Delivered.' : 'On its way soon.',
-      lede:
-          'Placed ${_date.format(o.placedAt!)} · ${o.shipping.label} · '
-          'arrives ${_arrival(o)}.',
+      heading: switch (o.status()) {
+        'Delivered' => 'Delivered.'.tr,
+        'Cancelled' => 'Cancelled.'.tr,
+        'On its way' => 'On its way.'.tr,
+        _ => 'On its way soon.'.tr,
+      },
+      lede: o.status() == 'Cancelled'
+          ? trArgs('Placed {0} · {1}.', [
+              _date.format(o.placedAt!),
+              o.shipping.label,
+            ])
+          : trArgs('Placed {0} · {1} · arrives {2}.', [
+              _date.format(o.placedAt!),
+              o.shipping.label,
+              _arrival(o),
+            ]),
       children: [
         if (address != null) ...[
           SoftCard(
@@ -183,10 +199,10 @@ class OrderDetailsPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
         ],
-        OrderSummaryCard(data: o, title: 'What’s inside'),
+        OrderSummaryCard(data: o, title: 'What’s inside'.tr),
         const SizedBox(height: 12),
         Text(
-          'Demo order: no real payment was made and nothing will ship.',
+          'Demo order: no real payment was made and nothing will ship.'.tr,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodySmall?.copyWith(
             fontSize: 11,
