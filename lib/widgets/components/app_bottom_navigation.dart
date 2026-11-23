@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Bottom bar with the five tabs; the centre one leaves room for [AppCenterButton].
 class AppBottomNavigation extends StatelessWidget {
@@ -85,8 +86,11 @@ class AppCenterButton extends StatelessWidget {
 
 /// Label and icon of a tab.
 class _NavItemData {
-  const _NavItemData(this.label, this.icon);
-  final String label;
+  const _NavItemData(this._label, this.icon);
+  final String _label;
+
+  String get label => _label.tr;
+
   final IconData icon;
 }
 

@@ -1,3 +1,6 @@
+// Private fields can't be named parameters.
+// ignore_for_file: prefer_initializing_formals
+
 import 'dart:math';
 
 import 'package:flutter/widgets.dart';
@@ -5,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/owned_plants.dart';
 import 'package:verdant/data/storage.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// The kinds of care Verdant can remind you about, with their labels and icons.
 enum CareKind {
@@ -31,18 +35,28 @@ enum CareKind {
   );
 
   const CareKind({
-    required this.verb,
-    required this.doneLabel,
-    required this.filterLabel,
-    required this.needsLabel,
+    required String verb,
+    required String doneLabel,
+    required String filterLabel,
+    required String needsLabel,
     required this.icon,
-  });
+  }) : _verb = verb,
+       doneKey = doneLabel,
+       _filterLabel = filterLabel,
+       _needsLabel = needsLabel;
 
-  final String verb;
-  final String doneLabel;
-  final String filterLabel;
-  final String needsLabel;
+  final String _verb;
+
+  /// English text saved in the care history.
+  final String doneKey;
+  final String _filterLabel;
+  final String _needsLabel;
   final IconData icon;
+
+  String get verb => _verb.tr;
+  String get doneLabel => doneKey.tr;
+  String get filterLabel => _filterLabel.tr;
+  String get needsLabel => _needsLabel.tr;
 }
 
 /// A recurring care routine for one plant (e.g. water every 7 days).
@@ -53,16 +67,16 @@ class CarePlan {
     required this.kind,
     required this.nextDue,
     this.everyDays = 7,
-    this.note,
+    String? note,
     this.push = true,
     this.email = false,
-  });
+  }) : _note = note;
 
   final String id;
   final String plantId;
   final CareKind kind;
   final int everyDays;
-  final String? note;
+  final String? _note;
   final bool push;
   final bool email;
 
@@ -71,13 +85,18 @@ class CarePlan {
 
   OwnedPlant? get plant => plantCollection.byId(plantId);
 
+  /// Built-in notes follow the language; the user's own stay as written.
+  String? get note => _note?.tr;
+
   Map<String, Object?> toJson() => {
     'id': id,
     'plantId': plantId,
     'kind': kind.name,
     'everyDays': everyDays,
     'nextDue': nextDue.toIso8601String(),
-    'note': note,
+    // `nextDue` has no time zone; the server needs this one for reminder emails.
+    'nextDueUtc': nextDue.toUtc().toIso8601String(),
+    'note': _note,
     'push': push,
     'email': email,
   };
@@ -109,16 +128,20 @@ class CareTask {
 class CompletedCare {
   const CompletedCare({
     required this.plantId,
-    required this.title,
+    required String title,
     required this.date,
-    this.note,
+    String? note,
     this.kind,
-  });
+  }) : _title = title,
+       _note = note;
 
   final String plantId;
-  final String title;
+  final String _title;
   final DateTime date;
-  final String? note;
+  final String? _note;
+
+  String get title => _title.tr;
+  String? get note => _note?.tr;
 
   /// Null for care that is not part of a routine (e.g. wiping leaves).
   final CareKind? kind;
@@ -128,9 +151,9 @@ class CompletedCare {
 
   Map<String, Object?> toJson() => {
     'plantId': plantId,
-    'title': title,
+    'title': _title,
     'date': date.toIso8601String(),
-    'note': note,
+    'note': _note,
     'kind': kind?.name,
   };
 
@@ -148,27 +171,31 @@ class CompletedCare {
 /// Midnight of [d]: drops the time so days can be compared.
 DateTime dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
-final _day = DateFormat('EEE, MMM d', 'en_US');
-final _time = DateFormat('h:mm a', 'en_US');
+DateFormat get _day => appDate('EEE, MMM d');
+DateFormat get _time => appDate('h:mm a');
 
 /// "Today · 9:00 AM", "Tomorrow · 9:00 AM", "Sat, Nov 7 · 9:00 AM".
 String formatDue(DateTime due, {DateTime? now}) {
   final today = dateOnly(now ?? DateTime.now());
   final day = dateOnly(due);
   final time = _time.format(due);
-  if (day.isBefore(today)) return 'Overdue since ${_day.format(due)}';
-  if (day == today) return 'Today · $time';
-  if (day == today.add(const Duration(days: 1))) return 'Tomorrow · $time';
+  if (day.isBefore(today)) {
+    return trArgs('Overdue since {0}', [_day.format(due)]);
+  }
+  if (day == today) return trArgs('Today · {0}', [time]);
+  if (day == today.add(const Duration(days: 1))) {
+    return trArgs('Tomorrow · {0}', [time]);
+  }
   return '${_day.format(due)} · $time';
 }
 
 /// "Every day", "Every week", "Every 2 weeks", "Every 12 days"…
 String formatEvery(int days) => switch (days) {
-  1 => 'Every day',
-  7 => 'Every week',
-  14 => 'Every 2 weeks',
-  30 => 'Every month',
-  _ => 'Every $days days',
+  1 => 'Every day'.tr,
+  7 => 'Every week'.tr,
+  14 => 'Every 2 weeks'.tr,
+  30 => 'Every month'.tr,
+  _ => trArgs('Every {0} days', [days]),
 };
 
 /// Unique enough id for plans created on this device.
@@ -256,7 +283,7 @@ class CareSchedule extends ChangeNotifier {
   /// "Needs water" / "Healthy".
   String statusLabel(OwnedPlant plant, {DateTime? now}) {
     final due = dueTasks(now: now, plantId: plant.id);
-    return due.isEmpty ? 'Healthy' : due.first.plan.kind.needsLabel;
+    return due.isEmpty ? 'Healthy'.tr : due.first.plan.kind.needsLabel;
   }
 
   /// "Water today · 9:00 AM" / "Next watering · Sun, Nov 8" / "No reminders yet".
@@ -266,13 +293,18 @@ class CareSchedule extends ChangeNotifier {
     if (due.isNotEmpty) {
       final t = due.first;
       return t.due.isBefore(dateOnly(at))
-          ? '${t.plan.kind.verb} · overdue since ${_day.format(t.due)}'
-          : '${t.plan.kind.verb} today · ${_time.format(t.due)}';
+          ? trArgs('{0} · overdue since {1}', [
+              t.plan.kind.verb,
+              _day.format(t.due),
+            ])
+          : trArgs('{0} today · {1}', [t.plan.kind.verb, _time.format(t.due)]);
     }
     final next = firstFrom(dateOnly(at), plantId: plant.id);
-    if (next == null) return 'No reminders yet';
-    return 'Next ${next.plan.kind.filterLabel.toLowerCase()} · '
-        '${_day.format(next.due)}';
+    if (next == null) return 'No reminders yet'.tr;
+    return trArgs('Next {0} · {1}', [
+      next.plan.kind.filterLabel.toLowerCase(),
+      _day.format(next.due),
+    ]);
   }
 
   /// Marks [task] as done now and moves its plan to the next occurrence.
@@ -282,7 +314,7 @@ class CareSchedule extends ChangeNotifier {
     _completed.add(
       CompletedCare(
         plantId: task.plant.id,
-        title: plan.kind.doneLabel,
+        title: plan.kind.doneKey,
         date: at,
         note: 'Marked as done in Verdant',
         kind: plan.kind,
@@ -330,7 +362,7 @@ class CareSchedule extends ChangeNotifier {
         kind: CareKind.water,
         nextDue: tomorrow.add(const Duration(hours: 9)),
         everyDays: everyDays,
-        note: plant.guide.waterInstructions,
+        note: plant.guide.waterInstructionsKey,
       ),
     );
     _save();

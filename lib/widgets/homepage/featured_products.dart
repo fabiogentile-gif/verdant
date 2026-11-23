@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Product data needed by a featured card (price already formatted).
 class Product {
@@ -49,7 +50,7 @@ class FeaturedProducts extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'Rooted in good taste',
+                'Rooted in good taste'.tr,
                 style: TextStyle(
                   fontFamily: 'Lora',
                   fontSize: 23,
@@ -62,7 +63,7 @@ class FeaturedProducts extends StatelessWidget {
             GestureDetector(
               onTap: onShopAll,
               child: Text(
-                'Shop all →',
+                'Shop all →'.tr,
                 style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 11,
@@ -133,21 +134,34 @@ class _ProductCard extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  top: 10,
-                  right: 10,
-                  child: GestureDetector(
-                    onTap: onFavoriteTap,
-                    child: Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: scheme.surface,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        isFavorite ? Icons.favorite : LucideIcons.heart,
-                        size: 15,
-                        color: scheme.onSurface,
+                  top: 1,
+                  right: 1,
+                  // 48 dp touch area around the 30 dp circle.
+                  child: Semantics(
+                    button: true,
+                    label: isFavorite
+                        ? 'Remove from favourites'.tr
+                        : 'Add to favourites'.tr,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: onFavoriteTap,
+                      child: SizedBox.square(
+                        dimension: 48,
+                        child: Center(
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: scheme.surface,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isFavorite ? Icons.favorite : LucideIcons.heart,
+                              size: 15,
+                              color: scheme.onSurface,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -179,35 +193,65 @@ class _ProductCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 9),
-          Text(
-            product.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: scheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 9),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // The add button covers the whole text block: a 48 dp touch area
+          // without making the card taller.
+          Stack(
             children: [
-              Text(
-                product.price,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14,
-                  color: scheme.onSurface,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 28),
+                    child: Text(
+                      product.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 9),
+                  SizedBox(
+                    height: 23,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        product.price,
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              GestureDetector(
-                onTap: onAddTap,
-                child: Icon(
-                  LucideIcons.circlePlus,
-                  size: 23,
-                  color: scheme.onSurfaceVariant,
+              Positioned(
+                top: 0,
+                right: 0,
+                bottom: 0,
+                width: 48,
+                child: Semantics(
+                  button: true,
+                  label: trArgs('Add {0} to cart', [product.name]),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: onAddTap,
+                    child: Align(
+                      alignment: Alignment.bottomRight,
+                      child: Icon(
+                        LucideIcons.circlePlus,
+                        size: 23,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],

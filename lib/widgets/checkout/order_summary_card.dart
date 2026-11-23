@@ -5,6 +5,7 @@ import 'package:verdant/data/orders.dart';
 import 'package:verdant/data/product_repository.dart';
 import 'package:verdant/theme/theme.dart';
 import 'package:verdant/utils/money.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Items and totals of an order (the live cart by default).
 class OrderSummaryCard extends StatelessWidget {
@@ -35,7 +36,7 @@ class OrderSummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            title,
+            title.tr,
             style: theme.textTheme.headlineSmall?.copyWith(
               fontSize: 23,
               letterSpacing: -0.5,
@@ -50,18 +51,18 @@ class OrderSummaryCard extends StatelessWidget {
           const SizedBox(height: 16),
           Divider(height: 1, thickness: 1, color: scheme.outlineVariant),
           const SizedBox(height: 16),
-          _SummaryRow(label: 'Subtotal', value: formatMoney(d.subtotal)),
+          _SummaryRow(label: 'Subtotal'.tr, value: formatMoney(d.subtotal)),
           if (d.discountLabel != null) ...[
             const SizedBox(height: 16),
             _SummaryRow(
-              label: d.discountLabel!,
+              label: d.discountLabel!.replaceAll('% off', '% off'.tr),
               value: '−${formatMoney(d.discountAmount)}',
             ),
           ],
           const SizedBox(height: 16),
           _SummaryRow(
             label: d.shipping.label,
-            value: d.delivery == 0 ? 'Free' : formatMoney(d.delivery),
+            value: d.delivery == 0 ? 'Free'.tr : formatMoney(d.delivery),
           ),
           const SizedBox(height: 16),
           Divider(height: 1, thickness: 1, color: scheme.outlineVariant),
@@ -69,12 +70,14 @@ class OrderSummaryCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Total · USD',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: scheme.onSurface,
+              Expanded(
+                child: Text(
+                  'Total · USD'.tr,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurface,
+                  ),
                 ),
               ),
               Text(
@@ -90,8 +93,10 @@ class OrderSummaryCard extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             d.paymentTitle == null
-                ? 'Applicable taxes included.'
-                : 'Paid with ${d.paymentTitle}. Applicable taxes included.',
+                ? 'Applicable taxes included.'.tr
+                : trArgs('Paid with {0}. Applicable taxes included.', [
+                    d.paymentTitle,
+                  ]),
             style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 10,
               height: 1.5,
@@ -152,7 +157,7 @@ class _OrderItemRow extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Qty ${item.quantity}',
+                trArgs('Qty {0}', [item.quantity]),
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: 10,
                   color: scheme.onSurfaceVariant,
@@ -189,13 +194,16 @@ class _SummaryRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontSize: 13,
-            color: scheme.onSurfaceVariant,
+        Expanded(
+          child: Text(
+            label,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontSize: 13,
+              color: scheme.onSurfaceVariant,
+            ),
           ),
         ),
+        const SizedBox(width: 12),
         Text(
           value,
           style: theme.textTheme.bodyMedium?.copyWith(

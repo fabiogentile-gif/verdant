@@ -1,31 +1,42 @@
+// Private fields can't be named parameters.
+// ignore_for_file: prefer_initializing_formals
+
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// One line of a care guide (e.g. light, humidity) with its icon.
 class CareRequirement {
   const CareRequirement({
     required this.icon,
-    required this.title,
-    required this.description,
-  });
+    required String title,
+    required String description,
+  }) : _title = title,
+       _description = description;
 
   final IconData icon;
-  final String title;
-  final String description;
+  final String _title;
+  final String _description;
+
+  String get title => _title.tr;
+  String get description => _description.tr;
 }
 
 /// A species Verdant knows how to look after.
 class PlantSpecies {
   const PlantSpecies({
     required this.latinName,
-    required this.commonName,
+    required String commonName,
     required this.imagePath,
     required this.waterEveryDays,
     required this.guide,
-  });
+  }) : _commonName = commonName;
 
   final String latinName;
-  final String commonName;
+  final String _commonName;
+
+  String get commonName => _commonName.tr;
+
   final String imagePath;
   final int waterEveryDays;
   final PlantGuide guide;
@@ -244,25 +255,41 @@ class PlantSpecies {
 class PlantGuide {
   const PlantGuide({
     required this.family,
-    required this.description,
-    required this.waterInstructions,
+    required String description,
+    required String waterInstructions,
     required this.requirements,
-    required this.seasonLabel,
-    required this.seasonTitle,
-    required this.seasonBody,
-    required this.botanicalNotes,
-    required this.petSafetyLabel,
-  });
+    required String seasonLabel,
+    required String seasonTitle,
+    required String seasonBody,
+    required String botanicalNotes,
+    required String petSafetyLabel,
+  }) : _description = description,
+       waterInstructionsKey = waterInstructions,
+       _seasonLabel = seasonLabel,
+       _seasonTitle = seasonTitle,
+       _seasonBody = seasonBody,
+       _botanicalNotes = botanicalNotes,
+       _petSafetyLabel = petSafetyLabel;
 
   final String? family;
-  final String description;
-  final String waterInstructions;
+  final String _description;
+
+  /// English text, saved as the note of a new reminder.
+  final String waterInstructionsKey;
   final List<CareRequirement> requirements;
-  final String seasonLabel;
-  final String seasonTitle;
-  final String seasonBody;
-  final String botanicalNotes;
-  final String petSafetyLabel;
+  final String _seasonLabel;
+  final String _seasonTitle;
+  final String _seasonBody;
+  final String _botanicalNotes;
+  final String _petSafetyLabel;
+
+  String get description => _description.tr;
+  String get waterInstructions => waterInstructionsKey.tr;
+  String get seasonLabel => _seasonLabel.tr;
+  String get seasonTitle => _seasonTitle.tr;
+  String get seasonBody => _seasonBody.tr;
+  String get botanicalNotes => _botanicalNotes.tr;
+  String get petSafetyLabel => _petSafetyLabel.tr;
 
   static const generic = PlantGuide(
     family: null,

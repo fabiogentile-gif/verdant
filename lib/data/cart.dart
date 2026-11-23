@@ -1,33 +1,43 @@
+// Private fields can't be named parameters.
+// ignore_for_file: prefer_initializing_formals
+
 import 'package:flutter/foundation.dart';
+import 'package:verdant/data/api_client.dart';
 import 'package:verdant/data/storage.dart';
 import 'package:verdant/models/product.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// A product in the cart with its quantity and optional variant (e.g. pot size).
 class CartItem {
   CartItem({
     required this.productId,
-    required this.name,
+    required String name,
     required this.unitPrice,
     required this.image,
-    this.variant,
+    String? variant,
     this.quantity = 1,
-  });
+  }) : _name = name,
+       _variant = variant;
 
   final int productId;
-  final String name;
+  final String _name;
+  final String? _variant;
+
+  String get name => _name.tr;
+  String? get variant => _variant?.tr;
+
   final double unitPrice;
   final String image;
-  final String? variant;
   int quantity;
 
   double get total => unitPrice * quantity;
 
   Map<String, Object?> toJson() => {
     'productId': productId,
-    'name': name,
+    'name': _name,
     'unitPrice': unitPrice,
     'image': image,
-    'variant': variant,
+    'variant': _variant,
     'quantity': quantity,
   };
 
@@ -45,16 +55,31 @@ class CartItem {
 class DiscountCode {
   const DiscountCode({
     required this.code,
-    required this.label,
+    required String label,
     required this.rate,
-  });
+  }) : _label = label;
 
   final String code;
-  final String label;
+  final String _label;
+
+  String get label => _label.tr;
   final double rate; // 0.10 = 10%
 
   /// e.g. `GROW10 · 10% off`
-  String get shortLabel => '$code · ${(rate * 100).round()}% off';
+  String get shortLabel =>
+      trArgs('{0} · {1}% off', [code, (rate * 100).round()]);
+
+  Map<String, Object?> toJson() => {
+    'code': code,
+    'label': _label,
+    'rate': rate,
+  };
+
+  factory DiscountCode.fromJson(Map json) => DiscountCode(
+    code: json['code'] as String,
+    label: json['label'] as String,
+    rate: (json['rate'] as num).toDouble(),
+  );
 }
 
 /// Delivery choices at checkout: price and expected days in transit.
@@ -69,18 +94,22 @@ enum ShippingOption {
   express(label: 'Express delivery', fee: 12.0, minDays: 2, maxDays: 4);
 
   const ShippingOption({
-    required this.label,
+    required String label,
     required this.fee,
     required this.minDays,
     required this.maxDays,
-    this.note,
-  });
+    String? note,
+  }) : _label = label,
+       _note = note;
 
-  final String label;
+  final String _label;
   final double fee;
   final int minDays;
   final int maxDays;
-  final String? note;
+  final String? _note;
+
+  String get label => _label.tr;
+  String? get note => _note?.tr;
 }
 
 /// Shopping cart shared by the whole app, saved on the device.
@@ -89,14 +118,6 @@ class Cart extends ChangeNotifier {
   /// Standard delivery is free above this merchandise subtotal.
   static const freeDeliveryThreshold = 100.0;
   static const maxQuantity = 99;
-
-  static const _codes = {
-    'GROW10': DiscountCode(
-      code: 'GROW10',
-      label: 'Welcome discount (10%)',
-      rate: 0.10,
-    ),
-  };
 
   final List<CartItem> _items = [];
   DiscountCode? _discount;
@@ -167,7 +188,7 @@ class Cart extends ChangeNotifier {
 
   void addSummary(ProductSummary p, {int quantity = 1}) => add(
     productId: p.id,
-    name: p.name,
+    name: p.rawName,
     unitPrice: p.price,
     image: p.image,
     quantity: quantity,
@@ -175,10 +196,10 @@ class Cart extends ChangeNotifier {
 
   void addDetails(ProductDetails p, {int quantity = 1}) => add(
     productId: p.id,
-    name: p.name,
+    name: p.rawName,
     unitPrice: p.price,
     image: p.images.isNotEmpty ? p.images.first : '',
-    variant: p.variantLabel,
+    variant: p.rawVariantLabel,
     quantity: quantity,
   );
 
@@ -194,13 +215,17 @@ class Cart extends ChangeNotifier {
     _changed();
   }
 
-  /// Returns true when [code] is valid and has been applied.
-  bool applyDiscount(String code) {
-    final match = _codes[code.trim().toUpperCase()];
-    if (match == null) return false;
-    _discount = match;
-    _changed();
-    return true;
+  /// Asks the server about [code] and applies it.
+  /// Returns an error message, or null on success.
+  Future<String?> applyDiscount(String code) async {
+    try {
+      final json = await api.post('/discounts/validate', {'code': code.trim()});
+      _discount = DiscountCode.fromJson(json as Map);
+      _changed();
+      return null;
+    } on ApiException catch (e) {
+      return e.fields['code'] ?? e.message;
+    }
   }
 
   void removeDiscount() {
@@ -213,6 +238,14 @@ class Cart extends ChangeNotifier {
     _discount = null;
     _shipping = ShippingOption.standard;
     _changed();
+  }
+
+  /// Empties the cart in memory only (saved data is handled by the caller).
+  void reset() {
+    _items.clear();
+    _discount = null;
+    _shipping = ShippingOption.standard;
+    notifyListeners();
   }
 
   CartItem? _find(int productId) {
@@ -230,7 +263,8 @@ class Cart extends ChangeNotifier {
       ..addAll(
         (json['items'] as List? ?? []).whereType<Map>().map(CartItem.fromJson),
       );
-    _discount = _codes[json['discount']];
+    final saved = json['discount'];
+    _discount = saved is Map ? DiscountCode.fromJson(saved) : null;
     _shipping =
         ShippingOption.values.asNameMap()[json['shipping']] ?? _shipping;
     notifyListeners();
@@ -239,7 +273,7 @@ class Cart extends ChangeNotifier {
   void _changed() {
     Storage.write(StorageKeys.cart, {
       'items': _items.map((i) => i.toJson()).toList(),
-      'discount': _discount?.code,
+      'discount': _discount?.toJson(),
       'shipping': _shipping.name,
     });
     notifyListeners();

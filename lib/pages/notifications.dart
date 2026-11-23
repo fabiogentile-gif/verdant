@@ -8,6 +8,7 @@ import 'package:verdant/router/router.dart';
 import 'package:verdant/theme/theme.dart';
 import 'package:verdant/widgets/components/detail_header.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// One entry of the in-app inbox.
 class AppNotification {
@@ -45,10 +46,15 @@ List<AppNotification> currentNotifications({DateTime? now}) {
       if (order.placedAt != null && at.difference(order.placedAt!).inDays < 14)
         AppNotification(
           icon: LucideIcons.package,
-          title: 'Order ${order.number} · ${order.status(now: at)}',
-          body:
-              '${order.itemCount} ${order.itemCount == 1 ? 'item' : 'items'} '
-              'on the way to ${order.address?.city ?? 'you'}.',
+          title: trArgs('Order {0} · {1}', [
+            order.number,
+            order.status(now: at).tr,
+          ]),
+          body: trArgs('{0} {1} on the way to {2}.', [
+            order.itemCount,
+            order.itemCount == 1 ? 'item'.tr : 'items'.tr,
+            order.address?.city ?? 'you',
+          ]),
           at: order.placedAt!,
           route: AppRoutes.orderPath(order.number!),
         ),
@@ -73,7 +79,7 @@ class NotificationsPage extends StatefulWidget {
 
 /// Remembers when the inbox was last opened, to highlight new entries.
 class _NotificationsPageState extends State<NotificationsPage> {
-  static final _time = DateFormat('MMM d · h:mm a', 'en_US');
+  static DateFormat get _time => appDate('MMM d · h:mm a');
   late final DateTime? _seenBefore = appSettings.notificationsSeenAt;
 
   @override
@@ -95,7 +101,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         child: Column(
           children: [
             DetailHeader(
-              title: 'Notifications',
+              title: 'Notifications'.tr,
               actionIcon: LucideIcons.settings2,
               onBack: () => Navigator.of(context).maybePop(),
               onMore: () => pushRoot(context, AppRoutes.privacy),
@@ -118,7 +124,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           ),
                           const SizedBox(height: 14),
                           Text(
-                            'All quiet in the greenhouse.',
+                            'All quiet in the greenhouse.'.tr,
                             textAlign: TextAlign.center,
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontSize: 23,
@@ -127,8 +133,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Care reminders and order updates will show up '
-                            'here.',
+                            'Care reminders and order updates will show up here.'
+                                .tr,
                             textAlign: TextAlign.center,
                             style: theme.textTheme.bodySmall?.copyWith(
                               fontSize: 13,

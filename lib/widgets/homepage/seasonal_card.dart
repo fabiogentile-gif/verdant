@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Homepage banner with the seasonal collection.
 class SeasonalFeatureCard extends StatelessWidget {
@@ -50,7 +51,7 @@ class SeasonalFeatureCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'THE INDOOR SEASON',
+                          'THE INDOOR SEASON'.tr,
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 10,
@@ -60,8 +61,8 @@ class SeasonalFeatureCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        const Text(
-                          'Bring the outside in.',
+                        Text(
+                          'Bring the outside in.'.tr,
                           style: TextStyle(
                             fontFamily: 'Lora',
                             fontSize: 30,
@@ -73,7 +74,7 @@ class SeasonalFeatureCard extends StatelessWidget {
                         SizedBox(
                           width: 240,
                           child: Text(
-                            'A slower season. A greener sanctuary.',
+                            'A slower season. A greener sanctuary.'.tr,
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 12,
@@ -83,13 +84,13 @@ class SeasonalFeatureCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(top: 5),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Explore the autumn edit',
+                                'Explore the autumn edit'.tr,
                                 style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 12,

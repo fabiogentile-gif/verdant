@@ -48,12 +48,15 @@ class AppFilterChip extends StatelessWidget {
               Icon(leadingIcon, size: 14, color: foreground),
               const SizedBox(width: 6),
             ],
-            Text(
-              label,
-              style: theme.textTheme.labelMedium?.copyWith(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: foreground,
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: foreground,
+                ),
               ),
             ),
             if (trailingIcon != null) ...[

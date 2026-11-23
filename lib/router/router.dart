@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:verdant/data/owned_plants.dart';
 import 'package:verdant/pages/activity.dart';
+import 'package:verdant/pages/auth.dart';
 import 'package:verdant/pages/cart.dart';
 import 'package:verdant/pages/checkout.dart';
 import 'package:verdant/pages/greenhouse.dart';
@@ -11,6 +12,7 @@ import 'package:verdant/pages/personal_plant_details.dart';
 import 'package:verdant/pages/plants.dart';
 import 'package:verdant/pages/product_details.dart';
 import 'package:verdant/pages/profile.dart';
+import 'package:verdant/pages/profile/account.dart';
 import 'package:verdant/pages/profile/addresses.dart';
 import 'package:verdant/pages/profile/care_reminders.dart';
 import 'package:verdant/pages/profile/help.dart';
@@ -41,13 +43,15 @@ class AppRoutes {
   static const careReminders = '/care-reminders';
   static const help = '/help';
   static const privacy = '/privacy';
+  static const account = '/account';
 
   static String productPath(int id) => '$productDetails/$id';
   static String plantPath(String id) => '$plantDetails/$id';
   static String orderPath(String number) => '$orders/$number';
 
   static final Map<String, WidgetBuilder> _pages = {
-    root: (_) => AppShell(key: AppShell.globalKey),
+    root: (_) => const AuthGate(),
+    account: (_) => const AccountPage(),
     cart: (_) => const CartPage(),
     checkout: (_) => const CheckoutPage(),
     notifications: (_) => const NotificationsPage(),

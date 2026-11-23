@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Catalogue, account and sync (release builds need it too) -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Care reminders (flutter_local_notifications) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>

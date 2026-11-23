@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/payment.dart';
 import 'package:verdant/widgets/checkout/add_payment_sheet.dart';
 import 'package:verdant/widgets/components/subpage_scaffold.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Saved (demo) payment methods: choose the default, remove, add.
 class PaymentMethodsPage extends StatelessWidget {
@@ -12,15 +13,15 @@ class PaymentMethodsPage extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Remove ${m.title}?'),
+        title: Text(trArgs('Remove {0}?', [m.title])),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Keep'),
+            child: Text('Keep'.tr),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Remove'),
+            child: Text('Remove'.tr),
           ),
         ],
       ),
@@ -39,17 +40,16 @@ class PaymentMethodsPage extends StatelessWidget {
         final methods = wallet.methods;
         final selectedId = wallet.selected?.id;
         return SubpageScaffold(
-          title: 'Payment methods',
+          title: 'Payment methods'.tr,
           actionIcon: LucideIcons.plus,
           onAction: () => showAddPaymentSheet(context),
-          heading: 'Pay your way.',
-          lede:
-              'Demo checkout: cards are checked but never charged, and only '
-              'the last 4 digits are kept.',
+          heading: 'Pay your way.'.tr,
+          lede: 'Demo checkout: cards are checked but never charged, and only the last 4 digits are kept.'
+              .tr,
           children: [
             if (methods.isEmpty)
               Text(
-                'No payment methods yet.',
+                'No payment methods yet.'.tr,
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: 13,
                   color: scheme.onSurfaceVariant,
@@ -105,7 +105,7 @@ class PaymentMethodsPage extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             m.id == selectedId
-                                ? '${m.subtitle} · Default'
+                                ? trArgs('{0} · Default', [m.subtitle])
                                 : m.subtitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -118,7 +118,7 @@ class PaymentMethodsPage extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Remove',
+                      tooltip: 'Remove'.tr,
                       onPressed: () => _remove(context, m),
                       icon: Icon(
                         LucideIcons.trash2,
@@ -135,8 +135,8 @@ class PaymentMethodsPage extends StatelessWidget {
             FilledButton.icon(
               onPressed: () => showAddPaymentSheet(context),
               icon: const Icon(LucideIcons.plus, size: 18),
-              label: const Text(
-                'Add a payment method',
+              label: Text(
+                'Add a payment method'.tr,
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
               style: FilledButton.styleFrom(

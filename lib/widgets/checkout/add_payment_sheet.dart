@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/payment.dart';
 import 'package:verdant/widgets/components/filter_chip.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Opens the "add payment method" sheet. Resolves to the saved method,
 /// or null when the sheet is dismissed.
@@ -60,7 +61,7 @@ class _AddPaymentSheetState extends State<_AddPaymentSheet> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Add a payment method',
+              'Add a payment method'.tr,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontFamily: 'Lora',
                 fontSize: 23,
@@ -70,7 +71,7 @@ class _AddPaymentSheetState extends State<_AddPaymentSheet> {
             ),
             const SizedBox(height: 6),
             Text(
-              'Demo checkout: no real payment is made.',
+              'Demo checkout: no real payment is made.'.tr,
               style: theme.textTheme.bodySmall?.copyWith(
                 fontSize: 11,
                 color: scheme.onSurfaceVariant,
@@ -80,7 +81,7 @@ class _AddPaymentSheetState extends State<_AddPaymentSheet> {
             Row(
               children: [
                 AppFilterChip(
-                  label: 'Card',
+                  label: 'Card'.tr,
                   leadingIcon: LucideIcons.creditCard,
                   selected: _kind == _Kind.card,
                   onTap: () => setState(() => _kind = _Kind.card),
@@ -162,16 +163,16 @@ class _CardFormState extends State<_CardForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _Field(
-            label: 'Name on card',
+            label: 'Name on card'.tr,
             controller: _holder,
-            hint: 'Maya Thompson',
+            hint: 'As printed on the card'.tr,
             textCapitalization: TextCapitalization.words,
             autofillHints: const [AutofillHints.creditCardName],
             validator: (v) => CardValidator.holder(v ?? ''),
           ),
           const SizedBox(height: 14),
           _Field(
-            label: 'Card number',
+            label: 'Card number'.tr,
             controller: _number,
             hint: '4242 4242 4242 4242',
             keyboardType: TextInputType.number,
@@ -186,7 +187,7 @@ class _CardFormState extends State<_CardForm> {
             children: [
               Expanded(
                 child: _Field(
-                  label: 'Expiry',
+                  label: 'Expiry'.tr,
                   controller: _expiry,
                   hint: 'MM/YY',
                   keyboardType: TextInputType.number,
@@ -198,7 +199,7 @@ class _CardFormState extends State<_CardForm> {
               const SizedBox(width: 12),
               Expanded(
                 child: _Field(
-                  label: 'Security code',
+                  label: 'Security code'.tr,
                   controller: _cvc,
                   hint: _brand == CardBrand.amex ? '1234' : '123',
                   keyboardType: TextInputType.number,
@@ -214,12 +215,12 @@ class _CardFormState extends State<_CardForm> {
             ],
           ),
           const SizedBox(height: 10),
-          const _Note(
-            'Try 4242 4242 4242 4242 with any future date. '
-            'Only the last 4 digits are kept.',
+          _Note(
+            'Try 4242 4242 4242 4242 with any future date. Only the last 4 digits are kept.'
+                .tr,
           ),
           const SizedBox(height: 20),
-          _PrimaryButton(label: 'Save card', onPressed: _save),
+          _PrimaryButton(label: 'Save card'.tr, onPressed: _save),
         ],
       ),
     );
@@ -324,7 +325,7 @@ class _PayPalFormState extends State<_PayPalForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _Field(
-            label: 'PayPal email',
+            label: 'PayPal email'.tr,
             controller: _email,
             hint: 'you@email.com',
             keyboardType: TextInputType.emailAddress,
@@ -334,20 +335,20 @@ class _PayPalFormState extends State<_PayPalForm> {
           ),
           const SizedBox(height: 14),
           _Field(
-            label: 'Password',
+            label: 'Password'.tr,
             controller: _password,
             obscureText: true,
             enabled: !_loading,
             validator: (v) => PayPalValidator.password(v ?? ''),
           ),
           const SizedBox(height: 10),
-          const _Note(
-            'Simulated login: any email and password work, '
-            'and the password is never stored.',
+          _Note(
+            'Simulated login: any email and password work, and the password is never stored.'
+                .tr,
           ),
           const SizedBox(height: 20),
           _PrimaryButton(
-            label: 'Log in with PayPal',
+            label: 'Log in with PayPal'.tr,
             loading: _loading,
             onPressed: _connect,
           ),

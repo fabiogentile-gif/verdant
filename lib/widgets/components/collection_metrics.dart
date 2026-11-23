@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Three numbers: plants in total, healthy and needing care.
 class CollectionMetrics extends StatelessWidget {
@@ -18,15 +19,15 @@ class CollectionMetrics extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: _Metric(value: '$total', label: 'plants at home'),
+          child: _Metric(value: '$total', label: 'plants at home'.tr),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _Metric(value: '$healthy', label: 'feeling good'),
+          child: _Metric(value: '$healthy', label: 'feeling good'.tr),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _Metric(value: '$needsCare', label: 'needs care'),
+          child: _Metric(value: '$needsCare', label: 'needs care'.tr),
         ),
       ],
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/data/address.dart';
+import 'package:verdant/data/auth.dart';
 import 'package:verdant/data/care_schedule.dart';
 import 'package:verdant/data/orders.dart';
 import 'package:verdant/data/owned_plants.dart';
@@ -14,6 +15,7 @@ import 'package:verdant/widgets/components/collection_overview.dart';
 import 'package:verdant/widgets/components/page_header.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
 import 'package:verdant/widgets/components/standard_app_bar.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Profile tab: account, orders, settings and app info.
 class Profile extends StatefulWidget {
@@ -44,11 +46,11 @@ class _ProfileState extends State<Profile> {
     if (!allowed && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            'Android hasn’t allowed notifications for Verdant yet.',
+          content: Text(
+            'Android hasn’t allowed notifications for Verdant yet.'.tr,
           ),
           action: SnackBarAction(
-            label: 'Details',
+            label: 'Details'.tr,
             onPressed: () => pushRoot(context, AppRoutes.privacy),
           ),
         ),
@@ -56,22 +58,66 @@ class _ProfileState extends State<Profile> {
     }
   }
 
+  String get _languageLabel => switch (appSettings.language) {
+    AppLanguage.system => 'Follows your phone'.tr,
+    AppLanguage.en => 'English',
+    AppLanguage.it => 'Italiano',
+  };
+
+  Future<void> _pickLanguage() async {
+    final picked = await showModalBottomSheet<AppLanguage>(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) {
+        final scheme = Theme.of(context).colorScheme;
+        Widget option(AppLanguage value, String label) => ListTile(
+          title: Text(label),
+          trailing: appSettings.language == value
+              ? Icon(LucideIcons.check, size: 18, color: scheme.primary)
+              : null,
+          onTap: () => Navigator.of(context).pop(value),
+        );
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                option(AppLanguage.system, 'Use phone language'.tr),
+                option(AppLanguage.it, 'Italiano'),
+                option(AppLanguage.en, 'English'),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (picked != null) appSettings.language = picked;
+  }
+
   void _showTimeZone() {
     final zone = NotificationService.timeZone;
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Time zone'),
+        title: Text('Time zone'.tr),
         content: Text(
           zone == null
-              ? 'Reminders follow your phone’s time zone.'
-              : 'Reminders follow your phone’s time zone ($zone). Change it '
-                    'in Android settings and Verdant will follow.',
+              ? 'Reminders follow your phone’s time zone.'.tr
+              : trArgs(
+                  'Reminders follow your phone’s time zone ({0}). Change it in Android settings and Verdant will follow.',
+                  [zone],
+                ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Got it'),
+            child: Text('Got it'.tr),
           ),
         ],
       ),
@@ -88,16 +134,40 @@ class _ProfileState extends State<Profile> {
         size: 36,
         color: Theme.of(context).colorScheme.primary,
       ),
-      applicationLegalese:
-          'A school project: a plant shop and care companion. Payments are '
-          'simulated and nothing is shipped.',
+      applicationLegalese: 'A school project: a plant shop and care companion. Payments are simulated and nothing is shipped.'
+          .tr,
     );
+  }
+
+  Future<void> _confirmSignOut() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Sign out of Verdant?'.tr),
+        content: Text(
+          'Your plants and orders stay safe in your account. Reminders stop on this phone until you sign in again.'
+              .tr,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Stay'.tr),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Sign out'.tr),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) await authStore.signOut();
   }
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: Listenable.merge([
+        authStore,
         plantCollection,
         careSchedule,
         appSettings,
@@ -115,12 +185,14 @@ class _ProfileState extends State<Profile> {
     final orders = orderHistory.orders.length;
     final payment = wallet.selected;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final user = authStore.user;
+    final address = addressBook.address;
 
     return Scaffold(
       appBar: StandardAppBar(
-        title: 'Profile',
+        title: 'Profile'.tr,
         actionIcon: LucideIcons.settings,
-        actionLabel: 'Settings',
+        actionLabel: 'Settings'.tr,
         onActionTap: _scrollToSettings,
       ),
       body: ScrollViewNoStretch(
@@ -129,19 +201,22 @@ class _ProfileState extends State<Profile> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             PageHeader.eyebrowText(
-              'YOUR VERDANT WORLD',
-              title: 'Rooted in you.',
-              subtitle: 'A little space for you and your growing world.',
+              'YOUR VERDANT WORLD'.tr,
+              title: 'Rooted in you.'.tr,
+              subtitle: 'A little space for you and your growing world.'.tr,
             ),
             const SizedBox(height: 24),
-            const _IdentityCard(
-              name: 'Maya',
-              subtitle: 'Plant parent · Portland, OR',
+            _IdentityCard(
+              name: user?.name ?? 'Verdant',
+              subtitle: user == null || user.location.isEmpty
+                  ? 'Plant parent'.tr
+                  : trArgs('Plant parent · {0}', [user.location]),
+              onEdit: () => pushRoot(context, AppRoutes.account),
             ),
             const SizedBox(height: 24),
             CollectionOverview(
-              title: 'Your little jungle',
-              actionLabel: 'My plants →',
+              title: 'Your little jungle'.tr,
+              actionLabel: 'My plants →'.tr,
               onActionTap: () => goToTab(context, AppRoutes.plants),
               images: [for (final p in plants) p.image],
               total: plants.length,
@@ -150,50 +225,54 @@ class _ProfileState extends State<Profile> {
             ),
             const SizedBox(height: 24),
             _Section(
-              title: 'Your shop, your way',
+              title: 'Your shop, your way'.tr,
               children: [
                 _SettingsTile(
                   icon: LucideIcons.package,
-                  title: 'My orders',
+                  title: 'My orders'.tr,
                   subtitle: orders == 0
-                      ? 'Track deliveries & revisit past orders'
-                      : '$orders ${orders == 1 ? 'order' : 'orders'} so far',
+                      ? 'Track deliveries & revisit past orders'.tr
+                      : trArgs('{0} {1} so far', [
+                          orders,
+                          orders == 1 ? 'order'.tr : 'orders'.tr,
+                        ]),
                   onTap: () => pushRoot(context, AppRoutes.orders),
                 ),
                 _SettingsTile(
                   icon: LucideIcons.mapPin,
-                  title: 'Saved addresses',
-                  subtitle:
-                      '${addressBook.address.label} · '
-                      '${addressBook.address.city}',
+                  title: 'Saved addresses'.tr,
+                  subtitle: address.isComplete
+                      ? '${address.label.tr} · ${address.city}'
+                      : 'Add where your plants should arrive'.tr,
                   onTap: () => pushRoot(context, AppRoutes.addresses),
                 ),
                 _SettingsTile(
                   icon: LucideIcons.creditCard,
-                  title: 'Payment methods',
+                  title: 'Payment methods'.tr,
                   subtitle: payment == null
-                      ? 'Manage your saved payment options'
-                      : 'Default: ${payment.title}',
+                      ? 'Manage your saved payment options'.tr
+                      : trArgs('Default: {0}', [payment.title]),
                   onTap: () => pushRoot(context, AppRoutes.paymentMethods),
                 ),
               ],
             ),
             const SizedBox(height: 24),
             _Section(
-              title: 'Your care rhythm',
+              title: 'Your care rhythm'.tr,
               children: [
                 _SettingsTile(
                   icon: LucideIcons.calendarDays,
-                  title: 'Care reminders',
-                  subtitle:
-                      'Review schedules for your ${plants.length} '
-                      '${plants.length == 1 ? 'plant' : 'plants'}',
+                  title: 'Care reminders'.tr,
+                  subtitle: trArgs('Review schedules for your {0} {1}', [
+                    plants.length,
+                    plants.length == 1 ? 'plant'.tr : 'plants'.tr,
+                  ]),
                   onTap: () => pushRoot(context, AppRoutes.careReminders),
                 ),
                 _SettingsTile(
                   icon: LucideIcons.bell,
-                  title: 'Push notifications',
-                  subtitle: 'A gentle nudge on your phone',
+                  title: 'Push notifications'.tr,
+                  subtitle: 'A gentle nudge on your phone'.tr,
                   trailing: AppToggle(
                     value: appSettings.push,
                     onChanged: _setPush,
@@ -201,8 +280,8 @@ class _ProfileState extends State<Profile> {
                 ),
                 _SettingsTile(
                   icon: LucideIcons.mail,
-                  title: 'Email reminders',
-                  subtitle: 'Saved for when email reminders arrive',
+                  title: 'Email reminders'.tr,
+                  subtitle: 'For reminders with email turned on'.tr,
                   trailing: AppToggle(
                     value: appSettings.email,
                     onChanged: (v) => appSettings.email = v,
@@ -210,9 +289,9 @@ class _ProfileState extends State<Profile> {
                 ),
                 _SettingsTile(
                   icon: LucideIcons.clock3,
-                  title: 'Time zone',
+                  title: 'Time zone'.tr,
                   subtitle:
-                      NotificationService.timeZone ?? 'Follows your phone',
+                      NotificationService.timeZone ?? 'Follows your phone'.tr,
                   onTap: _showTimeZone,
                 ),
               ],
@@ -220,12 +299,12 @@ class _ProfileState extends State<Profile> {
             const SizedBox(height: 24),
             _Section(
               key: _housekeepingKey,
-              title: 'A little housekeeping',
+              title: 'A little housekeeping'.tr,
               children: [
                 _SettingsTile(
                   icon: LucideIcons.moon,
-                  title: 'Dark mode',
-                  subtitle: 'Switch to a darker, easier-on-the-eyes theme',
+                  title: 'Dark mode'.tr,
+                  subtitle: 'Switch to a darker, easier-on-the-eyes theme'.tr,
                   trailing: AppToggle(
                     value: isDark,
                     onChanged: (v) => appSettings.themeMode = v
@@ -234,33 +313,40 @@ class _ProfileState extends State<Profile> {
                   ),
                 ),
                 _SettingsTile(
+                  icon: LucideIcons.languages,
+                  title: 'Language'.tr,
+                  subtitle: _languageLabel,
+                  onTap: _pickLanguage,
+                ),
+                _SettingsTile(
                   icon: LucideIcons.userRound,
-                  title: 'Account & security',
-                  onTap: () {},
+                  title: 'Account & security'.tr,
+                  subtitle: user?.email,
+                  onTap: () => pushRoot(context, AppRoutes.account),
                 ),
                 _SettingsTile(
                   icon: LucideIcons.shieldCheck,
-                  title: 'Privacy & permissions',
+                  title: 'Privacy & permissions'.tr,
                   onTap: () => pushRoot(context, AppRoutes.privacy),
                 ),
                 _SettingsTile(
                   icon: LucideIcons.messageCircle,
-                  title: 'Help & support',
-                  subtitle: 'We’re here to help you grow',
+                  title: 'Help & support'.tr,
+                  subtitle: 'We’re here to help you grow'.tr,
                   onTap: () => pushRoot(context, AppRoutes.help),
                 ),
                 _SettingsTile(
                   icon: LucideIcons.sprout,
-                  title: 'About Verdant',
+                  title: 'About Verdant'.tr,
                   onTap: _showAbout,
                 ),
               ],
             ),
             const SizedBox(height: 24),
-            _SoftButton(label: 'Sign out', onPressed: () {}),
+            _SoftButton(label: 'Sign out'.tr, onPressed: _confirmSignOut),
             const SizedBox(height: 18),
             Text(
-              'Good things grow with a little care.',
+              'Good things grow with a little care.'.tr,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontSize: 18,
@@ -277,10 +363,15 @@ class _ProfileState extends State<Profile> {
 
 /// Avatar, name and a short subtitle.
 class _IdentityCard extends StatelessWidget {
-  const _IdentityCard({required this.name, required this.subtitle});
+  const _IdentityCard({
+    required this.name,
+    required this.subtitle,
+    required this.onEdit,
+  });
 
   final String name;
   final String subtitle;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -344,7 +435,7 @@ class _IdentityCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 18),
-          _SoftButton(label: 'Edit profile', onPressed: () {}),
+          _SoftButton(label: 'Edit profile'.tr, onPressed: onEdit),
         ],
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Shown for unknown routes or items that no longer exist.
 class NotFoundPage extends StatelessWidget {
@@ -32,7 +33,7 @@ class NotFoundPage extends StatelessWidget {
               Icon(LucideIcons.leaf, size: 40, color: scheme.primary),
               const SizedBox(height: 16),
               Text(
-                title,
+                title.tr,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontSize: 26,
@@ -41,7 +42,7 @@ class NotFoundPage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                message,
+                message.tr,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontSize: 13,
@@ -61,8 +62,8 @@ class NotFoundPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text(
-                  'Back to home',
+                child: Text(
+                  'Back to home'.tr,
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ),

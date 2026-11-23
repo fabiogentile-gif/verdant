@@ -12,6 +12,7 @@ import 'package:verdant/router/router.dart';
 import 'package:verdant/widgets/components/filter_chip.dart';
 import 'package:verdant/widgets/components/product_card.dart';
 import 'package:verdant/widgets/components/scrollview_list.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Icon for a tag or care step key sent by the backend ("sprout", "sun", "droplets").
 IconData? _iconFor(String? key) {
@@ -92,7 +93,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     return _ErrorState(
                       message: error is ProductLoadException
                           ? error.message
-                          : 'We couldn’t load this product.',
+                          : 'We couldn’t load this product.'.tr,
                       onRetry: () => setState(_load),
                     );
                   }
@@ -126,7 +127,12 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (p.eyebrow != null) _Eyebrow(p.eyebrow!) else const SizedBox(),
+              Flexible(
+                child: p.eyebrow != null
+                    ? _Eyebrow(p.eyebrow!)
+                    : const SizedBox(),
+              ),
+              if (p.rating != null) const SizedBox(width: 12),
               if (p.rating != null)
                 Row(
                   children: [
@@ -168,14 +174,21 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   color: scheme.onSurface,
                 ),
               ),
-              if (p.availabilityLabel != null)
-                Text(
-                  '● ${p.availabilityLabel}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontSize: 11,
-                    color: p.inStock ? scheme.primary : scheme.onSurfaceVariant,
+              if (p.availabilityLabel != null) ...[
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    '● ${p.availabilityLabel}',
+                    textAlign: TextAlign.end,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 11,
+                      color: p.inStock
+                          ? scheme.primary
+                          : scheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
+              ],
             ],
           ),
           if (p.summary != null) ...[
@@ -248,14 +261,14 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                 children: [
                   Expanded(
                     child: p.growth != null
-                        ? _Characteristic(label: 'GROWTH', value: p.growth!)
+                        ? _Characteristic(label: 'GROWTH'.tr, value: p.growth!)
                         : const SizedBox.shrink(),
                   ),
                   const SizedBox(width: 18),
                   Expanded(
                     child: p.goodToKnow != null
                         ? _Characteristic(
-                            label: 'GOOD TO KNOW',
+                            label: 'GOOD TO KNOW'.tr,
                             value: p.goodToKnow!,
                           )
                         : const SizedBox.shrink(),
@@ -269,7 +282,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             const SizedBox(height: 24),
             Container(height: 1, color: scheme.outlineVariant),
             const SizedBox(height: 24),
-            const _SectionHeading('The simple care guide'),
+            _SectionHeading('The simple care guide'.tr),
             const SizedBox(height: 17),
             for (int i = 0; i < p.careSteps.length; i++) ...[
               if (i > 0) const SizedBox(height: 17),
@@ -283,8 +296,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           if (p.related.isNotEmpty) ...[
             const SizedBox(height: 24),
             _SectionHeading(
-              'Better together',
-              actionLabel: 'View all →',
+              'Better together'.tr,
+              actionLabel: 'View all →'.tr,
               onAction: () {
                 shopFilter.show();
                 goToTab(context, AppRoutes.greenhouse);
@@ -337,7 +350,7 @@ class _DetailHeader extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Plant profile',
+              'Plant profile'.tr,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -494,22 +507,29 @@ class _PurchaseCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  product.variantLabel!,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: scheme.onSurface,
-                  ),
-                ),
-                if (product.variantDetail != null)
-                  Text(
-                    product.variantDetail!,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontSize: 12,
-                      color: scheme.onSurfaceVariant,
+                Expanded(
+                  child: Text(
+                    product.variantLabel!,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
                     ),
                   ),
+                ),
+                if (product.variantDetail != null) ...[
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Text(
+                      product.variantDetail!,
+                      textAlign: TextAlign.end,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 16),
@@ -517,13 +537,16 @@ class _PurchaseCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Make room for green',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontSize: 13,
-                  color: scheme.onSurfaceVariant,
+              Expanded(
+                child: Text(
+                  'Make room for green'.tr,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: 13,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
               ),
+              const SizedBox(width: 12),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
@@ -571,7 +594,7 @@ class _PurchaseCard extends StatelessWidget {
             onPressed: product.inStock ? onAddToCart : null,
             icon: const Icon(LucideIcons.arrowRight, size: 18),
             label: Text(
-              'Add to cart · ${formatMoney(total)}',
+              trArgs('Add to cart · {0}', [formatMoney(total)]),
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             style: FilledButton.styleFrom(
@@ -761,7 +784,8 @@ class _CareAssistantNote extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Bring it home. We’ll help you build its care routine in My plants.',
+              'Bring it home. We’ll help you build its care routine in My plants.'
+                  .tr,
               style: theme.textTheme.bodySmall?.copyWith(
                 fontSize: 12,
                 height: 1.5,
@@ -857,7 +881,10 @@ class _ErrorState extends StatelessWidget {
           const SizedBox(height: 8),
           TextButton(
             onPressed: onRetry,
-            child: Text('Try again', style: TextStyle(color: scheme.primary)),
+            child: Text(
+              'Try again'.tr,
+              style: TextStyle(color: scheme.primary),
+            ),
           ),
         ],
       ),

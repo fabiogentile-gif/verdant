@@ -10,6 +10,7 @@ import 'package:verdant/widgets/components/scrollview_list.dart';
 import 'package:verdant/widgets/components/search_bar.dart';
 import 'package:verdant/widgets/components/standard_app_bar.dart';
 import 'package:verdant/widgets/plants/plant_form_sheet.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Top filter of the collection: every plant or only those needing care.
 enum _PlantFilter { all, needsCare }
@@ -55,7 +56,7 @@ class _PlantsState extends State<Plants> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                option('All rooms', '', _room == null),
+                option('All rooms'.tr, '', _room == null),
                 for (final r in rooms) option(r, r, _room == r),
               ],
             ),
@@ -96,9 +97,9 @@ class _PlantsState extends State<Plants> {
 
     return Scaffold(
       appBar: StandardAppBar(
-        title: 'My plants',
+        title: 'My plants'.tr,
         actionIcon: LucideIcons.plus,
-        actionLabel: 'Add a plant',
+        actionLabel: 'Add a plant'.tr,
         onActionTap: _addPlant,
       ),
       body: ScrollViewNoStretch(
@@ -107,9 +108,9 @@ class _PlantsState extends State<Plants> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             PageHeader.eyebrowText(
-              'MAYA’S LITTLE JUNGLE',
-              title: 'Growing, together.',
-              subtitle: 'Every leaf has a story. Here are yours.',
+              'YOUR LITTLE JUNGLE'.tr,
+              title: 'Growing, together.'.tr,
+              subtitle: 'Every leaf has a story. Here are yours.'.tr,
             ),
             const SizedBox(height: 24),
             CollectionOverview(
@@ -119,7 +120,7 @@ class _PlantsState extends State<Plants> {
             ),
             const SizedBox(height: 24),
             AppSearchField(
-              hintText: 'Find a plant in your collection',
+              hintText: 'Find a plant in your collection'.tr,
               onChanged: (value) => setState(() => _query = value),
             ),
             const SizedBox(height: 24),
@@ -128,20 +129,20 @@ class _PlantsState extends State<Plants> {
               child: Row(
                 children: [
                   _FilterChip(
-                    label: 'All plants (${plants.length})',
+                    label: trArgs('All plants ({0})', [plants.length]),
                     selected: _filter == _PlantFilter.all,
                     onTap: () => setState(() => _filter = _PlantFilter.all),
                   ),
                   const SizedBox(width: 8),
                   _FilterChip(
-                    label: 'Needs care ($needsCareCount)',
+                    label: trArgs('Needs care ({0})', [needsCareCount]),
                     selected: _filter == _PlantFilter.needsCare,
                     onTap: () =>
                         setState(() => _filter = _PlantFilter.needsCare),
                   ),
                   const SizedBox(width: 8),
                   _FilterChip(
-                    label: _room ?? 'By room',
+                    label: _room ?? 'By room'.tr,
                     selected: _room != null,
                     leadingIcon: LucideIcons.chevronDown,
                     onTap: _pickRoom,
@@ -156,7 +157,8 @@ class _PlantsState extends State<Plants> {
                 child: Text(
                   plants.isEmpty
                       ? 'Your collection is empty. Add your first plant below.'
-                      : 'No plants match your filters.',
+                            .tr
+                      : 'No plants match your filters.'.tr,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontSize: 12,
@@ -180,7 +182,7 @@ class _PlantsState extends State<Plants> {
             ],
             const SizedBox(height: 24),
             _AddPlantButton(
-              label: 'Add a plant to your collection',
+              label: 'Add a plant to your collection'.tr,
               onPressed: _addPlant,
             ),
             const SizedBox(height: 24),
@@ -309,7 +311,7 @@ class _CollectionGuidance extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Small rituals, happy roots.',
+                  'Small rituals, happy roots.'.tr,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -318,7 +320,8 @@ class _CollectionGuidance extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  'Check the soil before you water. Your plant knows what it needs.',
+                  'Check the soil before you water. Your plant knows what it needs.'
+                      .tr,
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontSize: 12,
                     height: 1.5,

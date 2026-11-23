@@ -4,21 +4,46 @@ import 'package:flutter/widgets.dart';
 import 'package:verdant/data/care_schedule.dart';
 import 'package:verdant/data/storage.dart';
 import 'package:verdant/models/plant_details.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// A plant in the user's collection.
 class OwnedPlant {
   OwnedPlant({
     required this.id,
-    required this.name,
-    required this.room,
+    required String name,
+    required String room,
     required this.species,
     required this.imagePath,
     required this.addedOn,
-  });
+  }) : _name = I18n.sourceIn(name, _speciesNames),
+       _room = I18n.sourceIn(room, _roomNames);
+
+  static const _speciesNames = {
+    'Monstera',
+    'Rubber Plant',
+    'Golden Pothos',
+    'Peace Lily',
+  };
+  static const _roomNames = {
+    'Living room',
+    'Bedroom',
+    'Kitchen',
+    'Study',
+    'Bathroom',
+    'Balcony',
+  };
 
   final String id;
-  String name;
-  String room;
+  String _name;
+  String _room;
+
+  /// A species' common name is translated; a name the user chose is not.
+  String get name => _speciesNames.contains(_name) ? _name.tr : _name;
+  set name(String value) => _name = I18n.sourceIn(value, _speciesNames);
+
+  /// Suggested rooms are saved in English, so they follow the language.
+  String get room => _roomNames.contains(_room) ? _room.tr : _room;
+  set room(String value) => _room = I18n.sourceIn(value, _roomNames);
 
   /// Latin name, e.g. "Monstera deliciosa" (see [PlantSpecies.catalog]).
   final String species;
@@ -34,8 +59,8 @@ class OwnedPlant {
 
   Map<String, Object?> toJson() => {
     'id': id,
-    'name': name,
-    'room': room,
+    'name': _name,
+    'room': _room,
     'species': species,
     'imagePath': imagePath,
     'addedOn': addedOn.toIso8601String(),

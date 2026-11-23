@@ -23,13 +23,30 @@ abstract final class Storage {
     }
   }
 
+  /// Called after each store save, so changes can be uploaded.
+  static void Function(String key)? onWrite;
+
   static void write(String key, Object? value) {
+    writeLocal(key, value);
+    onWrite?.call(key);
+  }
+
+  /// Saves without reporting a change (data that came from the server).
+  static void writeLocal(String key, Object? value) {
     _prefs?.setString(key, jsonEncode(value));
   }
 
-  /// Removes everything Verdant saved on this device.
+  static void remove(String key) {
+    _prefs?.remove(key);
+  }
+
+  /// Removes everything Verdant saved on this device, except its language.
   static Future<void> clearAll() async {
+    final language = _prefs?.getString(StorageKeys.language);
     await _prefs?.clear();
+    if (language != null) {
+      await _prefs?.setString(StorageKeys.language, language);
+    }
   }
 }
 
@@ -43,4 +60,7 @@ abstract final class StorageKeys {
   static const favorites = 'favorites.v1';
   static const orders = 'orders.v1';
   static const address = 'address.v1';
+  static const user = 'user.v1';
+  static const syncDirty = 'sync_dirty.v1';
+  static const language = 'language.v1';
 }

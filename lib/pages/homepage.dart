@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:verdant/data/auth.dart';
 import 'package:verdant/data/care_schedule.dart';
 import 'package:verdant/data/cart.dart';
 import 'package:verdant/data/favorites.dart';
@@ -23,6 +24,7 @@ import 'package:verdant/widgets/homepage/category_filter.dart';
 import 'package:verdant/widgets/homepage/featured_products.dart' as fp;
 import 'package:verdant/widgets/homepage/seasonal_card.dart';
 import 'package:verdant/widgets/homepage/upcoming_care.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Home tab: greeting, search, categories, featured products and upcoming care.
 class Homepage extends StatefulWidget {
@@ -81,6 +83,7 @@ class _HomepageState extends State<Homepage> {
         favorites,
         appSettings,
         orderHistory,
+        authStore,
       ]),
       builder: (context, _) => _build(context),
     );
@@ -111,12 +114,16 @@ class _HomepageState extends State<Homepage> {
           children: [
             PageHeader.eyebrowDate(
               now,
-              title: 'A little greener, Maya.',
-              subtitle: 'Good things grow with a little care.',
+              title: authStore.user == null
+                  ? 'A little greener.'.tr
+                  : trArgs('A little greener, {0}.', [
+                      authStore.user!.firstName,
+                    ]),
+              subtitle: 'Good things grow with a little care.'.tr,
             ),
             const SizedBox(height: 28),
             AppSearchField(
-              hintText: 'Find your next green companion',
+              hintText: 'Find your next green companion'.tr,
               onSubmitted: (q) => _openShop(query: q.trim()),
             ),
             const SizedBox(height: 28),
@@ -139,7 +146,7 @@ class _HomepageState extends State<Homepage> {
                   return _FeaturedError(
                     message: snap.error is ProductLoadException
                         ? (snap.error as ProductLoadException).message
-                        : 'We couldn’t load our favourites.',
+                        : 'We couldn’t load our favourites.'.tr,
                     onRetry: () => setState(
                       () => _featured = productRepository.getFeaturedProducts(),
                     ),
@@ -179,8 +186,8 @@ class _HomepageState extends State<Homepage> {
                 statusLabel: careSchedule.statusLabel(focus),
                 scheduleLabel: careSchedule.scheduleLabel(focus),
                 collectionLabel: plants.length == 1
-                    ? '1 plant, one happy home'
-                    : '${plants.length} plants, one happy home',
+                    ? '1 plant, one happy home'.tr
+                    : trArgs('{0} plants, one happy home', [plants.length]),
                 onSeeAll: () => goToTab(context, AppRoutes.plants),
                 onPlantTap: () => openPlant(context, focus),
                 onCollectionTap: () => goToTab(context, AppRoutes.plants),
@@ -238,7 +245,7 @@ class _FeaturedError extends StatelessWidget {
               ),
             ),
           ),
-          TextButton(onPressed: onRetry, child: const Text('Retry')),
+          TextButton(onPressed: onRetry, child: Text('Retry'.tr)),
         ],
       ),
     );

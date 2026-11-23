@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:verdant/widgets/components/subpage_scaffold.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Frequently asked questions about using Verdant.
 class HelpPage extends StatelessWidget {
@@ -36,12 +37,13 @@ class HelpPage extends StatelessWidget {
       'Is my payment real?',
       'No. Verdant’s checkout is a demo: cards are checked but never '
           'charged, PayPal is simulated, and only the last 4 digits of a '
-          'card are kept on this phone.',
+          'card are kept.',
     ),
     (
       'Where is my data stored?',
-      'Your plants, reminders, cart, orders and settings are saved only on '
-          'this phone. You can erase them from Privacy & permissions.',
+      'Your plants, reminders, cart, orders and settings are saved to your '
+          'account and on this phone. You can erase them from Privacy & '
+          'permissions.',
     ),
   ];
 
@@ -51,10 +53,10 @@ class HelpPage extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     return SubpageScaffold(
-      title: 'Help & support',
+      title: 'Help & support'.tr,
       actionIcon: LucideIcons.messageCircle,
-      heading: 'We’re here to help you grow.',
-      lede: 'Answers to the questions new plant parents ask most.',
+      heading: 'We’re here to help you grow.'.tr,
+      lede: 'Answers to the questions new plant parents ask most.'.tr,
       children: [
         for (final (question, answer) in _faq) ...[
           SoftCard(
@@ -67,7 +69,7 @@ class HelpPage extends StatelessWidget {
                 iconColor: scheme.primary,
                 collapsedIconColor: scheme.onSurfaceVariant,
                 title: Text(
-                  question,
+                  question.tr,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -76,7 +78,7 @@ class HelpPage extends StatelessWidget {
                 ),
                 children: [
                   Text(
-                    answer,
+                    answer.tr,
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontSize: 12,
                       height: 1.55,

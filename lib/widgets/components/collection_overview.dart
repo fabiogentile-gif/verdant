@@ -40,15 +40,18 @@ class CollectionOverview extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title!,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontSize: 23,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: -0.5,
-                    color: scheme.surface,
+                Expanded(
+                  child: Text(
+                    title!,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontSize: 23,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: -0.5,
+                      color: scheme.surface,
+                    ),
                   ),
                 ),
+                if (actionLabel != null) const SizedBox(width: 8),
                 if (actionLabel != null)
                   GestureDetector(
                     onTap: onActionTap,

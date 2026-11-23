@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Page header: optional [eyebrow] + title + subtitle.
 ///
@@ -44,7 +45,10 @@ class PageHeader extends StatelessWidget {
     if (text != null) return text.toUpperCase();
     final date = _eyebrowDate;
     if (date != null) {
-      return DateFormat('EEEE, MMMM d', locale).format(date).toUpperCase();
+      final format = locale == null
+          ? appDate('EEEE, MMMM d')
+          : DateFormat('EEEE, MMMM d', locale);
+      return format.format(date).toUpperCase();
     }
     return null;
   }

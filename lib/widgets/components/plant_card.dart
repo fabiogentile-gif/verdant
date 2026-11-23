@@ -59,12 +59,14 @@ class PlantCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        name,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: scheme.onSurface,
+                      Expanded(
+                        child: Text(
+                          name,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: scheme.onSurface,
+                          ),
                         ),
                       ),
                       Icon(

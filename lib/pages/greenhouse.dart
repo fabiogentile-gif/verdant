@@ -15,6 +15,7 @@ import 'package:verdant/utils/money.dart';
 import 'package:verdant/data/product_repository.dart';
 import 'package:verdant/pages/cart.dart' show showAddedToCart;
 import 'package:verdant/models/product.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Shop tab: search, categories, sorting and the product grid.
 class Greenhouse extends StatefulWidget {
@@ -111,12 +112,12 @@ class _GreenhouseState extends State<Greenhouse> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 SwitchListTile(
-                  title: const Text('In stock only'),
+                  title: Text('In stock only'.tr),
                   value: shopFilter.inStockOnly,
                   onChanged: (v) => shopFilter.inStockOnly = v,
                 ),
                 SwitchListTile(
-                  title: const Text('My favourites only'),
+                  title: Text('My favourites only'.tr),
                   value: shopFilter.favoritesOnly,
                   onChanged: (v) => shopFilter.favoritesOnly = v,
                 ),
@@ -125,7 +126,7 @@ class _GreenhouseState extends State<Greenhouse> {
                     shopFilter.clear();
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Clear all filters'),
+                  child: Text('Clear all filters'.tr),
                 ),
               ],
             ),
@@ -146,9 +147,9 @@ class _GreenhouseState extends State<Greenhouse> {
   Widget _build(BuildContext context) {
     return Scaffold(
       appBar: StandardAppBar(
-        title: 'The greenhouse',
+        title: 'The greenhouse'.tr,
         actionIcon: LucideIcons.shoppingBag,
-        actionLabel: 'Your cart',
+        actionLabel: 'Your cart'.tr,
         badgeCount: cart.itemCount,
         onActionTap: () => pushRoot(context, AppRoutes.cart),
       ),
@@ -157,14 +158,15 @@ class _GreenhouseState extends State<Greenhouse> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const PageHeader(
-              title: 'Room to grow.',
-              subtitle: 'Thoughtfully grown plants and beautiful things to help them thrive.',
+            PageHeader(
+              title: 'Room to grow.'.tr,
+              subtitle: 'Thoughtfully grown plants and beautiful things to help them thrive.'
+                  .tr,
             ),
             const SizedBox(height: 24),
             AppSearchField(
               controller: _search,
-              hintText: 'Search plants, pots & essentials',
+              hintText: 'Search plants, pots & essentials'.tr,
               onChanged: (v) => shopFilter.query = v,
             ),
             const SizedBox(height: 24),
@@ -182,7 +184,7 @@ class _GreenhouseState extends State<Greenhouse> {
             ),
             const SizedBox(height: 24),
             _FeaturedCollection(
-              onTap: () => shopFilter.show(query: 'Easy care'),
+              onTap: () => shopFilter.show(query: 'Easy care'.tr),
             ),
             const SizedBox(height: 24),
             const _DeliveryNote(),
@@ -205,12 +207,12 @@ class _GreenhouseState extends State<Greenhouse> {
                         Text(
                           error is ProductLoadException
                               ? error.message
-                              : 'Couldn’t load products.',
+                              : 'Couldn’t load products.'.tr,
                           textAlign: TextAlign.center,
                         ),
                         TextButton(
                           onPressed: _reload,
-                          child: const Text('Try again'),
+                          child: Text('Try again'.tr),
                         ),
                       ],
                     ),
@@ -223,8 +225,8 @@ class _GreenhouseState extends State<Greenhouse> {
                 );
                 final controls = _SortAndFilter(
                   countLabel: shopFilter.isActive
-                      ? '${visible.length} of ${all.length} finds'
-                      : '${all.length} thoughtfully chosen finds',
+                      ? trArgs('{0} of {1} finds', [visible.length, all.length])
+                      : trArgs('{0} thoughtfully chosen finds', [all.length]),
                   sortLabel: shopFilter.sort.label,
                   activeFilters: shopFilter.extraFilterCount,
                   onSort: _pickSort,
@@ -237,7 +239,9 @@ class _GreenhouseState extends State<Greenhouse> {
                     children: [
                       _SectionHeading(
                         shopFilter.query.trim().isNotEmpty
-                            ? 'Results for “${shopFilter.query.trim()}”'
+                            ? trArgs('Results for “{0}”', [
+                                shopFilter.query.trim(),
+                              ])
                             : shopFilter.category.label,
                       ),
                       const SizedBox(height: 16),
@@ -261,17 +265,17 @@ class _GreenhouseState extends State<Greenhouse> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const _SectionHeading('The greenhouse favorites'),
+                    _SectionHeading('The greenhouse favorites'.tr),
                     const SizedBox(height: 16),
                     controls,
                     const SizedBox(height: 16),
                     _ProductGrid(products: plants),
                     if (essentials.isNotEmpty) ...[
                       const SizedBox(height: 24),
-                      const _SectionHeading('Good for your jungle'),
+                      _SectionHeading('Good for your jungle'.tr),
                       const SizedBox(height: 16),
                       _SectionSubtitle(
-                        'A few essentials for your Monstera and friends',
+                        'A few essentials for your Monstera and friends'.tr,
                       ),
                       const SizedBox(height: 16),
                       _ProductGrid(products: essentials),
@@ -309,7 +313,7 @@ class _EmptyResults extends StatelessWidget {
           Icon(LucideIcons.sprout, size: 28, color: scheme.primary),
           const SizedBox(height: 10),
           Text(
-            'Nothing growing here yet.',
+            'Nothing growing here yet.'.tr,
             style: theme.textTheme.titleSmall?.copyWith(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -318,14 +322,14 @@ class _EmptyResults extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Try another search or category.',
+            'Try another search or category.'.tr,
             style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 12,
               color: scheme.onSecondaryContainer,
             ),
           ),
           const SizedBox(height: 8),
-          TextButton(onPressed: onClear, child: const Text('Show everything')),
+          TextButton(onPressed: onClear, child: Text('Show everything'.tr)),
         ],
       ),
     );
@@ -401,7 +405,7 @@ class _FeaturedCollection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'THE EASY-GROW EDIT',
+                    'THE EASY-GROW EDIT'.tr,
                     style: theme.textTheme.labelSmall?.copyWith(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
@@ -411,7 +415,7 @@ class _FeaturedCollection extends StatelessWidget {
                   ),
                   const SizedBox(height: 7),
                   Text(
-                    'Start small. Grow wild.',
+                    'Start small. Grow wild.'.tr,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontSize: 19,
                       fontWeight: FontWeight.w500,
@@ -421,7 +425,7 @@ class _FeaturedCollection extends StatelessWidget {
                   ),
                   const SizedBox(height: 7),
                   Text(
-                    'Meet your first plant →',
+                    'Meet your first plant →'.tr,
                     style: theme.textTheme.labelSmall?.copyWith(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -481,7 +485,7 @@ class _SortAndFilter extends StatelessWidget {
           ),
         ),
         IconButton(
-          tooltip: 'Filters',
+          tooltip: 'Filters'.tr,
           onPressed: onFilter,
           icon: Badge(
             isLabelVisible: activeFilters > 0,
@@ -591,7 +595,8 @@ class _DeliveryNote extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Grown with care. Delivered with love. Free shipping on orders \$100+.',
+              'Grown with care. Delivered with love. Free shipping on orders \$100+.'
+                  .tr,
               style: theme.textTheme.bodySmall?.copyWith(
                 fontSize: 12,
                 height: 1.5,

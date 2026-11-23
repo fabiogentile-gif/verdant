@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:verdant/models/product.dart';
+import 'package:verdant/l10n/i18n.dart';
 
 /// Data contract used by the UI; the source (API, mock, cache) stays hidden.
 abstract class ProductRepository {
@@ -25,11 +26,12 @@ class ProductLoadException implements Exception {
 
   String get message => switch (kind) {
     ProductErrorKind.offline =>
-      'We can’t reach the greenhouse. Check your connection.',
-    ProductErrorKind.timeout => 'The greenhouse is taking too long to answer.',
-    ProductErrorKind.notFound => 'This product is no longer available.',
-    ProductErrorKind.server => 'Something went wrong on our side.',
-    ProductErrorKind.badData => 'We received something unexpected.',
+      'We can’t reach the greenhouse. Check your connection.'.tr,
+    ProductErrorKind.timeout =>
+      'The greenhouse is taking too long to answer.'.tr,
+    ProductErrorKind.notFound => 'This product is no longer available.'.tr,
+    ProductErrorKind.server => 'Something went wrong on our side.'.tr,
+    ProductErrorKind.badData => 'We received something unexpected.'.tr,
   };
 
   @override
@@ -146,23 +148,24 @@ class ApiProductRepository implements ProductRepository {
   );
 
   @override
-  Future<ProductDetails> getProductDetails(int id) =>
-      _cached('product:$id', () async {
-        final json = await _get(Uri.parse('$_api/products/$id'));
-        if (json is! Map<String, dynamic>) {
-          throw const ProductLoadException(ProductErrorKind.badData);
-        }
-        // Make the product's own images and the related products' images absolute.
-        String abs(String p) => resolveImage(p, origin);
-        return ProductDetails.fromJson({
-          ...json,
-          'images': (json['images'] as List? ?? const [])
-              .map((i) => abs(i as String))
-              .toList(),
-          'related': (json['related'] as List? ?? const [])
-              .cast<Map<String, dynamic>>()
-              .map((r) => {...r, 'image': abs(r['image'] as String)})
-              .toList(),
-        });
-      });
+  Future<ProductDetails> getProductDetails(
+    int id,
+  ) => _cached('product:$id', () async {
+    final json = await _get(Uri.parse('$_api/products/$id'));
+    if (json is! Map<String, dynamic>) {
+      throw const ProductLoadException(ProductErrorKind.badData);
+    }
+    // Make the product's own images and the related products' images absolute.
+    String abs(String p) => resolveImage(p, origin);
+    return ProductDetails.fromJson({
+      ...json,
+      'images': (json['images'] as List? ?? const [])
+          .map((i) => abs(i as String))
+          .toList(),
+      'related': (json['related'] as List? ?? const [])
+          .cast<Map<String, dynamic>>()
+          .map((r) => {...r, 'image': abs(r['image'] as String)})
+          .toList(),
+    });
+  });
 }
