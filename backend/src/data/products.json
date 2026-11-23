@@ -18,8 +18,8 @@
       { "label": "Indoor" },
       { "label": "Low light" }
     ],
-    "image": "/product_rubber_plant.png",
-    "images": ["/product_rubber_plant.png"],
+    "image": "/static/products/product_rubber_plant.png",
+    "images": ["/static/products/product_rubber_plant.png"],
     "variantLabel": "6-inch nursery pot",
     "variantDetail": "16–22 in tall",
     "purchaseNote": "Nursery pot included · Decorative pot sold separately",
@@ -65,8 +65,8 @@
       { "label": "Indoor" },
       { "label": "Air-loving" }
     ],
-    "image": "/product_monstera_deliciosa.png",
-    "images": ["/product_monstera_deliciosa.png"],
+    "image": "/static/products/product_monstera_deliciosa.png",
+    "images": ["/static/products/product_monstera_deliciosa.png"],
     "variantLabel": "6-inch nursery pot",
     "variantDetail": "18–24 in tall",
     "purchaseNote": "Nursery pot included · Decorative pot sold separately",
@@ -110,8 +110,8 @@
       { "label": "Organic" },
       { "label": "All indoor plants" }
     ],
-    "image": "/product_organic_potting_mix.png",
-    "images": ["/product_organic_potting_mix.png"],
+    "image": "/static/products/product_organic_potting_mix.png",
+    "images": ["/static/products/product_organic_potting_mix.png"],
     "variantLabel": "Medium bag",
     "variantDetail": "5 L",
     "purchaseNote": "Peat-free · Enough for two 6-inch pots",
@@ -137,8 +137,8 @@
       { "label": "Handmade look" },
       { "label": "Drainage hole" }
     ],
-    "image": "/product_sandstone_pot.png",
-    "images": ["/product_sandstone_pot.png"],
+    "image": "/static/products/product_sandstone_pot.png",
+    "images": ["/static/products/product_sandstone_pot.png"],
     "variantLabel": "Medium",
     "variantDetail": "7 in wide",
     "purchaseNote": "Saucer included · Plant sold separately",
@@ -164,8 +164,8 @@
       { "label": "Gift idea" },
       { "label": "3 pieces" }
     ],
-    "image": "/product_watering_ritual_set.png",
-    "images": ["/product_watering_ritual_set.png"],
+    "image": "/static/products/product_watering_ritual_set.png",
+    "images": ["/static/products/product_watering_ritual_set.png"],
     "variantLabel": "Complete set",
     "variantDetail": "Can, mister & cloth",
     "purchaseNote": "Free shipping on orders $100+",
@@ -193,8 +193,8 @@
       { "label": "Indoor" },
       { "label": "Bright light" }
     ],
-    "image": "/product_white_orchid.png",
-    "images": ["/product_white_orchid.png"],
+    "image": "/static/products/product_white_orchid.png",
+    "images": ["/static/products/product_white_orchid.png"],
     "variantLabel": "4-inch pot",
     "variantDetail": "18–22 in tall",
     "purchaseNote": "Nursery pot included · Decorative pot sold separately",
@@ -215,5 +215,487 @@
       }
     ],
     "relatedIds": [4, 5]
+  },
+  {
+    "id": 7,
+    "name": "Snake plant",
+    "eyebrow": "THE UNBOTHERED ONE",
+    "price": 28,
+    "category": "plants",
+    "stock": 18,
+    "inStock": true,
+    "availabilityLabel": "In stock · ready to grow",
+    "tag": "Beginner friendly",
+    "featured": false,
+    "summary": "Tall, striped leaves that stand straight and ask for very little. A calm choice for a first plant or a dim corner.",
+    "tags": [
+      {
+        "label": "Easy care",
+        "icon": "sprout"
+      },
+      {
+        "label": "Indoor"
+      },
+      {
+        "label": "Low light"
+      }
+    ],
+    "image": "/static/products/product_snake_plant.png",
+    "images": [
+      "/static/products/product_snake_plant.png"
+    ],
+    "variantLabel": "6-inch nursery pot",
+    "variantDetail": "18–24 in tall",
+    "purchaseNote": "Nursery pot included · Decorative pot sold separately",
+    "descriptionTitle": "Happy to be left alone",
+    "description": "Native to West Africa, the snake plant stores water in its thick leaves, so a missed watering is rarely a problem. Too much water is the one thing it dislikes.",
+    "growth": "Upright, slow",
+    "goodToKnow": "Keep away from pets",
+    "careSteps": [
+      {
+        "icon": "sun",
+        "title": "Low to bright, indirect light",
+        "description": "Grows faster near a window, but copes with shade."
+      },
+      {
+        "icon": "droplets",
+        "title": "Water every 2–3 weeks",
+        "description": "Wait until the soil is completely dry."
+      },
+      {
+        "icon": "sprout",
+        "title": "Gritty, fast-draining soil",
+        "description": "A cactus mix keeps the roots from staying wet."
+      }
+    ],
+    "relatedIds": [
+      10,
+      3
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Golden pothos",
+    "eyebrow": "THE GENTLE TRAILER",
+    "price": 22,
+    "category": "plants",
+    "stock": 22,
+    "inStock": true,
+    "availabilityLabel": "In stock · ready to grow",
+    "tag": "Easy care",
+    "featured": false,
+    "summary": "Heart-shaped leaves with soft golden marbling. Let it trail from a shelf and watch it fill the space.",
+    "tags": [
+      {
+        "label": "Easy care",
+        "icon": "sprout"
+      },
+      {
+        "label": "Indoor"
+      },
+      {
+        "label": "Trailing"
+      }
+    ],
+    "image": "/static/products/product_golden_pothos.png",
+    "images": [
+      "/static/products/product_golden_pothos.png"
+    ],
+    "variantLabel": "5-inch nursery pot",
+    "variantDetail": "10–14 in long",
+    "purchaseNote": "Nursery pot included · Decorative pot sold separately",
+    "descriptionTitle": "A little more every week",
+    "description": "One of the most forgiving houseplants there is. Its leaves droop slightly when thirsty, so it tells you when it is time to water, and it perks up soon after.",
+    "growth": "Trailing or climbing",
+    "goodToKnow": "Keep away from pets",
+    "careSteps": [
+      {
+        "icon": "sun",
+        "title": "Medium, indirect light",
+        "description": "More light keeps the golden marbling bright."
+      },
+      {
+        "icon": "droplets",
+        "title": "Water every 7–10 days",
+        "description": "Let the top inch of soil dry first."
+      },
+      {
+        "icon": "sprout",
+        "title": "Standard potting mix",
+        "description": "Any well-draining indoor mix works."
+      }
+    ],
+    "relatedIds": [
+      11,
+      12
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Peace lily",
+    "eyebrow": "THE SOFT BLOOM",
+    "price": 34,
+    "category": "plants",
+    "stock": 10,
+    "inStock": true,
+    "availabilityLabel": "In stock · ready to grow",
+    "tag": "In bloom",
+    "featured": false,
+    "summary": "Deep green leaves and quiet white blooms. It brings a little calm to a shaded room.",
+    "tags": [
+      {
+        "label": "In bloom",
+        "icon": "sprout"
+      },
+      {
+        "label": "Indoor"
+      },
+      {
+        "label": "Low light"
+      }
+    ],
+    "image": "/static/products/product_peace_lily.png",
+    "images": [
+      "/static/products/product_peace_lily.png"
+    ],
+    "variantLabel": "6-inch nursery pot",
+    "variantDetail": "16–20 in tall",
+    "purchaseNote": "Nursery pot included · Decorative pot sold separately",
+    "descriptionTitle": "It tells you when it's thirsty",
+    "description": "Peace lilies flower indoors with only gentle light. When the leaves begin to droop, a good drink usually brings them back within a few hours.",
+    "growth": "Full, clumping",
+    "goodToKnow": "Keep away from pets",
+    "careSteps": [
+      {
+        "icon": "sun",
+        "title": "Low to medium light",
+        "description": "Keep it out of direct sun."
+      },
+      {
+        "icon": "droplets",
+        "title": "Water about once a week",
+        "description": "Keep the soil lightly moist, never soggy."
+      },
+      {
+        "icon": "sprout",
+        "title": "Moisture-holding soil",
+        "description": "A rich indoor potting mix suits it well."
+      }
+    ],
+    "relatedIds": [
+      4,
+      12
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Terracotta pot",
+    "eyebrow": "THE CLASSIC",
+    "price": 16,
+    "category": "planters",
+    "stock": 30,
+    "inStock": true,
+    "availabilityLabel": "In stock · ready to ship",
+    "featured": false,
+    "summary": "Simple, breathable clay with a matching saucer. A timeless home for plants that like to dry out.",
+    "tags": [
+      {
+        "label": "Natural clay"
+      },
+      {
+        "label": "Drainage hole"
+      }
+    ],
+    "image": "/static/products/product_terracotta_pot.png",
+    "images": [
+      "/static/products/product_terracotta_pot.png"
+    ],
+    "variantLabel": "Medium",
+    "variantDetail": "6 in wide",
+    "purchaseNote": "Saucer included · Plant shown for styling, sold separately",
+    "descriptionTitle": "Clay that lets roots breathe",
+    "description": "Unglazed terracotta lets air and moisture pass through its walls, which helps prevent overwatering. It is a natural match for snake plants and other easygoing growers.",
+    "careSteps": [],
+    "relatedIds": [
+      7,
+      3
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Woven seagrass basket",
+    "eyebrow": "THE WARM TEXTURE",
+    "price": 29,
+    "category": "planters",
+    "stock": 14,
+    "inStock": true,
+    "availabilityLabel": "In stock · ready to ship",
+    "featured": false,
+    "summary": "A soft, hand-woven look with two small handles. Slip a nursery pot inside and the room feels warmer.",
+    "tags": [
+      {
+        "label": "Natural fiber"
+      },
+      {
+        "label": "Cover pot"
+      }
+    ],
+    "image": "/static/products/product_woven_basket.png",
+    "images": [
+      "/static/products/product_woven_basket.png"
+    ],
+    "variantLabel": "Medium",
+    "variantDetail": "9 in wide",
+    "purchaseNote": "Not waterproof: keep the plant in its nursery pot · Plant shown for styling, sold separately",
+    "descriptionTitle": "Texture for a quiet corner",
+    "description": "Woven from natural seagrass, this basket works as a cover for a nursery pot. Lift the plant out to water it, let it drain, then set it back.",
+    "careSteps": [],
+    "relatedIds": [
+      8,
+      2
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Leaf shine oil",
+    "eyebrow": "THE LITTLE GLOW",
+    "price": 14,
+    "category": "accessories",
+    "stock": 26,
+    "inStock": true,
+    "availabilityLabel": "In stock · ships fast",
+    "featured": false,
+    "summary": "A light plant-based oil that brings back a natural shine to smooth, dusty leaves.",
+    "tags": [
+      {
+        "label": "Leaf care"
+      },
+      {
+        "label": "Plant-based"
+      }
+    ],
+    "image": "/static/products/product_leaf_shine_oil.png",
+    "images": [
+      "/static/products/product_leaf_shine_oil.png"
+    ],
+    "variantLabel": "Pump bottle",
+    "variantDetail": "120 ml",
+    "purchaseNote": "Use on smooth leaves only · Not for fuzzy leaves",
+    "descriptionTitle": "A small ritual for clean leaves",
+    "description": "Add one pump to a soft cloth and wipe each leaf gently, supporting it from below. Use it once a month, away from direct sun.",
+    "careSteps": [],
+    "relatedIds": [
+      1,
+      5
+    ]
+  },
+  {
+    "id": 13,
+    "name": "English lavender",
+    "eyebrow": "THE SUNNY ONE",
+    "price": 19,
+    "category": "plants",
+    "stock": 20,
+    "inStock": true,
+    "availabilityLabel": "In stock · ready to grow",
+    "tag": "Outdoor",
+    "featured": false,
+    "summary": "Silvery foliage and fragrant purple spikes. A small patch of summer for a balcony, terrace or garden.",
+    "tags": [
+      {
+        "label": "Outdoor",
+        "icon": "sprout"
+      },
+      {
+        "label": "Full sun"
+      },
+      {
+        "label": "Fragrant"
+      }
+    ],
+    "image": "/static/products/product_lavender.png",
+    "images": [
+      "/static/products/product_lavender.png"
+    ],
+    "variantLabel": "6-inch terracotta pot",
+    "variantDetail": "14–18 in tall",
+    "purchaseNote": "Terracotta pot and saucer included",
+    "descriptionTitle": "Happiest in the sun",
+    "description": "Lavender loves warmth, light and fast-draining ground. Once settled it needs little water, and a light trim after flowering keeps it compact and full.",
+    "growth": "Bushy, compact",
+    "goodToKnow": "Keep away from pets",
+    "careSteps": [
+      {
+        "icon": "sun",
+        "title": "Full sun",
+        "description": "Aim for at least six hours of sun a day."
+      },
+      {
+        "icon": "droplets",
+        "title": "Water every 1–2 weeks",
+        "description": "Let the soil dry between waterings."
+      },
+      {
+        "icon": "sprout",
+        "title": "Gritty, well-draining soil",
+        "description": "Wet roots are its only real enemy."
+      }
+    ],
+    "relatedIds": [
+      10,
+      16
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Potted olive tree",
+    "eyebrow": "THE MEDITERRANEAN",
+    "price": 58,
+    "category": "plants",
+    "stock": 7,
+    "inStock": true,
+    "availabilityLabel": "In stock · ready to grow",
+    "tag": "Outdoor",
+    "featured": false,
+    "summary": "Slender trunk, narrow silver-green leaves and an easy, timeless shape for a sunny terrace.",
+    "tags": [
+      {
+        "label": "Outdoor",
+        "icon": "sprout"
+      },
+      {
+        "label": "Full sun"
+      },
+      {
+        "label": "Drought tolerant"
+      }
+    ],
+    "image": "/static/products/product_olive_tree.png",
+    "images": [
+      "/static/products/product_olive_tree.png"
+    ],
+    "variantLabel": "8-inch pot",
+    "variantDetail": "28–36 in tall",
+    "purchaseNote": "Pot and saucer included · Young tree, fruit not guaranteed",
+    "descriptionTitle": "A little Mediterranean, at home",
+    "description": "Olive trees grow slowly and handle heat and dry spells well. Give them a bright, sheltered spot and they will settle into a calm, sculptural presence for years.",
+    "growth": "Upright, slow",
+    "goodToKnow": "Shelter it from hard frost",
+    "careSteps": [
+      {
+        "icon": "sun",
+        "title": "Full sun",
+        "description": "A bright, south-facing spot is ideal."
+      },
+      {
+        "icon": "droplets",
+        "title": "Water every 7–14 days",
+        "description": "Check first: let the top 2 inches of soil dry."
+      },
+      {
+        "icon": "sprout",
+        "title": "Free-draining soil",
+        "description": "A pot with drainage keeps the roots healthy."
+      }
+    ],
+    "relatedIds": [
+      16,
+      13
+    ]
+  },
+  {
+    "id": 15,
+    "name": "Hydrangea",
+    "eyebrow": "THE SHADY BLOOM",
+    "price": 36,
+    "category": "plants",
+    "stock": 9,
+    "inStock": true,
+    "availabilityLabel": "In stock · ready to grow",
+    "tag": "In bloom",
+    "featured": false,
+    "summary": "Full, rounded flower heads in soft blue-green tones. A generous bloom for a balcony with gentle morning sun.",
+    "tags": [
+      {
+        "label": "Outdoor",
+        "icon": "sprout"
+      },
+      {
+        "label": "Part shade"
+      },
+      {
+        "label": "In bloom"
+      }
+    ],
+    "image": "/static/products/product_hydrangea.png",
+    "images": [
+      "/static/products/product_hydrangea.png"
+    ],
+    "variantLabel": "7-inch pot",
+    "variantDetail": "16–20 in tall",
+    "purchaseNote": "Pot included · Flower color can vary with the soil",
+    "descriptionTitle": "Big blooms, gentle light",
+    "description": "Hydrangeas like cool roots and soft light. Morning sun with afternoon shade keeps the flowers fresh, and regular watering carries them through the warm months.",
+    "growth": "Rounded shrub",
+    "goodToKnow": "Keep away from pets",
+    "careSteps": [
+      {
+        "icon": "sun",
+        "title": "Morning sun, afternoon shade",
+        "description": "Protect it from the hottest hours."
+      },
+      {
+        "icon": "droplets",
+        "title": "Water 2–3 times a week",
+        "description": "Keep the soil moist in warm weather."
+      },
+      {
+        "icon": "sprout",
+        "title": "Rich, moist soil",
+        "description": "Feed lightly in spring and summer."
+      }
+    ],
+    "relatedIds": [
+      16,
+      11
+    ]
+  },
+  {
+    "id": 16,
+    "name": "Organic plant fertilizer",
+    "eyebrow": "THE GENTLE BOOST",
+    "price": 15,
+    "category": "accessories",
+    "stock": 24,
+    "inStock": true,
+    "availabilityLabel": "In stock · ships fast",
+    "tag": "Organic",
+    "featured": false,
+    "summary": "Slow-release organic granules that feed indoor and outdoor plants gently through the growing season.",
+    "tags": [
+      {
+        "label": "Organic"
+      },
+      {
+        "label": "Indoor & outdoor"
+      },
+      {
+        "label": "Slow release"
+      }
+    ],
+    "image": "/static/products/product_fertilizer.png",
+    "images": [
+      "/static/products/product_fertilizer.png"
+    ],
+    "variantLabel": "Medium pouch",
+    "variantDetail": "500 g",
+    "purchaseNote": "Wooden scoop included · Keep away from children and pets",
+    "descriptionTitle": "A little goes a long way",
+    "description": "Sprinkle one scoop around the base of a 6-inch pot every 6–8 weeks in spring and summer, then water it in. Skip feeding in winter, when most plants are resting.",
+    "careSteps": [],
+    "relatedIds": [
+      3,
+      15
+    ]
   }
 ]
